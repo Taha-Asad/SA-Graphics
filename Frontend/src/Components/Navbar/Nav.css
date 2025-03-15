@@ -1,28 +1,56 @@
 @import "tailwindcss";
 
-*{
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
-body{
-    font-family: 'Raleway', sans-serif;
-    background-color: #f5f5f5;
+body {
+  font-family: "Raleway", sans-serif;
+  background-color: #f5f5f5;
 }
-.nav-head{
-    margin-top: 54%;
-    margin-left: 28.6% ;
+.nav-head {
+  margin-top: 54%;
+  margin-left: 28.6%;
 }
-.social-links{
-    display: flex;
+.social-links {
+  display: flex;
+  margin-left: 7%;
+  margin-top: 4%;
 }
-.social-icons{
-    list-style: none;
-    border: 1px solid #f5f5f5;
-    border-radius:50%;
-    padding: 5%;
+.social-icons {
+  list-style: none;
+  padding: 10px;
+  margin: 1.5%;
+  border: 1px solid transparent;
+  border-radius: 50%;
+  background-color: #1e242c;
 }
-.icon{
-    color: #f5f5f5;
-    font-size: 26px;
+.social-icons:hover {
+  background-color: #149ddd;
+}
+.icon {
+  color: #f5f5f5;
+  font-size: 22px;
+}
+
+.nav-links {
+  list-style-type: none;
+  cursor: pointer;
+  color: #a8a9b4;
+  font-size: 20px;
+  margin-left: 25px;
+  margin-top: 10%;
+  margin-bottom: 8%;
+}
+.page-links {
+  margin-right: 10px;
+  font-size: 25px;
+  display: inline;
+}
+.nav-links:hover .page-links{
+    color: #149ddd;
+}
+.nav-links:hover .text{
+    color: white;
 }

@@ -17,7 +17,7 @@ export const Social = [
     },
     {
         icon: <FaSquareWhatsapp  className="icon"/>,
-        url:"" ,
+        url:"https://wa.link/4g9blc" ,
         cName:"social-icons"
      },
     {
