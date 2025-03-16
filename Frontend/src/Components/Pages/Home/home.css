@@ -1,0 +1,20 @@
+@import "tailwindcss";
+
+.titles::after {
+    position: absolute;
+    content: "";
+    top: 120%;
+    left: 60px;
+    width: var(--underline-width, 120px); /* Controlled by React */
+    height: 3px;
+    background-color: #149ddd;
+    transition: width 0.3s ease, left 0.3s ease;
+  }
+@keyframes blink{
+    50% {opacity: 0;}
+}
+.animate-blink{
+    display: inline-block;
+    color: #149ddd;
+    animation: blink 1.5s infinite;
+}

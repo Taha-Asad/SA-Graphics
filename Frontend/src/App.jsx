@@ -1,3 +1,4 @@
+import Footer from "./Components/Footer/Footer"
 import Navbar from "./Components/Navbar/NavBar"
 import Pages from "./Components/Pages/Pages"
 import "./index.css"
@@ -9,6 +10,7 @@ function App() {
     <div className="app">
       <Navbar/>
       <Pages/>
+      <Footer/>
     </div>
     </>
   )

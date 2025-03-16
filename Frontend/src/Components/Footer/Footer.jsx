@@ -4,6 +4,7 @@ const Footer = () => {
   return (
     <>
     {/* #F4FAFD */}
+    <h1>Hekko</h1>
     </>
   )
 }
