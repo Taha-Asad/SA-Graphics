@@ -3,7 +3,7 @@ import { ServicesList } from './servicesList'
 import './service.css'
 const Services = () => {
     return (
-        <><div className='container relative top-96'>
+        <><div className='container relative services'>
                 <h1 className='text-4xl absolute left-5 font-bold bottom-20 top-10 section-title'>Services</h1>
             <div className="cards absolute grid grid-cols-3 left-5 right-5 gap-4 top-36">
                 {ServicesList.map((list, index) => {

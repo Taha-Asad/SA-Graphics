@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+.services{
+    margin-top: 60%;
+}
 .section-title::after{
     content: '';
     position: absolute ;

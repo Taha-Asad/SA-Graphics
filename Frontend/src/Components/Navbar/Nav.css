@@ -24,6 +24,7 @@ body {
   margin: 1.5%;
   border: 1px solid transparent;
   border-radius: 50%;
+  transition: all 1s ease;
   background-color: #1e242c;
 }
 .social-icons:hover {
@@ -43,10 +44,14 @@ body {
   margin-top: 10%;
   margin-bottom: 8%;
 }
+.text{
+  transition: all 0.5s ease;  
+}
 .page-links {
   margin-right: 10px;
   font-size: 25px;
   display: inline;
+  transition: all 0.5s ease;
 }
 .nav-links:hover .page-links{
     color: #149ddd;
