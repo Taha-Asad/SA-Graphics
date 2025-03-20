@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Order Status Update</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+    }
+    h1 {
+      color: #4CAF50;
+    }
+    .order-details {
+      margin-top: 20px;
+    }
+    .order-details p {
+      margin: 5px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Order Status Update</h1>
+    <div class="order-details">
+      <p><strong>Order ID:</strong> <%= order._id %></p>
+      <p><strong>New Status:</strong> <%= order.status %></p>
+    </div>
+    <p>Thank you for shopping with us!</p>
+  </div>
+</body>
+</html>

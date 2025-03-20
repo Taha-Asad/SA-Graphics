@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>New Order Received</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+    }
+    h1 {
+      color: #4CAF50;
+    }
+    .order-details {
+      margin-top: 20px;
+    }
+    .order-details p {
+      margin: 5px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>New Order Received</h1>
+    <div class="order-details">
+      <p><strong>Order ID:</strong> <%= order._id %></p>
+      <p><strong>Total Amount:</strong> PKR <%= order.totalAmount %></p>
+      <p><strong>Shipping Address:</strong></p>
+      <p>
+        <%= order.shippingAddress.street %>, <%= order.shippingAddress.city %>,
+        <%= order.shippingAddress.province %>, <%= order.shippingAddress.postalCode %>
+      </p>
+    </div>
+  </div>
+</body>
+</html>

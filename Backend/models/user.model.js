@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-
 const userSchema = new mongoose.Schema(
   {
     name: {
@@ -9,20 +8,26 @@ const userSchema = new mongoose.Schema(
     email: {
       type: String,
       required: true,
-      unique,
     },
     password: {
       type: String,
       required: true,
     },
-    isAdmin: {
-      type: Boolean,
-      required: true,
-      default: false,
+    role:{
+      type:String,
+      enum:["user" , "admin"] ,
+      default:"user",
     },
+    resetPasswordToken:{
+      type:String,
+    },
+    resetPasswordExpires:{
+      type:Date,
+    }
   },
   {
     timestamps: true,
   }
 );
+
 module.exports = mongoose.model("User", userSchema);
