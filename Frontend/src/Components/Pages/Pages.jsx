@@ -19,7 +19,7 @@ const Pages = () => {
   }
   return (
     <>
-      <div className="container relative left-[24%] right-0 p-0 m-0 w-[76%]">
+      <div className="container">
         <div ref={sectionRefs.home}> <Home /> </div>
         <div ref={sectionRefs.about}> <About /> </div>
         <div ref={sectionRefs.resume}> <Resume /> </div>

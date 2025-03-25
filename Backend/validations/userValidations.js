@@ -3,6 +3,7 @@ const Joi = require("joi");
 const registarSchema = Joi.object({
   name: Joi.string().required(),
   email: Joi.string().required(),
+  phoneNo: Joi.string().regex(/^\d{11}$/).required(),
   password: Joi.string().min(6).required(),
 });
 

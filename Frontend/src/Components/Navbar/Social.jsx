@@ -5,11 +5,11 @@ import { FaLinkedin } from "react-icons/fa";
 import { FaSquareWhatsapp } from "react-icons/fa6";
 
 export const Social = [
-    {
-        icon: <FaXTwitter  className="icon"/>,
-        url:"" ,
-        cName:"social-icons"
-     },
+   //  {
+   //      icon: <FaXTwitter  className="icon"/>,
+   //      url:"" ,
+   //      cName:"social-icons"
+   //   },
     {
        icon: <MdFacebook  className="icon"/>,
        url:"" ,

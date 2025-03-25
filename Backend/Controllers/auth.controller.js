@@ -4,6 +4,7 @@ const crypto = require("crypto");
 const User = require("../models/user.model.js");
 const path = require("path");
 const transporter = require("../config/nodemailer.js");
+const ejs = require("ejs");
 const {
   forgotPasswordSchema,
   registarSchema,
@@ -17,19 +18,28 @@ const registerUser = async (req, res) => {
     return res
       .status(400)
       .json({ success: false, message: error.details[0].message });
-  const { name, email, password } = req.body;
+  const { name, email, password, phoneNo } = req.body;
   try {
     let user = await User.findOne({ email });
     if (user)
       return res
         .status(400)
         .json({ success: false, message: "User Already exists" });
+    let userByPhoneNo = await User.findOne({ phoneNo });
+    if (userByPhoneNo)
+      return res
+        .status(400)
+        .json({ success: false, message: "User Already exists" });
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
+    const profilePic = req.file ? req.file.path : "";
+
     user = await User.create({
       name,
       email,
       password: hashedPassword,
+      phoneNo,
+      profilePic,
     });
 
     // await user.save();
@@ -47,7 +57,29 @@ const registerUser = async (req, res) => {
     });
   }
 };
+const updateProfilePic = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user)
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
 
+    // Save new profile picture path
+    if (req.file) {
+      user.profilePic = req.file.path;
+      await user.save();
+    }
+
+    res.json({ success: true, profilePic: user.profilePic });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};
 const loginUser = async (req, res) => {
   try {
     const { error } = loginSchema.validate(req.body);
@@ -62,6 +94,7 @@ const loginUser = async (req, res) => {
         .status(400)
         .json({ success: false, message: "No user found!" });
     const isMatch = await bcrypt.compare(password, user.password);
+    
     if (!isMatch)
       return res
         .status(400)
@@ -160,4 +193,11 @@ const resetPassword = async (req, res) => {
   }
 };
 
-module.exports = { registerUser, loginUser, forgotPassword, resetPassword };
+module.exports = { registerUser, loginUser , updateProfilePic , forgotPassword, resetPassword };
+
+
+
+
+// Update Profile Picture
+
+

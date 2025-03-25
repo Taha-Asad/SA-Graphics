@@ -13,17 +13,30 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    role:{
-      type:String,
-      enum:["user" , "admin"] ,
-      default:"user",
+    phoneNo: {
+      type: Number,
+      require: true,
+      unique: true,
+      validates: function (v) {
+        /^\ d{11} /.test(v);
+      },
+      message: (props) => `${props.value} is not a valid phone number!`,
     },
-    resetPasswordToken:{
+    profilePic:{
       type:String,
+      default:"",
     },
-    resetPasswordExpires:{
-      type:Date,
-    }
+    role: {
+      type: String,
+      enum: ["user", "admin"],
+      default: "user",
+    },
+    resetPasswordToken: {
+      type: String,
+    },
+    resetPasswordExpires: {
+      type: Date,
+    },
   },
   {
     timestamps: true,
