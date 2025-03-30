@@ -1,39 +1,79 @@
-const Testimonial = require('../models/testimonial.model.js');
-const { testimonialSchema } = require('../validations/testimonialValidation.js');
+const Testimonial = require("../models/testimonial.model");
 
-// Submit Testimonial
+// Submit a Testimonial (User)
 exports.submitTestimonial = async (req, res) => {
-  const { error } = testimonialSchema.validate(req.body);
-  if (error) return res.status(400).json({ message: error.details[0].message });
-
-  const { text } = req.body;
   try {
-    const testimonial = new Testimonial({ userId: req.user.id, text });
-    await testimonial.save();
-    res.status(201).json({ message: 'Testimonial submitted for approval', testimonial });
-  } catch (err) {
-    res.status(500).json({ message: 'Server Error', error: err.message });
+    const { text } = req.body;
+    if (!text) {
+      return res.status(400).json({ message: "Testimonial text is required" });
+    }
+
+    const newTestimonial = new Testimonial({
+      userId: req.user.id,
+      text,
+      status: "pending", // Default status is pending
+    });
+
+    await newTestimonial.save();
+    res.status(201).json({
+      message: "Testimonial submitted for approval",
+      testimonial: newTestimonial,
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+// Get Approved Testimonials (Public)
+exports.getApprovedTestimonials = async (req, res) => {
+  try {
+    const testimonials = await Testimonial.find({ status: "approved" }).populate(
+      "userId",
+      "name"
+    );
+
+    res.status(200).json(testimonials);
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 
 // Get All Testimonials (Admin Only)
-exports.getTestimonials = async (req, res) => {
+exports.getAllTestimonials = async (req, res) => {
   try {
-    const testimonials = await Testimonial.find({ status: 'pending' }).populate('userId', 'name');
-    res.json(testimonials);
-  } catch (err) {
-    res.status(500).json({ message: 'Server Error', error: err.message });
+    const testimonials = await Testimonial.find().populate("userId", "name");
+
+    res.status(200).json(testimonials);
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 
-// Approve/Reject Testimonial (Admin Only)
+// Approve or Reject a Testimonial (Admin Only)
 exports.updateTestimonialStatus = async (req, res) => {
-  const { status } = req.body;
   try {
-    const testimonial = await Testimonial.findByIdAndUpdate(req.params.id, { status }, { new: true });
-    if (!testimonial) return res.status(404).json({ message: 'Testimonial not found' });
-    res.json({ message: `Testimonial ${status}`, testimonial });
-  } catch (err) {
-    res.status(500).json({ message: 'Server Error', error: err.message });
+    const { status } = req.body;
+    const testimonialId = req.params.id;
+
+    if (!["approved", "rejected"].includes(status)) {
+      return res.status(400).json({ message: "Invalid status value" });
+    }
+
+    const updatedTestimonial = await Testimonial.findByIdAndUpdate(
+      testimonialId,
+      { status },
+      { new: true }
+    );
+
+    if (!updatedTestimonial) {
+      return res.status(404).json({ message: "Testimonial not found" });
+    }
+
+    res.status(200).json({
+      message: `Testimonial ${status}`,
+      testimonial: updatedTestimonial,
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };

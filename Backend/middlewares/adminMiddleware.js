@@ -1,11 +1,12 @@
-const User = require('../models/user.model.js');
+const createError = require('http-errors');
 
-module.exports = async (req, res, next) => {
+module.exports = (req, res, next) => {
   try {
-    const user = await User.findById(req.user.id);
-    if (user.role !== 'admin') return res.status(403).json({ message: 'Access denied' });
+    if (req.user.role !== 'admin') {
+      throw createError(403, 'You do not have permission to perform this action');
+    }
     next();
-  } catch (err) {
-    res.status(500).json({ message: 'Server Error', error: err.message });
+  } catch (error) {
+    next(error);
   }
 };

@@ -8,22 +8,22 @@ import { AuthContext } from "./context/AuthContext.jsx";
 function App() {
   const { user } = useContext(AuthContext);
 
+  console.log("User in App:", user); // ✅ Debugging step
+
   return (
-    <>
-      <div className="app">
-        {user ? (
-          user.role === "admin" ? (
-            // <Admin />
-            <h1>Hello Admin</h1>
-          ) : (
-            <User />
-          )
+    <div className="app">
+      {user ? (
+        user.role === "admin" ? (
+          <h1>Hello Admin</h1>
         ) : (
           <User />
-        )}
-      </div>
-    </>
-  )
+        )
+      ) : (
+        <User />
+      )}
+    </div>
+  );
 }
+
 
 export default App
