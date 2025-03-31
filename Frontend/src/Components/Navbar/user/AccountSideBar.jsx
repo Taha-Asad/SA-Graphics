@@ -13,6 +13,7 @@ const AccountSideBar = ({ onClose }) => {
     console.log("User updated in AccountSideBar:", user);
   }, [user]);
 
+
   const handleLinkClick = (path, action) => {
     if (action) action();
     if (path) navigate(path);

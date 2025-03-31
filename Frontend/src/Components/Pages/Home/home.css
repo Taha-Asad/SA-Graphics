@@ -4,7 +4,7 @@
     position: absolute;
     content: "";
     top: 120%;
-    left: 60px;
+    left: 85px;
     width: var(--underline-width, 120px); /* Controlled by React */
     height: 3px;
     background-color: #149ddd;

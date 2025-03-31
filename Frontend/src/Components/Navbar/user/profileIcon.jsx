@@ -2,23 +2,23 @@ import React, { useContext } from "react";
 import { AuthContext } from "../../../context/AuthContext";
 
 const ProfileIcon = () => {
-  const { user, logout } = useContext(AuthContext);
+  const { user } = useContext(AuthContext);
 
   if (!user) return null;
 
   return (
-    <div style={{ position: "absolute", top: "10px", right: "10px" }}>
+    <div style={{ position: "absolute", top: "0px", right: "0px" , width:"100%"}}>
       {user.profilePic ? (
         <img
           src={user.profilePic}
           alt="Profile"
-          style={{ width: "40px", height: "40px", borderRadius: "50%" }}
+          style={{ width: "100%", height: "100%", borderRadius: "50%" }}
         />
       ) : (
         <div
           style={{
-            width: "40px",
-            height: "40px",
+            width: "100%",
+            height: "100%",
             borderRadius: "50%",
             background: "#ccc",
             display: "flex",
@@ -31,9 +31,6 @@ const ProfileIcon = () => {
           {user.name.charAt(0).toUpperCase()}
         </div>
       )}
-      <button onClick={logout} style={{ marginLeft: "10px" }}>
-        Logout
-      </button>
     </div>
   );
 };

@@ -4,7 +4,8 @@ const cors = require('cors');
 const morgan = require('morgan');
 const connectDB = require('./config/db');
 const { transporter } = require('./config/nodemailer.js');
-
+const createError = require('http-errors');
+const path = require('path');
 // Load env vars
 dotenv.config({ path: './.env' });
 
@@ -15,7 +16,12 @@ connectDB();
 const app = express();
 
 // Middlewares
-app.use(cors());
+app.use(cors({
+  origin: true,
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -25,9 +31,20 @@ if (process.env.NODE_ENV === 'development') {
 
 // Static files
 app.use('/uploads', express.static('uploads'));
+app.use(express.static(path.join(__dirname, '../Frontend/dist')));
 
 // Routes
 app.use('/api/v1/', require('./routers/api.js'));
+
+// Serve frontend for all other routes
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../Frontend/dist/index.html'));
+});
+
+// Handle 404
+app.all('/api/*', (req, res, next) => {
+  next(createError(404, `Can't find ${req.originalUrl} on this server!`));
+});
 
 // Test email connection
 transporter.verify((error) => {
@@ -36,11 +53,6 @@ transporter.verify((error) => {
   } else {
     console.log('SMTP Server is ready to take our messages');
   }
-});
-
-// Handle 404
-app.all('*', (req, res, next) => {
-  next(createError(404, `Can't find ${req.originalUrl} on this server!`));
 });
 
 // Error handling middleware

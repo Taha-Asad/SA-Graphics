@@ -93,7 +93,7 @@ const Login = () => {
             },
             body: JSON.stringify({
               email: user.email.trim(), // Trim email
-              password: user.password.trim() // Trim password
+              password: user.password // Don't trim password
             }),
           });
       
@@ -208,6 +208,7 @@ const Login = () => {
                     {isSubmitting ? 'Signing In...' : 'Sign In'}
                 </Button>
                 <Typography variant='h6' textAlign={'center'}>Don't have a account <Link to={"/register"} style={{color:'#149ddd'}} >Sign Up</Link></Typography>
+                <Typography variant='h6' textAlign={'center'}>Forgot Password <Link to={"/forgot-password"} style={{color:'#149ddd'}} >Click Here</Link></Typography>
             </Container>
             <ToastContainer/>
         </Grid>

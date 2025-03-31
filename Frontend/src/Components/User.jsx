@@ -1,24 +1,30 @@
-import React from 'react'
-import Pages from './Pages/Pages'
-import Footer from './Footer/Footer'
-import Navbar from './Navbar/Navbar'
-import { BrowserRouter, Route, Routes } from 'react-router-dom'
-import Login from './authentication/Login'
-import Register from './authentication/Register'
+import React, { useEffect } from 'react'
+import About from './Pages/About/About'
+import Services from './Pages/Services/Services'
+import Resume from './Pages/Resume/Resume'
+import Home from './Pages/Home/Home'
+import AOS from 'aos';
+import 'aos/dist/aos.css';
+import { Element } from "react-scroll";
+
 
 const User = () => {
+  useEffect(() => {
+    AOS.init({
+      duration: 1000, // Animation duration
+      offset: 100, // Offset from top before animation starts
+      easing: "ease-in-out", // Smooth animation
+      once: true, // Animates only once
+    });
+  }, []);
+
   return (
     <>
-    <BrowserRouter>
-    <Navbar/>
-    <Routes>
-      <Route path='/'element={<Footer/>}></Route>
-      <Route path='/Login' element={<Login/>}/>
-      <Route path='/Register' element={<Register/>}/>
-    </Routes>
-    </BrowserRouter>
-    {/* <Pages/>
-    <Footer/> */}
+      <Element name="home" data-aos="fade-right"><Home /></Element>
+      <Element name= "about" data-aos="fade-bottom"><About/></Element>
+      {/* <About />
+      <Services />
+      <Resume /> */}
     </>
   )
 }

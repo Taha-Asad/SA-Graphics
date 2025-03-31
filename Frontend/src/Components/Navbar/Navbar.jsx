@@ -8,13 +8,17 @@ import { CiShoppingCart } from 'react-icons/ci';
 import { AuthContext } from '../../context/AuthContext.jsx';
 import pfp from "../../../public/assets/PFP/my-profile-img.jpg"
 import AccountSideBar from './user/AccountSideBar.jsx';
+import { Link as ScrollLink } from "react-scroll"; // Import react-scroll Link
+
 const Navbar = () => {
   // const [isSideBarOpen, setIsSideBarOpen] = useState(false);
   // const [sectionRefs, setSectionRefs] = useState({});
   // const [isModalOpen, setIsModalOpen] = useState(false);
   // const { user, logout } = useContext(AuthContext);
   const [userSideBar, setUserSideBar] = useState(false);
-
+  setTimeout(()=>{
+    setUserSideBar(false);
+  }, 5000)
   // useEffect(() => {
   //   const refs = {};
   //   Links.forEach((link) => {
@@ -96,7 +100,7 @@ const Navbar = () => {
     //   {isModalOpen && <AuthModal onClose={() => setIsModalOpen(false)} />}
     // </>
     <>
-      <Box sx={{ width: "100%", height: "23vh", bgcolor: "#040B14", position:'absolute' }}>
+      <Box sx={{ width: "100%", height: "23vh", bgcolor: "#040B14", position: 'absolute' }}>
         <Container >
           <Stack direction={'row'} pt={"20px"} alignContent={"center"} >
             <Box sx={{
@@ -108,28 +112,45 @@ const Navbar = () => {
                 <span className='lName'>AMJAD</span>
               </h1>
             </Box>
-            <Box ml={"125px"} pt={"10px"} pl={"100px"}>
-              {Links.map((link) => {
-                return (
-                  <>
-                    <Link key={link.id} underline='none'
-                      sx={{
-                        color: '#fff',
-                        mt: "20px",
-                        position: "relative",
-                        pl: "20px",
-                        fontSize: "18px"
-                      }} className={link.cName}>{link.title}</Link>
-                  </>
-                )
-              })}
+            <Box ml={"125px"} pt={"10px"} pl={"100px"} zIndex={1000}>
+              {Links.map((link) => (
+                <ScrollLink
+                  key={link.id}
+                  to={link.to} // Scroll to section
+                  spy={true} // Highlights when active
+                  smooth={true} // Enables smooth scrolling
+                  offset={-70} // Prevents overlap if navbar is sticky
+                  duration={500} // Scroll duration in milliseconds
+                >
+                  <Link
+                    underline="none"
+                    sx={{
+                      color: "#fff",
+                      mt: "20px",
+                      position: "relative",
+                      pl: "20px",
+                      fontSize: "18px",
+                      cursor: "pointer", // Ensures it looks clickable
+                      textDecoration: "none",
+                    }}
+                    className={link.cName}
+                  >
+                    {link.title}
+                  </Link>
+                </ScrollLink>
+              ))}
             </Box>
             <Box sx={{
               mt: "20px",
               ml: "90px"
             }}>
               {/* User Panel */}
-              <Button onClick={() => setUserSideBar(!userSideBar)}>
+              <Button sx={{
+                zIndex: 1000
+              }} onClick={() => {
+                console.log("button is clicked");
+                setUserSideBar(!userSideBar);
+              }}>
                 <MdOutlineAccountCircle color='white' fontSize={"33px"} />
               </Button>
             </Box>

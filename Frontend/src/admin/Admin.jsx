@@ -1,13 +1,11 @@
-// import React from 'react'
-// import AdminRoute from './routes/AdminRoute'
+import React from 'react'
 
-// const Admin = () => {
-//   return (
-//     <>
+const Admin = () => {
+  return (
+    <>
 
-//     {/* <AdminRoute/> */}
-//     </>
-//   )
-// }
+    </>
+  )
+}
 
-// export default Admin
+export default Admin

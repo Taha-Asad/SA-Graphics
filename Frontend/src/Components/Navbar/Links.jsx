@@ -10,35 +10,41 @@ export const Links = [
     {
         title:'Home',
         id: "home",
+        to: "home",
         cName:"nav-links",
         icon: <IoHomeOutline className="page-links"/>
     },
     {
         title:'About',
         id: "about",
+        to: "about",
         cName:"nav-links",
         icon: <IoPersonOutline className="page-links"/>
     },
     {
         title:'Resume',
         id: "resume",
+        to: "resume",
         cName:"nav-links",
         icon: <GrDocumentText className="page-links"/>
     },
     {
         title:'Portfolio',
         id: "portfolio",
+        to: "portfolio",
         cName:"nav-links",
         icon: <IoImagesOutline className="page-links"/>,
         submenu:[
             {   title:'Projects',
                 id: "projects",
+                to: "projects",
                 cName:"nav-links",
                 icon: <IoImagesOutline className="page-links"/>,
             },
             {
                 title:'Books',
-                id: "book",
+                id: "books",
+                to: "books",
                 cName:"nav-links",
                 icon: <IoImagesOutline className="page-links"/>,
             }
@@ -47,18 +53,21 @@ export const Links = [
     {
         title:'Services',
         id: "services",
+        to: "services",
         cName:"nav-links",
         icon: <CiServer className="page-links"/>
     },
     {
         title:'Testimonials',
         id: "testimonials",
+        to: "testimonials",
         cName:"nav-links",
         icon: <MdOutlineMessage className="page-links"/>
     },
     {
         title:'Contact',
         id: "contact",
+        to: "contact",
         cName:"nav-links",
         icon: <MdOutlineEmail className="page-links"/>
     },

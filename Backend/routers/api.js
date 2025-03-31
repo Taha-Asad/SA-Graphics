@@ -44,6 +44,15 @@ router.post(
   authController.forgotPassword
 );
 
+// Password Reset Routes
+router.get(
+  "/reset-password/:token",
+  (req, res) => {
+    const frontendUrl = `http://localhost:5173/reset-password/${req.params.token}`;
+    res.status(302).redirect(frontendUrl);
+  }
+);
+
 router.post(
   "/reset-password/:token",
   validateJoi(resetPasswordSchema),

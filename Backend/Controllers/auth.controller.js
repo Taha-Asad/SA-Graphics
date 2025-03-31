@@ -23,10 +23,6 @@ const registerUser = async (req, res, next) => {
       throw createError(409, 'User already exists with this email or phone number');
     }
 
-    // Hash password securely
-    const saltRounds = 12;
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
-    console.log("Password: " , hashedPassword)
     // Set profile picture or initials
     let profilePic = req.file ? req.file.path : null;
     if (!profilePic) {
@@ -37,16 +33,17 @@ const registerUser = async (req, res, next) => {
       profilePic = `https://ui-avatars.com/api/?name=${initials}&background=random`;
     }
 
-    // Create new user
+    // Create new user - password will be hashed by middleware
     const user = new User({
       name,
       email,
-      password: hashedPassword,
+      password, // Plain password - will be hashed by middleware
       phoneNo,
       profilePic
     });
 
     await user.save(); // Save user to database
+    console.log("Registration - User saved successfully");
 
     // Generate JWT token
     const token = jwt.sign(
@@ -65,238 +62,56 @@ const registerUser = async (req, res, next) => {
       data: { user }
     });
   } catch (error) {
-    console.error('Error in registerUser:', error.message); // Log errors for debugging
+    console.error('Error in registerUser:', error.message);
     next(error);
   }
 };
 
-// const loginUser = async (req, res, next) => {
-//   try {
-//     const { email, password } = req.body;
-    
-//     if (!email || !password) {
-//       throw createError(400, 'Email and password are required');
-//     }
-
-//     // Find user and explicitly select password field
-//     const user = await User.findOne({ email }).select('+password');
-
-//     if (!user) {
-//       throw createError(401, 'User not found');
-//     }
-
-//     // Debug logging - very important
-//     console.log('🔑 Input Password:', password);
-//     console.log('🔑 Stored Hash:', user.password);
-//     console.log('🔑 Password Match:', await bcrypt.compare(password, user.password));
-
-//     // Compare passwords
-//     const isMatch = await bcrypt.compare(password, user.password);
-//     if (!isMatch) {
-//       throw createError(401, 'Incorrect password');
-//     }
-
-//     // Generate token
-//     const token = jwt.sign(
-//       { id: user._id },
-//       process.env.JWT_SECRET,
-//       { expiresIn: '7d' }
-//     );
-
-//     // Prepare user data without password
-//     const userData = {
-//       id: user._id,
-//       name: user.name,
-//       email: user.email,
-//       profilePic: user.profilePic
-//     };
-
-//     res.status(200).json({
-//       status: 'success',
-//       token,
-//       user: userData  // Changed from data.user to user for consistency
-//     });
-
-//   } catch (error) {
-//     console.error("🚨 Login Error:", error);
-//     next(error);
-//   }
-// };
-
-// const loginUser = async (req, res, next) => {
-//   try {
-//     const { email, password } = req.body;
-
-//     // Ensure both fields are provided
-//     if (!email || !password) {
-//       throw createError(400, 'Email and password are required');
-//     }
-
-//     // Find user in database and retrieve password explicitly
-//     const user = await User.findOne({ email }).select('+password');
-
-//     // Debugging logs
-//     console.log("User Found:", user ? user.email : "No user found");
-
-//     if (!user) {
-//       throw createError(401, 'User not found');
-//     }
-
-//     // Debugging logs - Check password comparison
-//     console.log("Entered Password:", password);
-//     console.log("Stored Hash from DB:", user.password);
-
-//     // Compare entered password with hashed password
-//     const isMatch = await bcrypt.compare(password.trim(), user.password);
-
-//     console.log("Password Match:", isMatch); // Debugging log
-
-//     if (!isMatch) {
-//       throw createError(401, 'Incorrect password');
-//     }
-
-//     // Generate JWT token
-//     const token = jwt.sign(
-//       { id: user._id },
-//       process.env.JWT_SECRET,
-//       { expiresIn: '7d' }
-//     );
-
-//     // Remove password before sending response
-//     user.password = undefined;
-
-//     res.status(200).json({
-//       status: 'success',
-//       token,
-//       data: { user }
-//     });
-
-//   } catch (error) {
-//     console.error("Login Error:", error.message);
-//     next(error);
-//   }
-// };
-
-
-// const loginUser = async (req, res, next) => {
-//   try {
-//     const { email, password } = req.body;
-
-//     // Check if user exists and password is correct
-//     const user = await User.findOne({ email }).select('+password');
-//     if (!user || !(await bcrypt.compare(password, user.password))) {
-//       throw createError(401, 'Incorrect email or password');
-//     }
-
-//     // Generate token
-//     const token = jwt.sign(
-//       { id: user._id },
-//       process.env.JWT_SECRET,
-//       { expiresIn: '7d' }
-//     );
-
-//     // Remove password from output
-//     user.password = undefined;
-
-//     res.status(200).json({
-//       status: 'success',
-//       token,
-//       data: {
-//         user
-//       }
-//     });
-
-//   } catch (error) {
-//     next(error);
-//   }
-// };
-// const loginUser = async (req, res, next) => {
-//   try {
-//     const { email, password } = req.body;
-    
-//     if (!email || !password) {
-//       throw createError(400, 'Email and password are required');
-//     }
-
-//     const user = await User.findOne({ email }).select('+password');
-
-//     console.log("🛠 User Found:", user ? user.email : "No user found");
-
-//     if (!user) {
-//       throw createError(401, 'User not found');
-//     }
-
-//     console.log("🛠 Entered Password:", password);
-//     console.log("🛠 Stored Hashed Password:", user.password);
-
-//     const isMatch = await bcrypt.compare(password.trim(), user.password);
-
-//     console.log("🛠 Password Match:", isMatch); // Debugging log
-
-//     if (!isMatch) {
-//       throw createError(401, 'Incorrect password');
-//     }
-
-//     const token = jwt.sign(
-//       { id: user._id },
-//       process.env.JWT_SECRET,
-//       { expiresIn: '7d' }
-//     );
-
-//     user.password = undefined;
-
-//     res.status(200).json({
-//       status: 'success',
-//       token,
-//       data: { user }
-//     });
-
-//   } catch (error) {
-//     console.error("🚨 Login Error:", error.message);
-//     next(error);
-//   }
-// };
 const loginUser = async (req, res, next) => {
   try {
     const { email, password } = req.body;
+    
+    console.log('Login attempt for email:', email);
     
     if (!email || !password) {
       throw createError(400, 'Email and password are required');
     }
 
-    // 1. Find user with password field explicitly selected
+    // Find user with password field explicitly selected
     const user = await User.findOne({ email }).select('+password');
     if (!user) {
+      console.log('Login failed: User not found for email:', email);
       throw createError(401, 'User not found');
     }
 
-    // 2. Detailed debugging logs
-    console.log('🔑 Input Password:', password);
-    console.log('🔑 Stored Hash:', user.password);
-    console.log('🔑 Password Length:', password.length);
-    console.log('🔑 Hash Length:', user.password.length);
+    console.log('User found:', {
+      email: user.email,
+      hasPassword: !!user.password,
+      passwordLength: user.password?.length,
+      storedHash: user.password
+    });
 
-    // 3. Trim and compare passwords
-    const trimmedPassword = password.trim();
-    const isMatch = await bcrypt.compare(trimmedPassword, user.password);
-    console.log('🔑 Password Match Result:', isMatch);
-
+    // Use the model's correctPassword method
+    const isMatch = await user.correctPassword(password);
+    console.log('Password comparison:', {
+      inputPassword: password,
+      isMatch: isMatch,
+      passwordLength: password.length
+    });
+    
     if (!isMatch) {
-      // 4. Additional check for common issues
-      const isOldHashMatch = await bcrypt.compare(password, user.password); // Without trim
-      console.log('🔑 Untrimmed Password Match:', isOldHashMatch);
-      
+      console.log('Login failed: Incorrect password for user:', email);
       throw createError(401, 'Incorrect password');
     }
 
-    // 5. Generate token
+    // Generate token
     const token = jwt.sign(
       { id: user._id },
       process.env.JWT_SECRET,
       { expiresIn: '7d' }
     );
 
-    // 6. Prepare user data without sensitive fields
+    // Prepare user data without sensitive fields
     const userResponse = {
       id: user._id,
       name: user.name,
@@ -304,6 +119,7 @@ const loginUser = async (req, res, next) => {
       profilePic: user.profilePic
     };
 
+    console.log('Login successful for user:', email);
     res.status(200).json({
       status: 'success',
       token,
@@ -311,14 +127,15 @@ const loginUser = async (req, res, next) => {
     });
 
   } catch (error) {
-    console.error("🚨 Detailed Login Error:", {
+    console.error("Login Error Details:", {
       message: error.message,
-      inputEmail: req.body.email,
-      errorStack: error.stack
+      email: req.body.email,
+      stack: error.stack
     });
     next(error);
   }
 };
+
 const updateProfilePic = async (req, res, next) => {
   try {
     const user = await User.findById(req.user.id);
@@ -354,15 +171,15 @@ const forgotPassword = async (req, res, next) => {
     user.resetPasswordExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
     await user.save({ validateBeforeSave: false });
 
-    // Send email
-    const resetURL = `${req.protocol}://${req.get('host')}/api/reset-password/${resetToken}`;
+    // Send email with backend URL
+    const resetUrl = `${req.protocol}://${req.get('host')}/reset-password/${resetToken}`;
     const templatePath = path.join(__dirname, '../views/emails/passwordReset.ejs');
-    const html = await ejs.renderFile(templatePath, { resetURL });
+    const html = await ejs.renderFile(templatePath, { resetUrl });
 
     const mailOptions = {
       from: process.env.EMAIL_USER,
       to: user.email,
-      subject: 'Your password reset token (valid for 10 min)',
+      subject: 'Your password reset token (valid for 10 minutes)',
       html
     };
 
@@ -370,7 +187,8 @@ const forgotPassword = async (req, res, next) => {
 
     res.status(200).json({
       status: 'success',
-      message: 'Token sent to email!'
+      message: 'Token sent to email!',
+      token: resetToken
     });
 
   } catch (error) {

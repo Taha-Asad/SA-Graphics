@@ -1,5 +1,5 @@
 import { Button, Container, Grid, IconButton, InputAdornment, Paper, TextField, Typography, Avatar } from '@mui/material';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MdVisibility, MdVisibilityOff } from 'react-icons/md';
 import { useNavigate } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
@@ -10,6 +10,7 @@ const Register = () => {
     const [showPassword, setShowPassword] = useState(false);
     const navigate = useNavigate();
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [previewUrl, setPreviewUrl] = useState(null);
 
     const [errors, setErrors] = useState({
         name: '',
@@ -26,18 +27,32 @@ const Register = () => {
         profilePhoto: null
     });
 
+    useEffect(() => {
+        // Cleanup function for the preview URL
+        return () => {
+            if (previewUrl) {
+                URL.revokeObjectURL(previewUrl);
+            }
+        };
+    }, [previewUrl]);
+
+
+
     const validateField = (name, value) => {
         let error = '';
 
         if (name === 'name') {
             if (!value.trim()) {
                 error = 'Name is required';
-            } else if (value.length < 3) {
+            } else if (value.trim().length < 3) {
                 error = 'Name must be at least 3 characters long';
-            } else if (!/^[A-Za-z\s]+$/.test(value)) {
+            } else if (!/^[A-Za-z][A-Za-z\s]*$/.test(value.trim())) {
                 error = 'Name can only contain letters and spaces';
             }
         }
+
+
+
 
         if (name === 'email') {
             if (!value) {
@@ -116,7 +131,7 @@ const Register = () => {
             }
 
             toast.success("Registration successful!");
-            setTimeout(() => navigate("/"), 2000);
+            setTimeout(() => navigate("/login"), 2000);
         } catch (error) {
             console.error("Error:", error.message);
             toast.error(error.message);
@@ -128,27 +143,49 @@ const Register = () => {
     const handleChange = (event) => {
         const { name, value } = event.target;
 
+        // For name field, prevent multiple consecutive spaces
+        let processedValue = value;
+        if (name === 'name') {
+            processedValue = value.replace(/\s+/g, ' ');
+        }
+
         setUser(prev => ({
             ...prev,
-            [name]: value
+            [name]: processedValue
         }));
 
         setErrors(prev => ({
             ...prev,
-            [name]: validateField(name, value)
+            [name]: validateField(name, processedValue)
         }));
     };
 
     const handleFileChange = (event) => {
-        setUser(prev => ({
-            ...prev,
-            profilePhoto: event.target.files[0]
-        }));
+        const file = event.target.files[0];
+        if (file) {
+            // Cleanup old preview URL
+            if (previewUrl) {
+                URL.revokeObjectURL(previewUrl);
+            }
+            // Create new preview URL
+            const newPreviewUrl = URL.createObjectURL(file);
+            setPreviewUrl(newPreviewUrl);
+            setUser(prev => ({
+                ...prev,
+                profilePhoto: file
+            }));
+        }
     };
 
     const getInitials = (name) => {
-        return name.split(" ").map(n => n[0].toUpperCase()).join("");
+        return name
+            .trim() // Remove leading/trailing spaces
+            .split(/\s+/) // Handle multiple spaces
+            .filter(n => n) // Remove empty parts
+            .map(n => n[0].toUpperCase())
+            .join("");
     };
+    
 
     return (
         <>
@@ -171,15 +208,40 @@ const Register = () => {
                         Sign Up
                     </Typography>
                     <Avatar
-                        src={user.profilePhoto ? URL.createObjectURL(user.profilePhoto) : ""}
+                        src={previewUrl}
                         sx={{ width: 100, height: 100, margin: "20px auto" }}
                     >
-                        {!user.profilePhoto && user.name && getInitials(user.name)}
+                        {!previewUrl && user.name && getInitials(user.name)}
                     </Avatar>
-                    <input type="file" accept="image/*" onChange={handleFileChange}  style={{marginLeft:"120px"}}/>
+                    <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleFileChange}
+                        style={{ marginLeft: "120px" }}
+                    />
 
-
-                    <TextField label="Name" autoComplete="name" fullWidth id="name" name="name" type="text" margin="normal" required value={user.name} onChange={handleChange} error={Boolean(errors.name)} helperText={errors.name} />
+                    <TextField
+                        label="Name"
+                        autoComplete="name"
+                        fullWidth
+                        id="name"
+                        name="name"
+                        type="text"
+                        margin="normal"
+                        required
+                        value={user.name}
+                        onChange={handleChange}
+                        onKeyDown={(e) => {
+                            if (e.key === ' ' && e.target.value.endsWith(' ')) {
+                                e.preventDefault();
+                            }
+                        }}
+                        error={Boolean(errors.name)}
+                        helperText={errors.name}
+                        inputProps={{
+                            pattern: "[A-Za-z\\s]*"
+                        }}
+                    />
                     <TextField margin="normal" name="email" type="email" label="Email Address" autoComplete="email" fullWidth required value={user.email} onChange={handleChange} error={Boolean(errors.email)} helperText={errors.email} />
                     <TextField margin="normal" name="phoneNo" type="tel" label="Phone No" autoComplete="tel" fullWidth required value={user.phoneNo} onChange={handleChange} error={Boolean(errors.phoneNo)} helperText={errors.phoneNo} />
                     <TextField margin="normal" name="password" type={showPassword ? "text" : "password"} fullWidth label="Password" required value={user.password} onChange={handleChange} error={Boolean(errors.password)} helperText={errors.password} InputProps={{ endAdornment: (<InputAdornment position="end"><IconButton onClick={() => setShowPassword(prev => !prev)} edge="end">{showPassword ? <MdVisibilityOff /> : <MdVisibility />}</IconButton></InputAdornment>) }} />
