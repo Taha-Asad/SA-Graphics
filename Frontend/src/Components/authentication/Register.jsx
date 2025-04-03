@@ -1,17 +1,16 @@
-import { Button, Container, Grid, IconButton, InputAdornment, Paper, TextField, Typography, Avatar } from '@mui/material';
-import React, { useState, useEffect } from 'react';
-import { MdVisibility, MdVisibilityOff } from 'react-icons/md';
-import { useNavigate } from 'react-router-dom';
-import { toast, ToastContainer } from 'react-toastify';
-
-const url = "http://localhost:5000/api/v1/register";
+import { Button, Container, Grid, IconButton, InputAdornment, Paper, TextField, Typography, Box, Avatar } from '@mui/material';
+import React, { useState, useContext } from 'react';
+import { MdVisibility, MdVisibilityOff, MdAccountCircle } from 'react-icons/md';
+import { Link, useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import { AuthContext } from '../../context/AuthContext';
+import axios from 'axios';
 
 const Register = () => {
     const [showPassword, setShowPassword] = useState(false);
     const navigate = useNavigate();
+    const { login } = useContext(AuthContext);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [previewUrl, setPreviewUrl] = useState(null);
-
     const [errors, setErrors] = useState({
         name: '',
         email: '',
@@ -22,76 +21,58 @@ const Register = () => {
     const [user, setUser] = useState({
         name: "",
         email: "",
-        phoneNo: "",
         password: "",
+        phoneNo: "",
         profilePhoto: null
     });
 
-    useEffect(() => {
-        // Cleanup function for the preview URL
-        return () => {
-            if (previewUrl) {
-                URL.revokeObjectURL(previewUrl);
-            }
-        };
-    }, [previewUrl]);
+    const [previewUrl, setPreviewUrl] = useState(null);
 
-
-
+    // Basic validation rules
     const validateField = (name, value) => {
         let error = '';
 
-        if (name === 'name') {
-            if (!value.trim()) {
-                error = 'Name is required';
-            } else if (value.trim().length < 3) {
-                error = 'Name must be at least 3 characters long';
-            } else if (!/^[A-Za-z][A-Za-z\s]*$/.test(value.trim())) {
-                error = 'Name can only contain letters and spaces';
-            }
-        }
+        switch (name) {
+            case 'name':
+                if (!value) {
+                    error = 'Name is required';
+                } else if (value.length > 50) {
+                    error = 'Name cannot exceed 50 characters';
+                }
+                break;
 
+            case 'email':
+                if (!value) {
+                    error = 'Email is required';
+                } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+                    error = 'Invalid email format';
+                }
+                break;
 
+            case 'password':
+                if (!value) {
+                    error = 'Password is required';
+                } else if (value.length < 6) {
+                    error = 'Password must be at least 6 characters';
+                }
+                break;
 
+            case 'phoneNo':
+                if (!value) {
+                    error = 'Phone number is required';
+                } else if (!/^\d{11}$/.test(value)) {
+                    error = 'Phone number must be 11 digits';
+                }
+                break;
 
-        if (name === 'email') {
-            if (!value) {
-                error = 'Email is required';
-            } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
-                error = 'Invalid email format';
-            }
-        }
-
-        if (name === 'phoneNo') {
-            if (!value) {
-                error = 'Phone number is required';
-            } else if (!/^\+?\d{10,15}$/.test(value)) {
-                error = 'Invalid phone number';
-            }
-        }
-
-        if (name === 'password') {
-            if (!value) {
-                error = 'Password is required';
-            } else if (value.length < 8) {
-                error = 'Password must be at least 8 characters long';
-            } else if (!/[A-Z]/.test(value)) {
-                error = 'Password must contain at least one uppercase letter';
-            } else if (!/[a-z]/.test(value)) {
-                error = 'Password must contain at least one lowercase letter';
-            } else if (!/[0-9]/.test(value)) {
-                error = 'Password must contain at least one number';
-            } else if (!/[@$!%*?&]/.test(value)) {
-                error = 'Password must contain at least one special character (@, $, !, %, *, ?, &)';
-            }
+            default:
+                break;
         }
 
         return error;
     };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-
+    const validateForm = () => {
         const newErrors = {
             name: validateField('name', user.name),
             email: validateField('email', user.email),
@@ -101,155 +82,289 @@ const Register = () => {
 
         setErrors(newErrors);
 
-        if (Object.values(newErrors).some(error => error)) {
-            toast.error("Error: Please fix all the errors!");
-            return;
-        }
-
-        setIsSubmitting(true);
-
-        try {
-            const formData = new FormData();
-            formData.append("name", user.name);
-            formData.append("email", user.email);
-            formData.append("phoneNo", user.phoneNo);
-            formData.append("password", user.password);
-            if (user.profilePhoto) {
-                formData.append("profilePhoto", user.profilePhoto);
-            }
-
-            const response = await fetch(url, {
-                method: "POST",
-                body: formData,
-            });
-
-            const data = await response.json();
-            console.log("User Data:", data);
-
-            if (!response.ok) {
-                throw new Error(data.message || "Registration Failed");
-            }
-
-            toast.success("Registration successful!");
-            setTimeout(() => navigate("/login"), 2000);
-        } catch (error) {
-            console.error("Error:", error.message);
-            toast.error(error.message);
-        } finally {
-            setIsSubmitting(false);
-        }
+        // Return true if there are no errors (all error messages are empty strings)
+        return !Object.values(newErrors).some(error => error);
     };
 
     const handleChange = (event) => {
         const { name, value } = event.target;
 
-        // For name field, prevent multiple consecutive spaces
-        let processedValue = value;
-        if (name === 'name') {
-            processedValue = value.replace(/\s+/g, ' ');
-        }
-
+        // Update user data
         setUser(prev => ({
             ...prev,
-            [name]: processedValue
+            [name]: value
         }));
 
+        // Validate and update errors
         setErrors(prev => ({
             ...prev,
-            [name]: validateField(name, processedValue)
+            [name]: validateField(name, value)
         }));
     };
 
     const handleFileChange = (event) => {
         const file = event.target.files[0];
         if (file) {
-            // Cleanup old preview URL
-            if (previewUrl) {
-                URL.revokeObjectURL(previewUrl);
-            }
-            // Create new preview URL
-            const newPreviewUrl = URL.createObjectURL(file);
-            setPreviewUrl(newPreviewUrl);
             setUser(prev => ({
                 ...prev,
                 profilePhoto: file
             }));
+
+            // Create preview URL
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setPreviewUrl(reader.result);
+            };
+            reader.readAsDataURL(file);
         }
     };
 
-    const getInitials = (name) => {
-        return name
-            .trim() // Remove leading/trailing spaces
-            .split(/\s+/) // Handle multiple spaces
-            .filter(n => n) // Remove empty parts
-            .map(n => n[0].toUpperCase())
-            .join("");
+    const handleSubmit = async (event) => {
+        event.preventDefault();
+
+        if (!validateForm()) {
+            toast.error("Please fix the form errors");
+            return;
+        }
+
+        setIsSubmitting(true);
+
+        try {
+            console.log('📝 Registration attempt with:', {
+                name: user.name,
+                email: user.email,
+                phoneNo: user.phoneNo,
+                password: '***'
+            });
+
+            const formData = new FormData();
+            formData.append('name', user.name);
+            formData.append('email', user.email);
+            formData.append('password', user.password);
+            formData.append('phoneNo', user.phoneNo);
+            if (user.profilePhoto) {
+                formData.append('profilePhoto', user.profilePhoto);
+            }
+
+            const response = await axios.post(
+                "http://localhost:5000/api/v1/register",
+                formData,
+                {
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                    },
+                }
+            );
+
+            console.log('✅ Registration response:', response.data);
+
+            if (response.data.token) {
+                // Store authentication data
+                login(response.data.token, response.data.data.user);
+                toast.success("Registration successful!");
+                navigate("/");
+            } else {
+                throw new Error("Registration failed - no token received");
+            }
+
+        } catch (error) {
+            console.error('❌ Registration error:', {
+                message: error.message,
+                response: error.response?.data,
+                status: error.response?.status
+            });
+
+            const errorMessage = error.response?.data?.message || "Registration failed";
+            toast.error(errorMessage);
+        } finally {
+            setIsSubmitting(false);
+        }
     };
-    
 
     return (
-        <>
+        <Grid
+            container
+            component="main"
+            sx={{
+                height: '80vh',
+                bgcolor: "#F4FAFD",
+                padding: { xs: "60px 0", md: "80px 0" },
+                position: 'relative'
+            }}
+        >
             <Grid
                 item
                 xs={12}
                 sm={8}
                 md={5}
-                position="absolute"
-                top="30%"
-                left="30%"
-                height="100vh"
                 component={Paper}
                 elevation={6}
                 square
-                textAlign="center"
+                sx={{
+                    margin: 'auto',
+                    padding: '20px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                }}
             >
-                <Container maxWidth="sm" component="form" onSubmit={handleSubmit} noValidate>
-                    <Typography component="h1" variant="h4" textAlign="center" mt="10px">
-                        Sign Up
-                    </Typography>
-                    <Avatar
-                        src={previewUrl}
-                        sx={{ width: 100, height: 100, margin: "20px auto" }}
+                <Box
+                    sx={{
+                        width: '100%',
+                        maxWidth: 400,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center'
+                    }}
+                >
+                    {/* Profile Preview Section */}
+                    <Box
+                        sx={{
+                            width: '100%',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            mb: 3
+                        }}
                     >
-                        {!previewUrl && user.name && getInitials(user.name)}
-                    </Avatar>
-                    <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleFileChange}
-                        style={{ marginLeft: "120px" }}
-                    />
+                        <Typography variant="h5" component="h1" color={"#656565"} gutterBottom>
+                            Create Account
+                        </Typography>
 
-                    <TextField
-                        label="Name"
-                        autoComplete="name"
-                        fullWidth
-                        id="name"
-                        name="name"
-                        type="text"
-                        margin="normal"
-                        required
-                        value={user.name}
-                        onChange={handleChange}
-                        onKeyDown={(e) => {
-                            if (e.key === ' ' && e.target.value.endsWith(' ')) {
-                                e.preventDefault();
-                            }
-                        }}
-                        error={Boolean(errors.name)}
-                        helperText={errors.name}
-                        inputProps={{
-                            pattern: "[A-Za-z\\s]*"
-                        }}
-                    />
-                    <TextField margin="normal" name="email" type="email" label="Email Address" autoComplete="email" fullWidth required value={user.email} onChange={handleChange} error={Boolean(errors.email)} helperText={errors.email} />
-                    <TextField margin="normal" name="phoneNo" type="tel" label="Phone No" autoComplete="tel" fullWidth required value={user.phoneNo} onChange={handleChange} error={Boolean(errors.phoneNo)} helperText={errors.phoneNo} />
-                    <TextField margin="normal" name="password" type={showPassword ? "text" : "password"} fullWidth label="Password" required value={user.password} onChange={handleChange} error={Boolean(errors.password)} helperText={errors.password} InputProps={{ endAdornment: (<InputAdornment position="end"><IconButton onClick={() => setShowPassword(prev => !prev)} edge="end">{showPassword ? <MdVisibilityOff /> : <MdVisibility />}</IconButton></InputAdornment>) }} />
-                    <Button type="submit" variant="contained" sx={{ mt: 3, mb: 2, py: 1.5 }} disabled={isSubmitting} fullWidth>{isSubmitting ? "Submitting..." : "Sign Up"}</Button>
-                </Container>
-                <ToastContainer />
+                        {/* Avatar Preview */}
+                        <Box
+                            sx={{
+                                position: 'relative',
+                                mb: 2,
+                                mt: 2
+                            }}
+                        >
+                            <Avatar
+                                src={previewUrl}
+                                sx={{
+                                    width: 100,
+                                    height: 100,
+                                    fontSize: '2.5rem',
+                                }}
+                            >
+                                {!previewUrl && (user.name ? user.name.charAt(0).toUpperCase() : <MdAccountCircle />)}
+                            </Avatar>
+                        </Box>
+
+                        <Button
+                            component="label"
+                            variant="outlined"
+                        >
+                            Upload Profile Picture
+                            <input
+                                type="file"
+                                hidden
+                                name="profilePhoto"
+                                onChange={handleFileChange}
+                                accept="image/*"
+                            />
+                        </Button>
+                    </Box>
+
+                    {/* Form Fields */}
+                    <Box component="form" onSubmit={handleSubmit} noValidate sx={{ width: '100%' }}>
+                        <TextField
+                            margin="normal"
+                            required
+                            fullWidth
+                            name="name"
+                            label="Full Name"
+                            autoComplete="name"
+                            autoFocus
+                            value={user.name}
+                            onChange={handleChange}
+                            error={!!errors.name}
+                            helperText={errors.name}
+                        />
+
+                        <TextField
+                            margin="normal"
+                            required
+                            fullWidth
+                            name="email"
+                            label="Email Address"
+                            type="email"
+                            autoComplete="email"
+                            value={user.email}
+                            onChange={handleChange}
+                            error={!!errors.email}
+                            helperText={errors.email}
+                        />
+
+                        <TextField
+                            margin="normal"
+                            required
+                            fullWidth
+                            name="phoneNo"
+                            label="Phone Number"
+                            autoComplete="tel"
+                            value={user.phoneNo}
+                            onChange={handleChange}
+                            error={!!errors.phoneNo}
+                            helperText={errors.phoneNo}
+                        />
+
+                        <TextField
+                            margin="normal"
+                            required
+                            fullWidth
+                            name="password"
+                            label="Password"
+                            type={showPassword ? "text" : "password"}
+                            autoComplete="new-password"
+                            value={user.password}
+                            onChange={handleChange}
+                            error={!!errors.password}
+                            helperText={errors.password}
+                            InputProps={{
+                                endAdornment: (
+                                    <InputAdornment position="end">
+                                        <IconButton
+                                            aria-label="toggle password visibility"
+                                            onClick={() => setShowPassword(!showPassword)}
+                                            edge="end"
+                                        >
+                                            {showPassword ? <MdVisibilityOff /> : <MdVisibility />}
+                                        </IconButton>
+                                    </InputAdornment>
+                                ),
+                            }}
+                        />
+
+                        <Button
+                            type="submit"
+                            fullWidth
+                            variant="contained"
+                            sx={{ mt: 3, mb: 2 }}
+                            disabled={isSubmitting}
+                        >
+                            {isSubmitting ? "Creating Account..." : "Create Account"}
+                        </Button>
+
+                        <Grid container justifyContent="center" spacing={2}>
+                            <Grid item xs={12}>
+                                <Typography variant='h6' textAlign={'center'}>
+                                    Already have an account? <Link to={"/login"} style={{color:'#149ddd'}} >Sign In</Link>
+                                </Typography>
+                            </Grid>
+                            <Grid item xs={12}>
+                                <Typography variant='h6' textAlign={'center'}>
+                                    <Link to={"/"} style={{color:'#149ddd', textDecoration: 'none'}} >
+                                        ← Back to Home
+                                    </Link>
+                                </Typography>
+                            </Grid>
+                        </Grid>
+                    </Box>
+                </Box>
             </Grid>
-        </>
+        </Grid>
     );
 };
 

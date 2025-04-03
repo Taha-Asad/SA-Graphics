@@ -7,6 +7,11 @@ const reviewsSchema = mongoose.Schema(
       ref: "User",
       required: true,
     },
+    book: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Book",
+      required: true,
+    },
     rating: {
       type: Number,
       required: true,

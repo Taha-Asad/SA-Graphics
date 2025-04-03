@@ -8,69 +8,53 @@ import { MdOutlineEmail } from "react-icons/md";
 
 export const Links = [
     {
-        title:'Home',
+        title: 'Home',
         id: "home",
         to: "home",
-        cName:"nav-links",
+        cName: "nav-links",
         icon: <IoHomeOutline className="page-links"/>
     },
     {
-        title:'About',
+        title: 'About',
         id: "about",
         to: "about",
-        cName:"nav-links",
+        cName: "nav-links",
         icon: <IoPersonOutline className="page-links"/>
     },
     {
-        title:'Resume',
+        title: 'Resume',
         id: "resume",
         to: "resume",
-        cName:"nav-links",
+        cName: "nav-links",
         icon: <GrDocumentText className="page-links"/>
     },
     {
-        title:'Portfolio',
+        title: 'Portfolio',
         id: "portfolio",
         to: "portfolio",
-        cName:"nav-links",
-        icon: <IoImagesOutline className="page-links"/>,
-        submenu:[
-            {   title:'Projects',
-                id: "projects",
-                to: "projects",
-                cName:"nav-links",
-                icon: <IoImagesOutline className="page-links"/>,
-            },
-            {
-                title:'Books',
-                id: "books",
-                to: "books",
-                cName:"nav-links",
-                icon: <IoImagesOutline className="page-links"/>,
-            }
-        ]
+        cName: "nav-links",
+        icon: <IoImagesOutline className="page-links"/>
     },
     {
-        title:'Services',
+        title: 'Services',
         id: "services",
         to: "services",
-        cName:"nav-links",
+        cName: "nav-links",
         icon: <CiServer className="page-links"/>
     },
     {
-        title:'Testimonials',
+        title: 'Testimonials',
         id: "testimonials",
         to: "testimonials",
-        cName:"nav-links",
+        cName: "nav-links",
         icon: <MdOutlineMessage className="page-links"/>
     },
     {
-        title:'Contact',
+        title: 'Contact',
         id: "contact",
         to: "contact",
-        cName:"nav-links",
+        cName: "nav-links",
         icon: <MdOutlineEmail className="page-links"/>
-    },
-
-]
+    }
+];
 

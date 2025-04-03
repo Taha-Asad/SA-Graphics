@@ -1,47 +1,40 @@
 @import "tailwindcss";
 
-.services{
-    margin-top: 60%;
+.service-card {
+    margin-bottom: 20px;
+    transition: all 0.3s ease-in-out;
+    cursor: pointer;
+    background-color: #fff;
 }
-.section-title::after{
-    content: '';
-    position: absolute ;
-    margin-top: 65px;
-    left: 0;
-    width: 100px;
-    height: 3px;
-    border-radius: 100px;
-    background-color: #149ddd;
-    border: 1px solid #149ddd;
+
+.service-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(20, 157, 221, 0.3);
 }
-.service-card{
-    margin-bottom: 40px;
-    height: 0%;
-}
-.service-icons{
-    border: 1px solid #149ddd;
-    padding: 6px 10px;
+
+.service-icons {
+    display: inline-flex;
+    border: 2px solid #149ddd;
+    padding: 10px;
     border-radius: 50%;
     color: #fff;
     background-color: #149ddd;
-    font-size: 50px;
-    margin: 13px 2px;
-    transition: all 0.5s ease;
-
-}
-.service-card h2{
-    margin: 15px 10px;
-    transition: all 0.5s ease;
-
-}
-.service-card p{
-    margin: 0px 10px;
+    font-size: 40px;
+    width: 70px;
+    height: 70px;
+    margin: 10px auto;
+    transition: all 0.3s ease-in-out;
 }
 
-.service-card:hover h2{
+.service-card h6 {
+    transition: color 0.3s ease-in-out;
+}
+
+.service-card:hover h6 {
     color: #149ddd;
 }
-.service-card:hover .service-icons{
+
+.service-card:hover .service-icons {
     background-color: #fff;
     color: #149ddd;
 }

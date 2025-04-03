@@ -23,16 +23,16 @@ const AccountSideBar = ({ onClose }) => {
   return (
     <div
       style={{
-        background: "#1e242c",
-        color: "#fff",
+      //   background: "#1e242c",
+      //   color: "#fff",
         padding: "20px",
-        position: "absolute",
-        top: 0,
-        right: 0,
-        width: "100%",
-        height: "100%",
-        zIndex: 20,
-        boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.2)",
+      //   position: "relative",
+      //   top: 0,
+      //   right: 0,
+      //   width: "100%",
+      //   height: "100%",
+      //   zIndex: 20,
+      //   boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.2)",
       }}
     >
       <Box sx={{ pt: "80px", pl: "50px" }}>

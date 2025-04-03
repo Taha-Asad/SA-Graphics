@@ -3,7 +3,7 @@ const Testimonial = require("../models/testimonial.model");
 // Submit a Testimonial (User)
 exports.submitTestimonial = async (req, res) => {
   try {
-    const { text } = req.body;
+    const { text, jobTitle } = req.body;
     if (!text) {
       return res.status(400).json({ message: "Testimonial text is required" });
     }
@@ -11,6 +11,7 @@ exports.submitTestimonial = async (req, res) => {
     const newTestimonial = new Testimonial({
       userId: req.user.id,
       text,
+      jobTitle,
       status: "pending", // Default status is pending
     });
 
@@ -27,10 +28,10 @@ exports.submitTestimonial = async (req, res) => {
 // Get Approved Testimonials (Public)
 exports.getApprovedTestimonials = async (req, res) => {
   try {
-    const testimonials = await Testimonial.find({ status: "approved" }).populate(
-      "userId",
-      "name"
-    );
+    const testimonials = await Testimonial.find({ status: "approved" })
+      .populate("userId", "name profilePic")
+      .select("text jobTitle createdAt userId")
+      .sort({ createdAt: -1 });
 
     res.status(200).json(testimonials);
   } catch (error) {
@@ -41,7 +42,10 @@ exports.getApprovedTestimonials = async (req, res) => {
 // Get All Testimonials (Admin Only)
 exports.getAllTestimonials = async (req, res) => {
   try {
-    const testimonials = await Testimonial.find().populate("userId", "name");
+    const testimonials = await Testimonial.find()
+      .populate("userId", "name profilePic")
+      .select("text jobTitle createdAt userId status")
+      .sort({ createdAt: -1 });
 
     res.status(200).json(testimonials);
   } catch (error) {

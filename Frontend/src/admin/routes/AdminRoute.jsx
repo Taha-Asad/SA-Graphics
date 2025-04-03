@@ -1,18 +1,10 @@
-// import React from 'react'
-// import { BrowserRouter, Route, Routes } from "react-router";
-// import AdminDashboard from '../adminComponents/AdminDashboard';
+import React from 'react'
 
-// const AdminRoute = () => {
-//     return (
-//         <>
-//             <BrowserRouter>
-//                 <AdminDashboard />
-//                 <Routes>
-//                     <Route path='/admin' element={<AdminDashboard/>}/>
-//                 </Routes>
-//             </BrowserRouter>
-//         </>
-//     )
-// }
+const AdminRoute = () => {
+    return (
+        <>
+        </>
+    )
+}
 
-// export default AdminRoute
+export default AdminRoute

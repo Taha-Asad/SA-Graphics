@@ -4,7 +4,7 @@ export const ServicesList = [
     {
         title: "Web Development",
         description: "I can build you a website from scratch, or update your current website to a more modern design.",
-        icon: <CgWebsite className="service-icons"/>,
+        icon: <CgWebsite display={"inline"}/>,
         cName:"service-card"
     },
     {

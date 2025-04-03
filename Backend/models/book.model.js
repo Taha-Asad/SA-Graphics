@@ -28,7 +28,10 @@ const bookSchema = new mongoose.Schema(
       required: true,
       default: 0,
     },
-    reviews: {type:mongoose.Schema.Types.ObjectId , ref : "Reviews" , require:true},
+    reviews: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Reviews"
+    }],
     countInStock: {
       type: Number,
       required: true,
@@ -38,13 +41,12 @@ const bookSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
+
 bookSchema.pre("save", async function (next) {
-  if (this.reviews.length > 0) {
-    const totalRating = this.reviews.reduce(
-      (sum, review) => sum + review.rating,
-      0
-    );
-    this.averageRating = totalRating / this.reviews.length;
+  if (this.reviews && this.reviews.length > 0) {
+    const reviews = await mongoose.model("Reviews").find({ _id: { $in: this.reviews } });
+    const totalRating = reviews.reduce((sum, review) => sum + review.rating, 0);
+    this.averageRating = totalRating / reviews.length;
   } else {
     this.averageRating = 0;
   }

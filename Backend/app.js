@@ -2,12 +2,13 @@ const express = require('express');
 const dotenv = require('dotenv');
 const cors = require('cors');
 const morgan = require('morgan');
+const path = require('path');
 const connectDB = require('./config/db');
 const { transporter } = require('./config/nodemailer.js');
 const createError = require('http-errors');
-const path = require('path');
+
 // Load env vars
-dotenv.config({ path: './.env' });
+dotenv.config()
 
 // Connect to database
 connectDB();
@@ -29,8 +30,8 @@ if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
 
-// Static files
-app.use('/uploads', express.static('uploads'));
+// Static files - ensure uploads folder is accessible
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use(express.static(path.join(__dirname, '../Frontend/dist')));
 
 // Routes

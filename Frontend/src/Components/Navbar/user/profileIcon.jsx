@@ -10,9 +10,13 @@ const ProfileIcon = () => {
     <div style={{ position: "absolute", top: "0px", right: "0px" , width:"100%"}}>
       {user.profilePic ? (
         <img
-          src={user.profilePic}
+          src={user.profilePic.startsWith('http') ? user.profilePic : `http://localhost:5000/${user.profilePic}`}
           alt="Profile"
-          style={{ width: "100%", height: "100%", borderRadius: "50%" }}
+          style={{ width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover" }}
+          onError={(e) => {
+            e.target.onerror = null;
+            e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=random`;
+          }}
         />
       ) : (
         <div

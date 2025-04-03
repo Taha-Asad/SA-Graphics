@@ -3,11 +3,12 @@ const router = express.Router();
 const authController = require("../Controllers/auth.controller.js");
 const bookController = require("../controllers/book.controller");
 const orderController = require("../controllers/order.controller");
-const projectController = require("../controllers/portfolio.controller");
+const portfolioController = require("../controllers/portfolio.controller");
 const testimonialController = require("../controllers/testimonials.controller");
+const reviewsController = require("../Controllers/reviews.controller.js");
 const authMiddleware = require("../middlewares/authMiddleware");
 const adminMiddleware = require("../middlewares/adminMiddleware");
-const upload = require("../config/multer");
+const { upload } = require("../config/multer");
 const errorHandler = require("../middlewares/errorHandler");
 const { validateJoi } = require("../middlewares/validationMiddleware");
 const {
@@ -16,6 +17,7 @@ const {
   forgotPasswordSchema,
   resetPasswordSchema
 } = require("../validations/userValidations");
+const { createContact } = require("../Controllers/contact.controller.js");
 
 // Auth Routes
 router.post(
@@ -87,12 +89,6 @@ router.delete(
   bookController.deleteBook
 );
 
-router.post(
-  "/books/:id/reviews",
-  authMiddleware,
-  bookController.addReview
-);
-
 // Order Routes
 router.post("/orders", authMiddleware, orderController.createOrder);
 
@@ -109,32 +105,32 @@ router.put(
   orderController.updateOrderStatus
 );
 
-// Project Routes
+// Portfolio Routes
 router.post(
-  "/projects",
+  "/portfolio",
   authMiddleware,
   adminMiddleware,
   upload.single("image"),
-  projectController.createProject
+  portfolioController.createProject
 );
 
-router.get("/projects", projectController.getAllProjects);
+router.get("/portfolio", portfolioController.getAllProjects);
 
-router.get("/projects/:id", projectController.getProjectById);
+router.get("/portfolio/:id", portfolioController.getProjectById);
 
 router.put(
-  "/projects/:id",
+  "/portfolio/:id",
   authMiddleware,
   adminMiddleware,
   upload.single("image"),
-  projectController.updateProject
+  portfolioController.updateProject
 );
 
 router.delete(
-  "/projects/:id",
+  "/portfolio/:id",
   authMiddleware,
   adminMiddleware,
-  projectController.deleteProject
+  portfolioController.deleteProject
 );
 
 // Testimonial Routes
@@ -159,6 +155,15 @@ router.put(
   adminMiddleware,
   testimonialController.updateTestimonialStatus
 );
+
+// Review Routes
+router.post("/books/:bookId/reviews", authMiddleware, reviewsController.createReview);
+router.get("/books/:bookId/reviews", reviewsController.getBookReviews);
+router.put("/books/:bookId/reviews/:reviewId", authMiddleware, reviewsController.updateReview);
+router.delete("/books/:bookId/reviews/:reviewId", authMiddleware, reviewsController.deleteReview);
+
+// contact routes
+router.post('/contact' , createContact);
 
 // Error handling middleware
 router.use(errorHandler);

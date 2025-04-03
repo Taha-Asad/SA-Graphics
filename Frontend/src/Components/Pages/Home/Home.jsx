@@ -52,8 +52,8 @@ const Home = () => {
           height: "100vh",
           width: "100%",
           brightness: "0.8",
-          position: "absolute",
-          mt: "132px",
+
+          position: "relative",
           filter: "brightness(0.8)",
         }}
         // className="bg-[url(/assets/Hero/hero-bg.jpg)] bg-cover bg-center h-[100vh] w-[100%] brightness-[0.8]"
@@ -61,7 +61,7 @@ const Home = () => {
       />
 
       {/* Content Section with AOS animations */}
-      <Box className="content" sx={{ position: "relative", paddingTop: "20%" }}>
+      <Box className="content" sx={{ position: "absolute", top: "20%" }}>
         <Typography variant="h2"
           sx={{
             mt: "50px",

@@ -3,39 +3,50 @@ const path = require('path');
 const fs = require('fs');
 const createError = require('http-errors');
 
-const UPLOADS_FOLDER = path.join(__dirname, '../uploads');
+// Define uploads folder relative to project root
+const UPLOADS_FOLDER = 'uploads';
+const UPLOAD_PATH = path.join(__dirname, '..', UPLOADS_FOLDER);
 
 // Ensure the uploads folder exists
-if (!fs.existsSync(UPLOADS_FOLDER)) {
-  fs.mkdirSync(UPLOADS_FOLDER, { recursive: true });
+if (!fs.existsSync(UPLOAD_PATH)) {
+  fs.mkdirSync(UPLOAD_PATH, { recursive: true });
 }
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, UPLOADS_FOLDER); // Store in 'uploads/' folder
+    cb(null, UPLOAD_PATH);
   },
   filename: (req, file, cb) => {
+    // Create a clean filename
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-    cb(null, uniqueSuffix + path.extname(file.originalname));
+    const ext = path.extname(file.originalname);
+    cb(null, uniqueSuffix + ext);
   }
 });
 
 const fileFilter = (req, file, cb) => {
   const filetypes = /jpeg|jpg|png|gif/;
-  const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
   const mimetype = filetypes.test(file.mimetype);
+  const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
 
-  if (extname && mimetype) {
-    cb(null, true);
-  } else {
-    cb(createError(400, 'Only image files are allowed!'), false);
+  if (mimetype && extname) {
+    return cb(null, true);
   }
+  cb(createError(400, 'Only image files (jpg, jpeg, png, gif) are allowed!'));
 };
 
+// Create multer upload instance
 const upload = multer({
-  storage,
-  fileFilter,
-  limits: { fileSize: 5 * 1024 * 1024 } // 5MB limit
+  storage: storage,
+  fileFilter: fileFilter,
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB limit
+    files: 1 // Only allow 1 file per request
+  }
 });
 
-module.exports = upload;
+// Export the upload instance and folder name
+module.exports = {
+  upload,
+  UPLOADS_FOLDER
+};

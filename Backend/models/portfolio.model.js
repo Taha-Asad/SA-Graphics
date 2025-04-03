@@ -14,13 +14,13 @@ const portfolioSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    skillsUsed:{
-      type:String,
-      require:true,
+    skillsUsed: {
+      type: [String],
+      required: true,
     },
     image: {
       type: String,
-      required: true,
+      required: false,
     },
     link: {
       type: String,

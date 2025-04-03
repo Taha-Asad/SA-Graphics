@@ -4,7 +4,21 @@ import { MdVisibility, MdVisibilityOff } from 'react-icons/md';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
 import { AuthContext } from '../../context/AuthContext';
-const url = "http://localhost:5000/api/v1/login"
+import axios from 'axios';
+
+// Add request interceptor
+axios.interceptors.request.use(request => {
+  if (request.url.includes('/login')) {
+    console.log('Login Request:', {
+      url: request.url,
+      method: request.method,
+      data: request.data,
+      headers: request.headers
+    });
+  }
+  return request;
+});
+
 const Login = () => {
     const [showPassword, setShowPassword] = useState(false);
     const navigate = useNavigate();
@@ -81,136 +95,174 @@ const Login = () => {
         setIsSubmitting(true);
       
         try {
-          console.log("Submitting login with:", {
-            email: user.email,
+          console.log("Attempting login for:", user.email);
+          
+          // Log the exact request data
+          const requestData = {
+            email: user.email.trim(),
             password: user.password
+          };
+          console.log("Request data:", requestData);
+      
+          const response = await axios.post("http://localhost:5000/api/v1/login", requestData, {
+            headers: {
+              'Content-Type': 'application/json'
+            }
           });
       
-          const response = await fetch(url , {
-            method: "POST",
-            headers: { 
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              email: user.email.trim(), // Trim email
-              password: user.password // Don't trim password
-            }),
-          });
+          console.log("Full response:", response);
+          console.log("Login response data:", response.data);
       
-          const data = await response.json();
-          console.log("Login Response:", data);
+          const { token, user: userData } = response.data;
       
-          if (!response.ok) {
-            throw new Error(data.message || "Login failed");
+          if (!token || !userData) {
+            console.error("Invalid response structure:", response.data);
+            throw new Error("Invalid response from server");
           }
+
+          // Log the user data before storing
+          console.log("User data before login:", userData);
       
-          if (!data.token || !data.user) {
-            throw new Error("Invalid server response format");
-          }
-      
-          // Store authentication
-          login(data.token, data.user);
+          // Store authentication data
+          login(token, userData);
       
           toast.success("Login successful!");
-          setTimeout(() => navigate("/"), 1500);
+          
+          // Redirect based on user role
+          if (userData.role === "admin") {
+            setTimeout(() => navigate("/admin"), 1500);
+          } else {
+            setTimeout(() => navigate("/"), 1500);
+          }
       
         } catch (error) {
-          console.error("Login Error Details:", {
+          console.error("Login error details:", {
             message: error.message,
-            email: user.email,
-            stack: error.stack
+            response: error.response?.data,
+            status: error.response?.status
           });
-          toast.error(error.message || "Login failed. Please try again.");
+          
+          // Handle different types of errors
+          if (error.response) {
+            // Server responded with an error
+            const errorMessage = error.response.data.message || "Invalid email or password";
+            console.log("Server error response:", error.response.data);
+            toast.error(errorMessage);
+          } else if (error.request) {
+            // No response received
+            console.log("Network error: No response received");
+            toast.error("Unable to connect to server. Please try again later.");
+          } else {
+            // Other errors
+            console.log("Other error:", error.message);
+            toast.error(error.message || "An error occurred. Please try again.");
+          }
         } finally {
           setIsSubmitting(false);
         }
-      };
-
+    };
 
     return (
         <Grid
-            item
-            xs={12}
-            sm={8}
-            md={5}
-            position="absolute"
-            top="30%"
-            left="30%"
-            height="60vh"
-            component={Paper}
-            elevation={6}
-            square
+            container
+            sx={{
+                width: '100%',
+                height: '100%',
+                position: 'relative'
+            }}
         >
-            <Container maxWidth="sm" component="form" onSubmit={handleSubmit} noValidate>
-                <Typography component="h1" variant="h4" textAlign="center" mt="30px">
-                    Sign In
-                </Typography>
-                
-                {/* Email Field */}
-                <TextField
-                    margin="normal"
-                    name="email"
-                    placeholder="Email"
-                    type="email"
-                    label="Email Address"
-                    autoComplete="email"
-                    autoFocus
-                    fullWidth
-                    required
-                    value={user.email}
-                    onChange={handleChange}
-                    onBlur={() => setErrors(prev => ({
-                        ...prev,
-                        email: validateField('email', user.email)
-                    }))}
-                    error={Boolean(errors.email)}
-                    helperText={errors.email}
-                />
-                
-                {/* Password Field */}
-                <TextField
-                    margin="normal"
-                    name="password"
-                    type={showPassword ? "text" : "password"}
-                    fullWidth
-                    placeholder="Password"
-                    label="Password"
-                    required
-                    value={user.password}
-                    onChange={handleChange}
-                    onBlur={() => setErrors(prev => ({
-                        ...prev,
-                        password: validateField('password', user.password)
-                    }))}
-                    error={Boolean(errors.password)}
-                    helperText={errors.password}
-                    InputProps={{
-                        endAdornment: (
-                            <InputAdornment position="end">
-                                <IconButton 
-                                    onClick={() => setShowPassword(prev => !prev)}
-                                    edge="end"
-                                >
-                                    {showPassword ? <MdVisibilityOff /> : <MdVisibility />}
-                                </IconButton>
-                            </InputAdornment>
-                        ),
-                    }}
-                />
-                
-                <Button
-                    type="submit"
-                    variant="contained"
-                    sx={{ mt: 3, mb: 2, py: 1.5 }}
-                    disabled={isSubmitting}
-                    fullWidth
-                >
-                    {isSubmitting ? 'Signing In...' : 'Sign In'}
-                </Button>
-                <Typography variant='h6' textAlign={'center'}>Don't have a account <Link to={"/register"} style={{color:'#149ddd'}} >Sign Up</Link></Typography>
-                <Typography variant='h6' textAlign={'center'}>Forgot Password <Link to={"/forgot-password"} style={{color:'#149ddd'}} >Click Here</Link></Typography>
-            </Container>
-            <ToastContainer/>
+            <Grid
+                item
+                xs={12}
+                sm={8}
+                md={5}
+                position="absolute"
+                top="30%"
+                left="30%"
+                height="60vh"
+                component={Paper}
+                elevation={6}
+                square
+            >
+                <Container maxWidth="sm" component="form" onSubmit={handleSubmit} noValidate>
+                    <Typography component="h1" variant="h4" textAlign="center" mt="30px">
+                        Sign In
+                    </Typography>
+                    
+                    <TextField
+                        margin="normal"
+                        name="email"
+                        placeholder="Email"
+                        type="email"
+                        label="Email Address"
+                        autoComplete="email"
+                        autoFocus
+                        fullWidth
+                        required
+                        value={user.email}
+                        onChange={handleChange}
+                        onBlur={() => setErrors(prev => ({
+                            ...prev,
+                            email: validateField('email', user.email)
+                        }))}
+                        error={Boolean(errors.email)}
+                        helperText={errors.email}
+                    />
+                    
+                    <TextField
+                        margin="normal"
+                        name="password"
+                        type={showPassword ? "text" : "password"}
+                        fullWidth
+                        placeholder="Password"
+                        label="Password"
+                        required
+                        value={user.password}
+                        onChange={handleChange}
+                        onBlur={() => setErrors(prev => ({
+                            ...prev,
+                            password: validateField('password', user.password)
+                        }))}
+                        error={Boolean(errors.password)}
+                        helperText={errors.password}
+                        InputProps={{
+                            endAdornment: (
+                                <InputAdornment position="end">
+                                    <IconButton 
+                                        onClick={() => setShowPassword(prev => !prev)}
+                                        edge="end"
+                                    >
+                                        {showPassword ? <MdVisibilityOff /> : <MdVisibility />}
+                                    </IconButton>
+                                </InputAdornment>
+                            ),
+                        }}
+                    />
+                    
+                    <Button
+                        type="submit"
+                        variant="contained"
+                        sx={{ mt: 3, mb: 2, py: 1.5 }}
+                        disabled={isSubmitting}
+                        fullWidth
+                    >
+                        {isSubmitting ? 'Signing In...' : 'Sign In'}
+                    </Button>
+
+                    <Typography variant='h6' textAlign={'center'}>
+                        Don't have an account? <Link to={"/register"} style={{color:'#149ddd'}} >Sign Up</Link>
+                    </Typography>
+                    <Typography variant='h6' textAlign={'center'}>
+                        Forgot Password? <Link to={"/forgot-password"} style={{color:'#149ddd'}} >Click Here</Link>
+                    </Typography>
+                    <Typography variant='h6' textAlign={'center'} sx={{ mt: 2 }}>
+                        <Link to={"/"} style={{color:'#149ddd', textDecoration: 'none'}} >
+                            ← Back to Home
+                        </Link>
+                    </Typography>
+                </Container>
+                <ToastContainer/>
+            </Grid>
         </Grid>
     );
 };

@@ -12,126 +12,154 @@ const registerUser = async (req, res, next) => {
   try {
     const { name, email, password, phoneNo } = req.body;
 
-    // Validate required fields
     if (!name || !email || !password || !phoneNo) {
       throw createError(400, 'All fields are required');
     }
 
-    // Check if user already exists
     const existingUser = await User.findOne({ $or: [{ email }, { phoneNo }] });
     if (existingUser) {
       throw createError(409, 'User already exists with this email or phone number');
     }
 
-    // Set profile picture or initials
-    let profilePic = req.file ? req.file.path : null;
-    if (!profilePic) {
-      const initials = name
-        .split(" ")
-        .map(word => word[0].toUpperCase())
-        .join(""); // Extract initials (e.g., "John Doe" → "JD")
+    let profilePic = '';
+    if (req.file) {
+      // Store only the filename, not the full path
+      profilePic = req.file.filename;
+    } else {
+      const initials = name.split(" ").map(word => word[0].toUpperCase()).join("");
       profilePic = `https://ui-avatars.com/api/?name=${initials}&background=random`;
     }
 
-    // Create new user - password will be hashed by middleware
+    // Create user with explicit role assignment
     const user = new User({
       name,
       email,
-      password, // Plain password - will be hashed by middleware
+      password, // Password will be hashed by the pre-save middleware
       phoneNo,
-      profilePic
+      profilePic,
+      role: email === "admin@gmail.com" ? "admin" : "user"
     });
 
-    await user.save(); // Save user to database
-    console.log("Registration - User saved successfully");
+    console.log("🟢 Before Saving: User Object", {
+      name: user.name,
+      email: user.email,
+      phoneNo: user.phoneNo,
+      role: user.role
+    });
 
-    // Generate JWT token
+    await user.save();
+
+    const savedUser = await User.findById(user._id);
+    console.log("🟢 After Saving: User from DB", {
+      name: savedUser.name,
+      email: savedUser.email,
+      phoneNo: savedUser.phoneNo,
+      role: savedUser.role
+    });
+
     const token = jwt.sign(
-      { id: user._id },
-      process.env.JWT_SECRET,
+      { id: savedUser._id, role: savedUser.role },
+      process.env.JWT_SECRET || 'your-super-secret-jwt-key',
       { expiresIn: "7d" }
     );
 
-    // Remove password from response
-    user.password = undefined;
+    // Remove sensitive data
+    savedUser.password = undefined;
+
+    // Construct the full profile pic URL for response
+    if (savedUser.profilePic && !savedUser.profilePic.startsWith('http')) {
+      savedUser.profilePic = `http://localhost:5000/uploads/${savedUser.profilePic}`;
+    }
 
     res.status(201).json({
       status: 'success',
       message: 'User registered successfully',
       token,
-      data: { user }
+      data: { user: savedUser }
     });
   } catch (error) {
-    console.error('Error in registerUser:', error.message);
+    console.error('❌ Registration error:', error);
     next(error);
   }
 };
+
+
+
+
+
+
 
 const loginUser = async (req, res, next) => {
   try {
     const { email, password } = req.body;
     
-    console.log('Login attempt for email:', email);
+    console.log('🔍 Login attempt for:', email);
     
     if (!email || !password) {
       throw createError(400, 'Email and password are required');
     }
 
-    // Find user with password field explicitly selected
+    // Find user and explicitly include the password field
     const user = await User.findOne({ email }).select('+password');
+    
     if (!user) {
-      console.log('Login failed: User not found for email:', email);
-      throw createError(401, 'User not found');
+      console.log('❌ User not found:', email);
+      throw createError(401, 'Invalid email or password');
     }
 
-    console.log('User found:', {
-      email: user.email,
-      hasPassword: !!user.password,
-      passwordLength: user.password?.length,
-      storedHash: user.password
-    });
-
-    // Use the model's correctPassword method
-    const isMatch = await user.correctPassword(password);
-    console.log('Password comparison:', {
-      inputPassword: password,
-      isMatch: isMatch,
-      passwordLength: password.length
-    });
+    // Direct password comparison using bcrypt
+    const isMatch = await bcrypt.compare(password, user.password);
+    console.log('🔑 Password comparison result:', isMatch);
     
     if (!isMatch) {
-      console.log('Login failed: Incorrect password for user:', email);
-      throw createError(401, 'Incorrect password');
+      console.log('❌ Password mismatch for:', email);
+      throw createError(401, 'Invalid email or password');
     }
 
-    // Generate token
+    // Generate token with user role
     const token = jwt.sign(
-      { id: user._id },
-      process.env.JWT_SECRET,
+      { 
+        id: user._id, 
+        role: user.role || 'user' // Ensure role is always set
+      },
+      process.env.JWT_SECRET || 'your-super-secret-jwt-key',
       { expiresIn: '7d' }
     );
 
-    // Prepare user data without sensitive fields
-    const userResponse = {
-      id: user._id,
-      name: user.name,
-      email: user.email,
-      profilePic: user.profilePic
-    };
+    // Remove sensitive data
+    user.password = undefined;
 
-    console.log('Login successful for user:', email);
+    // Ensure user has a role
+    if (!user.role) {
+      user.role = 'user';
+      await User.findByIdAndUpdate(user._id, { role: 'user' });
+    }
+
+    // Construct full profile pic URL
+    const profilePic = user.profilePic.startsWith('http') 
+      ? user.profilePic 
+      : `http://localhost:5000/uploads/${user.profilePic}`;
+
+    console.log('✅ Login successful:', {
+      email: user.email,
+      role: user.role,
+      id: user._id
+    });
+    
+    // Send response in the format the frontend expects
     res.status(200).json({
-      status: 'success',
       token,
-      user: userResponse
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        profilePic
+      }
     });
 
   } catch (error) {
-    console.error("Login Error Details:", {
-      message: error.message,
-      email: req.body.email,
-      stack: error.stack
-    });
+    console.error('❌ Login error:', error);
     next(error);
   }
 };

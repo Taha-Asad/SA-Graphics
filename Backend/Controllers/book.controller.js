@@ -1,32 +1,66 @@
 const Book = require('../models/book.model.js');
-const upload = require('../config/multer.js');
-const { bookSchema, reviewSchema } = require('../validations/bookValidation.js');
+const { UPLOADS_FOLDER } = require('../config/multer');
+const { bookSchema } = require('../validations/bookValidation.js');
+const createError = require('http-errors');
 
-// Create Book with Image Upload
-exports.createBook = [
-  upload.single('image'),
-  async (req, res) => {
-    const { error } = bookSchema.validate(req.body);
-    if (error) return res.status(400).json({ message: error.details[0].message });
-
-    const { title, author, price, description } = req.body;
-    const image = req.file ? req.file.path : '';
-
-    try {
-      const book = new Book({ title, author, price, description, image });
-      await book.save();
-      res.status(201).json({ message: 'Book created successfully', book });
-    } catch (err) {
-      res.status(500).json({ message: 'Server Error', error: err.message });
+// Create Book
+exports.createBook = async (req, res) => {
+  try {
+    // Check if image was uploaded
+    if (!req.file) {
+      return res.status(400).json({ 
+        message: 'Image is required. Please upload an image file.' 
+      });
     }
-  },
-];
+
+    const { title, author, description, price, countInStock } = req.body;
+
+    // Create book with image filename
+    const book = new Book({
+      title,
+      author,
+      description,
+      price: Number(price),
+      countInStock: Number(countInStock),
+      image: req.file.filename,
+      averageRating: 0
+    });
+
+    // Save the book
+    const savedBook = await book.save();
+
+    // Transform the response to include full image URL
+    const bookResponse = savedBook.toObject();
+    bookResponse.image = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
+
+    res.status(201).json({
+      message: 'Book created successfully',
+      book: bookResponse
+    });
+  } catch (err) {
+    console.error('Book creation error:', err);
+    res.status(500).json({ 
+      message: 'Server Error', 
+      error: err.message 
+    });
+  }
+};
 
 // Get All Books
 exports.getAllBooks = async (req, res) => {
   try {
     const books = await Book.find();
-    res.json(books);
+    
+    // Transform books to include full image URLs
+    const booksWithUrls = books.map(book => {
+      const bookObj = book.toObject();
+      bookObj.image = bookObj.image 
+        ? `${req.protocol}://${req.get('host')}/uploads/${bookObj.image}`
+        : null;
+      return bookObj;
+    });
+
+    res.json(booksWithUrls);
   } catch (err) {
     res.status(500).json({ message: 'Server Error', error: err.message });
   }
@@ -35,37 +69,67 @@ exports.getAllBooks = async (req, res) => {
 // Get Book by ID
 exports.getBookById = async (req, res) => {
   try {
-    const book = await Book.findById(req.params.id).populate('reviews.userId', 'name');
+    const book = await Book.findById(req.params.id);
     if (!book) return res.status(404).json({ message: 'Book not found' });
-    res.json(book);
+    
+    // Transform response to include full image URL
+    const bookResponse = book.toObject();
+    bookResponse.image = bookResponse.image 
+      ? `${req.protocol}://${req.get('host')}/uploads/${bookResponse.image}`
+      : null;
+
+    res.json(bookResponse);
   } catch (err) {
     res.status(500).json({ message: 'Server Error', error: err.message });
   }
 };
 
-// Update Book with Image Upload
-exports.updateBook = [
-  upload.single('image'),
-  async (req, res) => {
-    const { error } = bookSchema.validate(req.body);
-    if (error) return res.status(400).json({ message: error.details[0].message });
+// Update Book
+exports.updateBook = async (req, res) => {
+  try {
+    const { title, author, description, price, countInStock } = req.body;
 
-    const { title, author, price, description } = req.body;
-    const image = req.file ? req.file.path : req.body.image;
+    const updateData = {
+      title,
+      author,
+      description,
+      price: Number(price),
+      countInStock: Number(countInStock)
+    };
 
-    try {
-      const book = await Book.findByIdAndUpdate(
-        req.params.id,
-        { title, author, price, description, image },
-        { new: true }
-      );
-      if (!book) return res.status(404).json({ message: 'Book not found' });
-      res.json({ message: 'Book updated successfully', book });
-    } catch (err) {
-      res.status(500).json({ message: 'Server Error', error: err.message });
+    // Only update image if new file is uploaded
+    if (req.file) {
+      updateData.image = req.file.filename;
     }
-  },
-];
+
+    const book = await Book.findByIdAndUpdate(
+      req.params.id,
+      updateData,
+      { new: true }
+    );
+
+    if (!book) {
+      return res.status(404).json({ message: 'Book not found' });
+    }
+
+    // Transform response to include full image URL
+    const bookResponse = book.toObject();
+    bookResponse.image = bookResponse.image 
+      ? `${req.protocol}://${req.get('host')}/uploads/${bookResponse.image}`
+      : null;
+
+    res.json({ 
+      message: 'Book updated successfully', 
+      book: bookResponse 
+    });
+  } catch (err) {
+    console.error('Book update error:', err);
+    res.status(500).json({ 
+      message: 'Server Error', 
+      error: err.message 
+    });
+  }
+};
 
 // Delete Book
 exports.deleteBook = async (req, res) => {
@@ -78,27 +142,4 @@ exports.deleteBook = async (req, res) => {
   }
 };
 
-// Add Review to Book
-exports.addReview = async (req, res) => {
-  const { error } = reviewSchema.validate(req.body);
-  if (error) return res.status(400).json({ message: error.details[0].message });
-
-  const { rating, comment } = req.body;
-  try {
-    const book = await Book.findById(req.params.id);
-    if (!book) return res.status(404).json({ message: 'Book not found' });
-
-    const review = {
-      userId: req.user.id,
-      rating,
-      comment,
-    };
-
-    book.reviews.push(review);
-    await book.save();
-
-    res.json({ message: 'Review added successfully', book });
-  } catch (err) {
-    res.status(500).json({ message: 'Server Error', error: err.message });
-  }
-};
+module.exports = exports;
