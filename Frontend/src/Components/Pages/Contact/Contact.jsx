@@ -2,7 +2,7 @@ import { Box, Button, Container, Grid, Paper, TextField, Typography } from '@mui
 import axios from 'axios'
 import React, { useState } from 'react'
 import { MdLocationPin, MdEmail, MdPhone } from 'react-icons/md'
-import { toast, ToastContainer } from 'react-toastify'
+import { toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 
 const url = "http://localhost:5000/api/v1/contact"
@@ -59,7 +59,8 @@ const Contact = () => {
       sx={{
         bgcolor: "#F5F5F5",
         position: "relative",
-        padding: { xs: "60px 0", md: "80px 0" },
+        padding: { xs: "40px 0", md: "60px 0" },
+        marginBottom: { xs: "40px", md: "60px" },
         overflow: "hidden",
         width: "100%",
       }}
@@ -292,21 +293,6 @@ const Contact = () => {
           </Grid>
         </Grid>
       </Container>
-      <ToastContainer
-        position="bottom-right"
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="light"
-        style={{
-          zIndex: 9999,
-        }}
-      />
     </Box>
   )
 }

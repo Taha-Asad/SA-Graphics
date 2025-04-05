@@ -1,103 +1,62 @@
-import { useContext, useEffect } from "react";
-import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
+import React, { Suspense } from 'react';
+import { ThemeProvider, createTheme, CssBaseline } from '@mui/material';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import "./App.css";
+import MainLayout from './Components/Layout/MainLayout';
+import { AuthProvider } from './context/AuthContext';
+import { CartProvider } from './context/CartContext';
+import LoadingFallback from './Components/LoadingFallback';
+import Navbar from './Components/Navbar/Navbar';
+import AppRoutes from './routes/index';
+import { Box } from '@mui/material';
 
-import { AuthContext } from "./context/AuthContext.jsx";
-import Admin from "./admin/Admin";
-import User from "./Components/User";
-import Navbar from "./Components/Navbar/Navbar.jsx";
-import Login from "./Components/authentication/Login.jsx";
-import Register from "./Components/authentication/Register.jsx";
-import ForgotPassword from "./Components/authentication/ForgotPassword.jsx";
-import ResetPassword from "./Components/authentication/ResetPassword.jsx";
-// import Footer from "./Components/Footer/Footer.jsx";
-
-import "./index.css";
+// Create theme
+const theme = createTheme({
+  palette: {
+    primary: {
+      main: '#149ddd',
+    },
+    background: {
+      default: '#F4FAFD',
+    },
+  },
+});
 
 function App() {
-  const { user } = useContext(AuthContext);
-
-  // Reset scroll position on route change
-  useEffect(() => {
-    window.history.scrollRestoration = 'manual';
-    window.scrollTo(0, 0);
-  }, []);
-
-  console.log("User in App:", user); // ✅ Debugging step
-
   return (
-    <div className="app">
-      <BrowserRouter>
-        <Routes>
-          {/* Publicly Accessible Pages with Navbar */}
-          <Route
-            path="/"
-            element={
-              <>
-                <Navbar />
-                <User />
-              </>
-            }
-          />
-          <Route
-            path="/login"
-            element={
-              <>
-                <Navbar />
-                <Login />
-              </>
-            }
-          />
-          <Route
-            path="/register"
-            element={
-              <>
-                <Navbar />
-                <Register />
-              </>
-            }
-          />
-          <Route
-            path="/forgot-password"
-            element={
-              <>
-                <Navbar />
-                <ForgotPassword />
-              </>
-            }
-          />
-          <Route
-            path="/reset-password/:token"
-            element={
-              <>
-                <Navbar />
-                <ResetPassword />
-              </>
-            }
-          />
-
-          {/* Admin Panel - Only for Admins */}
-          <Route
-            path="/admin/*"
-            element={user && user.role === "admin" ? <Admin /> : <Navigate to="/" />}
-          />
-        </Routes>
-        {/* <Footer /> */}
-      </BrowserRouter>
-      <ToastContainer
-        position="top-right"
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="light"
-      />
-    </div>
+    <AuthProvider>
+      <CartProvider>
+        <ThemeProvider theme={theme}>
+          <CssBaseline />
+          <MainLayout>
+            <Navbar />
+            <Box 
+              component="div" 
+              sx={{ 
+                width: '100%',
+                minHeight: '100%'
+              }}
+            >
+              <Suspense fallback={<LoadingFallback />}>
+                <AppRoutes />
+              </Suspense>
+            </Box>
+            <ToastContainer 
+              position="top-right"
+              autoClose={3000}
+              hideProgressBar={false}
+              newestOnTop
+              closeOnClick
+              rtl={false}
+              pauseOnFocusLoss
+              draggable
+              pauseOnHover
+            />
+          </MainLayout>
+        </ThemeProvider>
+      </CartProvider>
+    </AuthProvider>
   );
 }
 

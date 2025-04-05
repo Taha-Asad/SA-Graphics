@@ -13,7 +13,8 @@ const Resume = () => {
       <Box id="resume" sx={{
         bgcolor: "#F4FAFD",
         position: "relative",
-        padding: "80px 0",
+        marginTop: "-50px",
+        padding: "20px 0",
         overflow: "hidden",
       }}
         data-aos="fade-up"
@@ -38,7 +39,7 @@ const Resume = () => {
             }
           }}
           >Resume</Typography>
-          <Typography variant='p' component="h6" sx={{
+          <Typography variant="body1" component="div" sx={{
             fontFamily: "Raleway",
             fontWeight: "500",
             mb: "50px",
@@ -58,8 +59,16 @@ const Resume = () => {
                       <TimelineConnector sx={{ bgcolor: "#149ddd" }} />
                     </TimelineSeparator>
                     <TimelineContent>
-                      <Typography variant='h6' component='p' color={"#6A6B6B"} fontSize={"25px"} fontFamily="Raleway">Brandon</Typography>
-                      <Typography variant='p' component='h6' color={"#6A6B6B"} fontFamily={"Raleway"} fontSize={"19px"} fontStyle={"italic"}>
+                      <Typography 
+                        variant="h6" 
+                        component="div" 
+                        color={"#6A6B6B"} 
+                        fontSize={"25px"} 
+                        fontFamily="Raleway"
+                      >
+                        Brandon
+                      </Typography>
+                      <Typography variant="body1" component="div" color={"#6A6B6B"} fontFamily={"Raleway"} fontSize={"19px"} fontStyle={"italic"}>
                         Innovative and deadline-driven Graphic Designer with 3+ years of experience designing and developing user-centered digital/print marketing material from initial concept to final, polished deliverable.
                       </Typography>
                       <ul style={{ listStyleType: "disc", fontFamily: "Raleway", fontSize: "19px", marginLeft: "30px", marginTop: "30px" }}>
@@ -80,12 +89,20 @@ const Resume = () => {
                       <TimelineConnector sx={{ bgcolor: "#149ddd" }} />
                     </TimelineSeparator>
                     <TimelineContent>
-                      <Typography variant='h6' component='p' fontSize={"25px"} color={"#6A6B6B"} fontFamily="Raleway">Master of Fine Arts & Graphic Design</Typography>
+                      <Typography 
+                        variant="h6" 
+                        component="div" 
+                        fontSize={"25px"} 
+                        color={"#6A6B6B"} 
+                        fontFamily="Raleway"
+                      >
+                        Master of Fine Arts & Graphic Design
+                      </Typography>
                       <span style={{ fontSize: "18px", marginLeft: "10px" }}><b>2015-2019</b></span>
-                      <Typography variant='p' component={'h6'} fontSize={"19px"} fontFamily={"Raleway"} fontStyle={"italic"} mt={"10px"} color={"#6A6B6B"}>
+                      <Typography variant="body1" component="div" fontSize={"19px"} fontFamily={"Raleway"} fontStyle={"italic"} mt={"10px"} color={"#6A6B6B"}>
                         Rochester Institute of Technology, Rochester, NY
                       </Typography>
-                      <Typography variant='p' component={'h6'} fontSize={"19px"} fontFamily={"Raleway"} mt={"10px"} color={"#6A6B6B"}>
+                      <Typography variant="body1" component="div" fontSize={"19px"} fontFamily={"Raleway"} mt={"10px"} color={"#6A6B6B"}>
                         Lorem ipsum dolor sit amet consectetur adipisicing elit. Harum quasi voluptates nemo provident enim laboriosam accusantium aspernatur, eius quo sit facere ipsum voluptate repellendus perferendis.
                       </Typography>
                     </TimelineContent>
@@ -96,12 +113,20 @@ const Resume = () => {
                       <TimelineConnector sx={{ bgcolor: "#149ddd" }} />
                     </TimelineSeparator>
                     <TimelineContent>
-                      <Typography variant='h6' component='p' fontSize={"25px"} color={"#6A6B6B"} fontFamily="Raleway">Bachelor of Fine Arts & Graphic Design</Typography>
+                      <Typography 
+                        variant="h6" 
+                        component="div" 
+                        fontSize={"25px"} 
+                        color={"#6A6B6B"} 
+                        fontFamily="Raleway"
+                      >
+                        Bachelor of Fine Arts & Graphic Design
+                      </Typography>
                       <span style={{ fontSize: "18px", marginLeft: "10px" }}><b>2015-2019</b></span>
-                      <Typography variant='p' component={'h6'} fontSize={"19px"} fontFamily={"Raleway"} fontStyle={"italic"} mt={"10px"} color={"#6A6B6B"}>
+                      <Typography variant="body1" component="div" fontSize={"19px"} fontFamily={"Raleway"} fontStyle={"italic"} mt={"10px"} color={"#6A6B6B"}>
                         Rochester Institute of Technology, Rochester, NY
                       </Typography>
-                      <Typography variant='p' component={'h6'} fontSize={"19px"} fontFamily={"Raleway"} mt={"10px"} color={"#6A6B6B"}>
+                      <Typography variant="body1" component="div" fontSize={"19px"} fontFamily={"Raleway"} mt={"10px"} color={"#6A6B6B"}>
                         Lorem ipsum dolor sit amet consectetur adipisicing elit. Quia rem atque omnis dolorum voluptatem ex obcaecati. Doloribus modi sint ab explicabo expedita, temporibus voluptate. Cupiditate?
                       </Typography>
                     </TimelineContent>
@@ -121,12 +146,20 @@ const Resume = () => {
                       <TimelineConnector sx={{ bgcolor: "#149ddd" }} />
                     </TimelineSeparator>
                     <TimelineContent>
-                      <Typography variant='h6' component='p' fontSize={"25px"} color={"#6A6B6B"} fontFamily="Raleway">Senior Graphic Designer</Typography>
+                      <Typography 
+                        variant="h6" 
+                        component="div" 
+                        fontSize={"25px"} 
+                        color={"#6A6B6B"} 
+                        fontFamily="Raleway"
+                      >
+                        Senior Graphic Designer
+                      </Typography>
                       <span style={{ fontSize: "18px", marginLeft: "10px" }}><b>2019-present</b></span>
-                      <Typography variant='p' component={'h6'} fontSize={"19px"} fontFamily={"Raleway"} mt={"10px"} fontStyle={"italic"} color={"#6A6B6B"}>
+                      <Typography variant="body1" component="div" fontSize={"19px"} fontFamily={"Raleway"} mt={"10px"} fontStyle={"italic"} color={"#6A6B6B"}>
                         Experion, New York, NY
                       </Typography>
-                      <Typography variant='p' component={'h6'} fontSize={"19px"} fontFamily={"Raleway"} color={"black"}>
+                      <Typography variant="body1" component="div" fontSize={"19px"} fontFamily={"Raleway"} color={"black"}>
                         <ul style={{ listStyleType: "disc", fontFamily: "Raleway", fontSize: "19px", marginLeft: "30px", marginTop: "10px", color:"black"}}>
                           <li style={{ marginBottom: "10px", color: "#6A6B6B" }}>Lead in the design, development, and implementation of the graphic, layout, and production communication materials</li>
                           <li style={{ marginBottom: "10px", color: "#6A6B6B" }}>Delegate tasks to the 7 members of the design team and provide counsel on all aspects of the project.</li>
@@ -142,11 +175,19 @@ const Resume = () => {
                       <TimelineConnector sx={{ bgcolor: "#149ddd" }} />
                     </TimelineSeparator>
                     <TimelineContent>
-                      <Typography variant='h6' component='p' fontSize={"25px"} color={"#6A6B6B"} fontFamily="Raleway">Graphic Designer</Typography>
+                      <Typography 
+                        variant="h6" 
+                        component="div" 
+                        fontSize={"25px"} 
+                        color={"#6A6B6B"} 
+                        fontFamily="Raleway"
+                      >
+                        Graphic Designer
+                      </Typography>
                       <span style={{ fontSize: "18px", marginLeft: "10px" }}><b>2015-2019</b></span>
-                      <Typography variant='p' component={'h6'} fontSize={"19px"} fontFamily={"Raleway"} mt={"10px"} fontStyle={"italic"} color={"#6A6B6B"}>
+                      <Typography variant="body1" component="div" fontSize={"19px"} fontFamily={"Raleway"} mt={"10px"} fontStyle={"italic"} color={"#6A6B6B"}>
                         Stepping Stone Advertising, New York, NY</Typography>
-                      <Typography variant='p' component={'h6'} fontSize={"19px"} fontFamily={"Raleway"} color={"#6A6B6B"}>
+                      <Typography variant="body1" component="div" fontSize={"19px"} fontFamily={"Raleway"} color={"#6A6B6B"}>
                         <ul style={{ listStyleType: "disc", fontFamily: "Raleway", fontSize: "19px", marginLeft: "30px", marginTop: "10px" }}>
                           <li style={{ marginBottom: "10px", color: "#6A6B6B" }}>Developed numerous marketing programs (logos, brochures,infographics, presentations, and advertisements).
                           </li>

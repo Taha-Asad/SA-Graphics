@@ -12,8 +12,7 @@ const About = () => {
        sx={
         {
           position: "relative",
-          mt: "10%",
-          mb: "5%"
+          marginTop: "-80px",
         }
       }>
         <Typography variant='h3' component="h2" sx={{
@@ -21,6 +20,7 @@ const About = () => {
           fontFamily: "Raleway",
           fontWeight: "500",
           mb: "50px",
+          color: "#000000",
           "&::after": {
             content: '""',  // Required for pseudo-elements
             position: "absolute",
@@ -34,10 +34,11 @@ const About = () => {
         }}
           data-aos="fade-down"
         >About</Typography>
-        <Typography variant='p' component="h6" sx={{
+        <Typography variant="body1" component="div" sx={{
           fontFamily: "Raleway",
           fontWeight: "500",
           mb: "50px",
+          color: "#6a6a6b",
         }}>Lorem ipsum dolor sit amet consectetur adipisicing elit. Aliquid eligendi, enim nobis eum harum quibusdam facilis magnam iusto hic provident praesentium voluptatem officia quod quis quidem laboriosam ipsum ipsa eius tenetur eveniet! Voluptate placeat, perferendis possimus repellat voluptas a quasi deserunt, in, quia expedita rerum. Totam ex quam minima excepturi.</Typography>
         <Grid container spacing={2}>
           {/* Left Column - Image */}
@@ -50,31 +51,38 @@ const About = () => {
           {/* Right Column - Title & Arrow Stacks */}
           <Grid item xs={12} md={8}>
             {/* Title */}
-            <Typography variant="h4" sx={{ mb: "20px" }} data-aos="fade-left">
+            <Typography variant="h4" sx={{ mb: "20px", color: "#000000" }} data-aos="fade-left">
               Title Goes Here
             </Typography>
-            <Typography variant='p' component='h6' sx={{ mb: "40px" }} data-aos="fade-left">Lorem ipsum dolor sit amet consectetur adipisicing elit. Aliquid eligendi, enim nobis eum harum quibusdam facilis magnam iusto hic provident praesentium voluptatem officia quod quis quidem laboriosam ipsum ipsa eius tenetur eveniet! Voluptate placeat</Typography>
+            <Typography 
+              variant="body1" 
+              component="div" 
+              sx={{ mb: "40px", color: "#6a6a6b" }} 
+              data-aos="fade-left"
+            >
+              Lorem ipsum dolor sit amet consectetur adipisicing elit. Aliquid eligendi, enim nobis eum harum quibusdam facilis magnam iusto hic provident praesentium voluptatem officia quod quis quidem laboriosam ipsum ipsa eius tenetur eveniet! Voluptate placeat
+            </Typography>
             <Grid container spacing={2}>
               {/* First Arrow Column */}
               <Grid item xs={12} sm={6} data-aos="fade-up">
                 <Stack spacing={5}>
-                  <span><IoIosArrowForward style={{ display:'inline', color: "#149ddd", fontSize: "20px" }}/><b>Birthday: </b>27 Feb, 2007</span>
-                  <span><IoIosArrowForward style={{display:'inline',  color: "#149ddd", fontSize: "20px" }}/><b>Website: </b>www.example.com</span>
-                  <span><IoIosArrowForward style={{ display:'inline', color: "#149ddd", fontSize: "20px" }}/><b>Phone: </b>+92 300 300000</span>
-                  <span><IoIosArrowForward style={{ display:'inline', color: "#149ddd", fontSize: "20px" }}/><b>City: </b>Sialkot</span>
+                  <span style={{ color: "#6a6a6b" }}><IoIosArrowForward style={{ display:'inline', color: "#149ddd", fontSize: "20px" }}/><b style={{ color: "#000000" }}>Birthday: </b>27 Feb, 2007</span>
+                  <span style={{ color: "#6a6a6b" }}><IoIosArrowForward style={{display:'inline',  color: "#149ddd", fontSize: "20px" }}/><b style={{ color: "#000000" }}>Website: </b>www.example.com</span>
+                  <span style={{ color: "#6a6a6b" }}><IoIosArrowForward style={{ display:'inline', color: "#149ddd", fontSize: "20px" }}/><b style={{ color: "#000000" }}>Phone: </b>+92 300 300000</span>
+                  <span style={{ color: "#6a6a6b" }}><IoIosArrowForward style={{ display:'inline', color: "#149ddd", fontSize: "20px" }}/><b style={{ color: "#000000" }}>City: </b>Sialkot</span>
                 </Stack>
               </Grid>
 
               {/* Second Arrow Column */}
               <Grid item xs={12} sm={6} data-aos="fade-up">
                 <Stack spacing={5} >
-                  <span><IoIosArrowForward style={{ display:'inline', color: "#149ddd", fontSize: "20px" }}/><b>Age: </b>18</span>
-                  <span><IoIosArrowForward style={{ display:'inline', color: "#149ddd", fontSize: "20px" }}/><b>Degree: </b>Intermediate</span>
-                  <span><IoIosArrowForward style={{ display:'inline', color: "#149ddd", fontSize: "20px" }}/><b>Email: </b>email@example.com</span>
-                  <span><IoIosArrowForward style={{ display:'inline', color: "#149ddd", fontSize: "20px" }}/><b>Freelance: </b>Available</span>
+                  <span style={{ color: "#6a6a6b" }}><IoIosArrowForward style={{ display:'inline', color: "#149ddd", fontSize: "20px" }}/><b style={{ color: "#000000" }}>Age: </b>18</span>
+                  <span style={{ color: "#6a6a6b" }}><IoIosArrowForward style={{ display:'inline', color: "#149ddd", fontSize: "20px" }}/><b style={{ color: "#000000" }}>Degree: </b>Intermediate</span>
+                  <span style={{ color: "#6a6a6b" }}><IoIosArrowForward style={{ display:'inline', color: "#149ddd", fontSize: "20px" }}/><b style={{ color: "#000000" }}>Email: </b>email@example.com</span>
+                  <span style={{ color: "#6a6a6b" }}><IoIosArrowForward style={{ display:'inline', color: "#149ddd", fontSize: "20px" }}/><b style={{ color: "#000000" }}>Freelance: </b>Available</span>
                 </Stack>
               </Grid>
-              <Typography variant='p' component='h6' sx={{ mb: "40px" , mt: "40px" , ml: "20px"}} data-aos="fade-left">Lorem ipsum dolor sit amet consectetur adipisicing elit. Aliquid eligendi, enim nobis eum harum quibusdam facilis magnam iusto hic provident praesentium</Typography>
+              <Typography variant="body1" component="div" sx={{ mt: "40px" , ml: "20px", color: "#6a6a6b"}} data-aos="fade-left">Lorem ipsum dolor sit amet consectetur adipisicing elit. Aliquid eligendi, enim nobis eum harum quibusdam facilis magnam iusto hic provident praesentium</Typography>
             </Grid>
           </Grid>
         </Grid>

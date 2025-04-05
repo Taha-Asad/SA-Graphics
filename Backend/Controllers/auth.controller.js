@@ -262,10 +262,109 @@ const resetPassword = async (req, res, next) => {
   }
 };
 
+const updateProfile = async (req, res, next) => {
+  try {
+    const { name, email, phone, address } = req.body;
+    const userId = req.user.id;
+
+    // Find user and update
+    const user = await User.findById(userId);
+    if (!user) {
+      throw createError(404, 'User not found');
+    }
+
+    // Check if email is being changed and if it's already taken
+    if (email && email !== user.email) {
+      const existingUser = await User.findOne({ email });
+      if (existingUser) {
+        throw createError(409, 'Email is already taken');
+      }
+    }
+
+    // Update user fields
+    user.name = name || user.name;
+    user.email = email || user.email;
+    user.phoneNo = phone || user.phoneNo;
+    user.address = address || user.address;
+
+    await user.save();
+
+    // Remove sensitive data
+    user.password = undefined;
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Profile updated successfully',
+      data: {
+        user: {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          phone: user.phoneNo,
+          address: user.address,
+          role: user.role,
+          profilePic: user.profilePic
+        }
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const changePassword = async (req, res, next) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      throw createError(400, 'Current password and new password are required');
+    }
+
+    // Get user with password
+    const user = await User.findById(req.user.id).select('+password');
+    if (!user) {
+      throw createError(404, 'User not found');
+    }
+
+    // Check if current password is correct
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      throw createError(401, 'Current password is incorrect');
+    }
+
+    // Update password
+    user.password = newPassword;
+    await user.save();
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Password updated successfully'
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const logout = async (req, res, next) => {
+  try {
+    // Since we're using JWT, we don't need to do anything server-side
+    // The client will remove the token
+    res.status(200).json({
+      status: 'success',
+      message: 'Logged out successfully'
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   registerUser,
   loginUser,
   updateProfilePic,
   forgotPassword,
-  resetPassword
+  resetPassword,
+  updateProfile,
+  changePassword,
+  logout
 };

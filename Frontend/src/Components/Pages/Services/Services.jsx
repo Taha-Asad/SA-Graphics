@@ -11,7 +11,6 @@ const Services = () => {
             <Box id="services" sx={{
                 bgcolor: "#F5F5F5",
                 position: "relative",
-                padding: "80px 0",
                 overflow: "hidden",
                 width: "100%", // Ensures it doesn't exceed the viewport width
             }}
@@ -34,12 +33,12 @@ const Services = () => {
                         }
                     }}
                     >Services</Typography>
-                    <Typography variant='p' component="h6" sx={{
+                    <Typography variant="body1" component="div" sx={{
                         fontFamily: "Raleway",
                         fontWeight: "500",
                         mb: "50px",
                     }}>
-                        Lorem ipsum dolor sit amet consectetur adipisicing elit. Excepturi non veritatis quam distinctio? Id fugit quaerat nisi accusamus eum iste harum blanditiis quos libero quo ea aut voluptatem amet ut pariatur laboriosam, eaque in sunt saepe repellendus incidunt rerum molestiae aliquam! Quaerat tenetur dolor iusto repellendus eius, commodi in quo.
+                        Lorem ipsum dolor sit amet consectetur adipisicing elit. Aliquid eligendi, enim nobis eum harum quibusdam facilis magnam iusto hic provident praesentium voluptatem officia quod quis quidem laboriosam ipsum ipsa eius tenetur eveniet! Voluptate placeat
                     </Typography>
                     <Box>
                         <Grid container spacing={2}>
@@ -62,8 +61,10 @@ const Services = () => {
                                                         padding: "50px",
                                                     }}>
                                                         <Box display={"flex"}>
-                                                            <Typography sx=
-                                                                {{
+                                                            <Typography 
+                                                                variant="body1"
+                                                                component="div"
+                                                                sx={{
                                                                     display: "inline-block",
                                                                     padding: "10px",
                                                                     borderRadius: "50%",
@@ -73,17 +74,24 @@ const Services = () => {
                                                                     transition: "all 0.6s ease",
                                                                     fontSize: "25px",
                                                                 }}>
-                                                                {service.icon}</Typography>
+                                                                {service.icon}
+                                                            </Typography>
                                                             <Typography
-                                                                ml={1} variant="h6" fontWeight={"500"}
+                                                                variant="h6"
+                                                                component="div"
+                                                                ml={1}
+                                                                fontWeight="500"
                                                                 mt={1}
                                                                 fontFamily="Raleway"
-                                                                transition={"all 0.6s ease"}
-                                                                color={hoveredIndex === index ? "#ffff" : "#149DDD"} >
+                                                                sx={{
+                                                                    transition: "all 0.6s ease",
+                                                                    color: hoveredIndex === index ? "#ffff" : "#149DDD"
+                                                                }}
+                                                            >
                                                                 {service.title}
                                                             </Typography>
                                                         </Box>
-                                                        <Typography variant="p" mt={2} ml={2} textAlign={"center"} component={'h6'}
+                                                        <Typography variant="body1" component="div" mt={2} ml={2} textAlign={"center"}
                                                             color={hoveredIndex === index ? "#ffff" : "black"}
                                                         >
                                                             {service.description}

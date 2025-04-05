@@ -1,5 +1,5 @@
-import { Box, Card, CardContent, CardMedia, Container, Grid, Typography, Dialog, DialogContent, IconButton, Button, Rating, TextField, Divider, Avatar, Stack, Fade } from '@mui/material'
-import React, { useEffect, useState } from 'react'
+import { Box, Card, CardContent, CardMedia, Container, Grid, Typography, Dialog, DialogContent, IconButton, Button, Rating, TextField, Divider, Avatar, Stack, Fade, Pagination } from '@mui/material'
+import React, { useEffect, useState, useMemo, memo, useCallback } from 'react'
 import Tab from '@mui/material/Tab';
 import TabContext from '@mui/lab/TabContext';
 import TabList from '@mui/lab/TabList';
@@ -11,9 +11,200 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { useCart } from '../../../context/CartContext';
 
-export default function Portfolio() {
-  const [value, setValue] = useState('1');
+// Memoized Card Components
+const ProjectCard = memo(({ project, onClick }) => {
+  const handleClick = useCallback(() => {
+    onClick(project);
+  }, [onClick, project]);
+
+  return (
+    <Card
+      sx={{
+        cursor: 'pointer',
+        minHeight: '250px',
+        width: '350px',
+        position: 'relative',
+        boxShadow: "rgba(17, 17, 26, 0.1) 0px 4px 16px, rgba(17, 17, 26, 0.05) 0px 8px 32px",
+        '&:hover': {
+          transform: 'translateY(-5px)',
+          boxShadow: "rgba(0, 0, 0, 0.25) 0px 14px 28px, rgba(0, 0, 0, 0.22) 0px 10px 10px"
+        },
+        '&:hover .overlay': {
+          opacity: 1
+        },
+        transition: 'transform 0.2s ease-out, box-shadow 0.2s ease-out'
+      }}
+      onClick={handleClick}
+    >
+      <CardMedia
+        component="img"
+        height="200"
+        image={project.image || 'https://via.placeholder.com/300x200?text=No+Image'}
+        alt={project.title}
+        sx={{
+          objectFit: 'cover',
+          width: '100%',
+          height: '250px',
+          objectPosition: 'center'
+        }}
+        loading="lazy"
+      />
+      <Box
+        className="overlay"
+        sx={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          bgcolor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          opacity: 0,
+          color: 'white',
+          textAlign: 'center',
+          p: 2
+        }}
+      >
+        <ZoomInIcon sx={{ fontSize: 40, mb: 1 }} />
+        <Typography variant="subtitle1">Click to View Details</Typography>
+      </Box>
+    </Card>
+  );
+});
+
+ProjectCard.displayName = 'ProjectCard';
+
+const BookCard = memo(({ book, onClick }) => {
+  const handleClick = useCallback(() => {
+    onClick(book);
+  }, [onClick, book]);
+
+  return (
+    <Card
+      sx={{
+        cursor: 'pointer',
+        minHeight: '250px',
+        width: '350px',
+        position: 'relative',
+        boxShadow: "rgba(17, 17, 26, 0.1) 0px 4px 16px, rgba(17, 17, 26, 0.05) 0px 8px 32px",
+        '&:hover': {
+          transform: 'translateY(-5px)',
+          boxShadow: "rgba(0, 0, 0, 0.25) 0px 14px 28px, rgba(0, 0, 0, 0.22) 0px 10px 10px"
+        },
+        '&:hover .overlay': {
+          opacity: 1
+        },
+        transition: 'transform 0.2s ease-out, box-shadow 0.2s ease-out'
+      }}
+      onClick={handleClick}
+    >
+      <CardMedia
+        component="img"
+        height="250"
+        image={book.image || 'https://via.placeholder.com/300x200?text=No+Image'}
+        alt={book.title}
+        sx={{
+          objectFit: 'cover',
+          width: '100%',
+          height: '250px',
+          objectPosition: 'center'
+        }}
+        loading="lazy"
+      />
+      <Box
+        className="overlay"
+        sx={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          bgcolor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          opacity: 0,
+          color: 'white',
+          textAlign: 'center',
+          p: 2
+        }}
+      >
+        <ZoomInIcon sx={{ fontSize: 40, mb: 1 }} />
+        <Typography variant="subtitle1">Click to View Details</Typography>
+      </Box>
+    </Card>
+  );
+});
+
+BookCard.displayName = 'BookCard';
+
+// Pagination component
+const PaginatedGrid = memo(({ items, renderItem, itemsPerPage = 6 }) => {
+  const [page, setPage] = useState(1);
+  const pageCount = Math.ceil(items.length / itemsPerPage);
+  
+  const handlePageChange = useCallback((event, value) => {
+    setPage(value);
+  }, []);
+  
+  const paginatedItems = useMemo(() => {
+    const startIndex = (page - 1) * itemsPerPage;
+    return items.slice(startIndex, startIndex + itemsPerPage);
+  }, [items, page, itemsPerPage]);
+
+  const renderGridItem = useCallback((item, index) => (
+    <Grid 
+      item 
+      xs={12} 
+      sm={6} 
+      md={4} 
+      key={item._id || index}
+      data-aos="fade-up"
+      data-aos-delay={Math.min(index * 50, 200)}
+      data-aos-once="true"
+    >
+      {renderItem(item)}
+    </Grid>
+  ), [renderItem]);
+  
+  return (
+    <>
+      <Grid container spacing={2}>
+        {paginatedItems.map(renderGridItem)}
+      </Grid>
+      
+      {pageCount > 1 && (
+        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+          <Pagination 
+            count={pageCount} 
+            page={page} 
+            onChange={handlePageChange} 
+            color="primary" 
+            size="large"
+          />
+        </Box>
+      )}
+    </>
+  );
+});
+
+PaginatedGrid.displayName = 'PaginatedGrid';
+
+const Portfolio = React.memo(function Portfolio() {
+  const [value, setValue] = useState(() => {
+    const savedTab = localStorage.getItem('selectedTab');
+    if (savedTab) {
+      localStorage.removeItem('selectedTab'); // Clear it after reading
+      return savedTab;
+    }
+    return '1';
+  });
   const [projects, setProjects] = useState([]);
   const [books, setBooks] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -22,43 +213,44 @@ export default function Portfolio() {
   const [quantity, setQuantity] = useState(1);
   const [reviews, setReviews] = useState([]);
   const [newReview, setNewReview] = useState({ rating: 0, comment: '' });
+  const { addToCart } = useCart();
+  const [user, setUser] = useState(null);
 
-  const handleChange = (event, newValue) => {
+  const handleChange = useCallback((event, newValue) => {
     setValue(newValue);
-  };
+  }, []);
 
-  const handleProjectClick = (project) => {
+  const handleProjectClick = useCallback((project) => {
     setSelectedProject(project);
-  };
+  }, []);
 
-  const handleBookClick = async (book) => {
+  const handleBookClick = useCallback(async (book) => {
     setSelectedBook(book);
     await fetchBookReviews(book._id);
-  };
+  }, []);
 
-  const handleCloseProjectModal = () => {
+  const handleCloseProjectModal = useCallback(() => {
     setSelectedProject(null);
-  };
+  }, []);
 
-  const handleCloseBookModal = () => {
+  const handleCloseBookModal = useCallback(() => {
     setSelectedBook(null);
     setQuantity(1);
     setReviews([]);
     setNewReview({ rating: 0, comment: '' });
-  };
+  }, []);
 
-  const handleQuantityChange = (event) => {
-    const value = Math.max(1, Math.min(selectedBook.countInStock, Number(event.target.value)));
+  const handleQuantityChange = useCallback((event) => {
+    const value = Math.max(1, Math.min(selectedBook?.countInStock || 1, Number(event.target.value)));
     setQuantity(value);
-  };
+  }, [selectedBook]);
 
-  const handleAddToCart = () => {
-    // TODO: Implement add to cart functionality
-    console.log('Adding to cart:', { book: selectedBook, quantity });
+  const handleAddToCart = useCallback(() => {
+    addToCart(selectedBook, quantity);
     handleCloseBookModal();
-  };
+  }, [addToCart, selectedBook, quantity, handleCloseBookModal]);
 
-  const fetchProjects = async () => {
+  const fetchProjects = useCallback(async () => {
     try {
       setLoading(true);
       const response = await axios.get("http://localhost:5000/api/v1/portfolio");
@@ -69,9 +261,9 @@ export default function Portfolio() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const fetchBooks = async () => {
+  const fetchBooks = useCallback(async () => {
     try {
       setLoading(true);
       const response = await axios.get("http://localhost:5000/api/v1/books");
@@ -82,9 +274,9 @@ export default function Portfolio() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const fetchBookReviews = async (bookId) => {
+  const fetchBookReviews = useCallback(async (bookId) => {
     try {
       const response = await axios.get(`http://localhost:5000/api/v1/books/${bookId}/reviews`);
       setReviews(response.data || []);
@@ -92,9 +284,9 @@ export default function Portfolio() {
       console.log("Error fetching reviews:", error);
       toast.error("Failed to load reviews. Please try again later.");
     }
-  };
+  }, []);
 
-  const handleAddReview = async () => {
+  const handleAddReview = useCallback(async () => {
     try {
       const token = localStorage.getItem('token');
       if (!token) {
@@ -136,9 +328,9 @@ export default function Portfolio() {
       const errorMessage = error.response?.data?.message || "Failed to add review. Please try again.";
       toast.error(errorMessage);
     }
-  };
+  }, [selectedBook, newReview, reviews]);
 
-  const handleDeleteReview = async (reviewId) => {
+  const handleDeleteReview = useCallback(async (reviewId) => {
     try {
       const token = localStorage.getItem('token');
       if (!token) {
@@ -168,11 +360,31 @@ export default function Portfolio() {
       const errorMessage = error.response?.data?.message || "Failed to delete review. Please try again.";
       toast.error(errorMessage);
     }
-  };
+  }, [selectedBook, reviews]);
+
+  // Memoize the filtered and sorted data
+  const memoizedProjects = useMemo(() => projects, [projects]);
+  const memoizedBooks = useMemo(() => books, [books]);
 
   useEffect(() => {
     fetchProjects();
     fetchBooks();
+  }, [fetchProjects, fetchBooks]);
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      axios.get('http://localhost:5000/api/v1/users/me', {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      .then(response => {
+        setUser(response.data);
+      })
+      .catch(error => {
+        console.log("Error fetching user:", error);
+        toast.error("Failed to load user information. Please try again later.");
+      });
+    }
   }, []);
 
   return (
@@ -181,7 +393,7 @@ export default function Portfolio() {
       sx={{
         bgcolor: "#F4FAFD",
         position: "relative",
-        padding: { xs: "60px 0", md: "80px 0" },
+        padding: { xs: "20px 0", md: "30px 0" },
         overflow: "hidden",
       }}
     >
@@ -193,7 +405,8 @@ export default function Portfolio() {
             position: "relative",
             fontFamily: "Raleway",
             fontWeight: "600",
-            mb: { xs: "80px", md: "50px" },
+            mt: 0,
+            mb: { xs: "20px", md: "25px" },
             fontSize: { xs: "2rem", md: "2.5rem" },
             "&::after": {
               content: '""',
@@ -221,16 +434,7 @@ export default function Portfolio() {
                 sx={{ 
                   textAlign: 'center', 
                   ml: {xs:'20%', md:'35%'}, 
-                  mr: {xs:'10%', md:'35%' },
-                  '& .MuiTabs-indicator': {
-                    transition: 'all 0.6s ease'
-                  },
-                  '& .MuiTab-root': {
-                    transition: 'all 0.6s ease',
-                    '&.Mui-selected': {
-                      transform: 'scale(1.05)'
-                    }
-                  }
+                  mr: {xs:'10%', md:'35%' }
                 }}
               >
                 <Tab label="Projects" value="1" />
@@ -241,147 +445,31 @@ export default function Portfolio() {
               value="1" 
               sx={{ 
                 p: 0,
-                opacity: value === '1' ? 1 : 0,
-                transition: 'opacity 0.6s ease',
-                mt: 2
+                mt: 2,
+                display: 'block'
               }}
             >
-              <Grid container spacing={2}>
-                {projects.map((project, index) => (
-                  <Grid item xs={12} sm={6} md={4} key={project._id}
-                  data-aos="fade-up"
-                  data-aos-delay={index * 100}
-                  >
-                    <Card
-                      sx={{
-                        cursor: 'pointer',
-                        minHeight: '250px',
-                        width: '350px',
-                        position: 'relative',
-                        boxShadow: "rgba(17, 17, 26, 0.1) 0px 4px 16px, rgba(17, 17, 26, 0.05) 0px 8px 32px",
-                        '&:hover': {
-                          transform: 'scale(1.05)',
-                          boxShadow: "rgba(0, 0, 0, 0.25) 0px 14px 28px, rgba(0, 0, 0, 0.22) 0px 10px 10px"
-                        },
-                        '&:hover .overlay': {
-                          opacity: 1
-                        },
-                        transition: 'all 0.6s ease'
-                      }}
-                      onClick={() => handleProjectClick(project)}
-                    >
-                      <CardMedia
-                        component="img"
-                        height="200"
-                        image={project.image || 'https://via.placeholder.com/300x200?text=No+Image'}
-                        alt={project.title}
-                        sx={{
-                          objectFit: 'cover',
-                          width: '100%',
-                          height: '250px',
-                          objectPosition: 'center'
-                        }}
-                      />
-                      <Box
-                        className="overlay"
-                        sx={{
-                          position: 'absolute',
-                          top: 0,
-                          left: 0,
-                          width: '100%',
-                          height: '100%',
-                          bgcolor: 'rgba(0, 0, 0, 0.5)',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          opacity: 0,
-                          transition: 'opacity 0.2s',
-                          color: 'white',
-                          textAlign: 'center',
-                          p: 2
-                        }}
-                      >
-                        <ZoomInIcon sx={{ fontSize: 40, mb: 1 }} />
-                        <Typography variant="subtitle1">Click to View Details</Typography>
-                      </Box>
-                    </Card>
-                  </Grid>
-                ))}
-              </Grid>
+              <PaginatedGrid 
+                items={memoizedProjects} 
+                renderItem={(project) => (
+                  <ProjectCard project={project} onClick={handleProjectClick} />
+                )}
+              />
             </TabPanel>
             <TabPanel 
               value="2" 
               sx={{ 
                 p: 0,
-                opacity: value === '2' ? 1 : 0,
-                transition: 'opacity 0.3s ease',
-                mt: 2
+                mt: 2,
+                display: 'block'
               }}
             >
-              <Grid container spacing={2}>
-                {books.map((book, index) => (
-                  <Grid item xs={12} sm={6} md={4} key={book._id}
-                  data-aos="fade-up"
-                  data-aos-delay={index * 100}
-                  >
-                    <Card
-                      sx={{
-                        cursor: 'pointer',
-                        minHeight: '250px',
-                        width: '350px',
-                        position: 'relative',
-                        boxShadow: "rgba(17, 17, 26, 0.1) 0px 4px 16px, rgba(17, 17, 26, 0.05) 0px 8px 32px",
-                        '&:hover': {
-                          transform: 'scale(1.05)',
-                          boxShadow: "rgba(0, 0, 0, 0.25) 0px 14px 28px, rgba(0, 0, 0, 0.22) 0px 10px 10px"
-                        },
-                        '&:hover .overlay': {
-                          opacity: 1
-                        },
-                        transition: 'all 0.6s ease'
-                      }}
-                      onClick={() => handleBookClick(book)}
-                    >
-                      <CardMedia
-                        component="img"
-                        height="250"
-                        image={book.image || 'https://via.placeholder.com/300x200?text=No+Image'}
-                        alt={book.title}
-                        sx={{
-                          objectFit: 'cover',
-                          width: '100%',
-                          height: '250px',
-                          objectPosition: 'center'
-                        }}
-                      />
-                      <Box
-                        className="overlay"
-                        sx={{
-                          position: 'absolute',
-                          top: 0,
-                          left: 0,
-                          width: '100%',
-                          height: '100%',
-                          bgcolor: 'rgba(0, 0, 0, 0.5)',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          opacity: 0,
-                          transition: 'opacity 0.2s',
-                          color: 'white',
-                          textAlign: 'center',
-                          p: 2
-                        }}
-                      >
-                        <ZoomInIcon sx={{ fontSize: 40, mb: 1 }} />
-                        <Typography variant="subtitle1">Click to View Details</Typography>
-                      </Box>
-                    </Card>
-                  </Grid>
-                ))}
-              </Grid>
+              <PaginatedGrid 
+                items={memoizedBooks} 
+                renderItem={(book) => (
+                  <BookCard book={book} onClick={handleBookClick} />
+                )}
+              />
             </TabPanel>
           </TabContext>
         )}
@@ -389,246 +477,230 @@ export default function Portfolio() {
 
       {/* Project Modal */}
       <Dialog
-        open={!!selectedProject}
+        open={Boolean(selectedProject)}
         onClose={handleCloseProjectModal}
         maxWidth="md"
         fullWidth
+        TransitionComponent={Fade}
+        TransitionProps={{ timeout: 400 }}
       >
-        <DialogContent>
-          <IconButton
-            onClick={handleCloseProjectModal}
-            sx={{ position: 'absolute', right: 8, top: 8 }}
-          >
-            <CloseIcon />
-          </IconButton>
-          {selectedProject && (
-            <Grid container spacing={3}>
-              <Grid item xs={12} md={6}>
-                <img
-                  src={selectedProject.image}
-                  alt={selectedProject.title}
-                  style={{ width: '100%', height: 'auto' }}
-                />
-              </Grid>
-              <Grid item xs={12} md={6}>
-                <Typography variant="h4" gutterBottom fontFamily="Raleway" fontWeight="600" textAlign={"center"}>{selectedProject.title}</Typography>
-                <Typography variant="subtitle1" color="text.secondary" gutterBottom fontFamily="Raleway" fontWeight="600">
-                  Category: {selectedProject.category}
+        {selectedProject && (
+          <DialogContent sx={{ p: 0, position: 'relative' }}>
+            <IconButton
+              onClick={handleCloseProjectModal}
+              sx={{
+                position: 'absolute',
+                right: 8,
+                top: 8,
+                color: 'grey.500',
+                zIndex: 1,
+                bgcolor: 'white',
+                '&:hover': {
+                  bgcolor: 'grey.200',
+                },
+              }}
+            >
+              <CloseIcon />
+            </IconButton>
+            <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' } }}>
+              <Box
+                component="img"
+                src={selectedProject.image || 'https://via.placeholder.com/600x400?text=No+Image'}
+                alt={selectedProject.title}
+                sx={{
+                  width: { xs: '100%', md: '50%' },
+                  height: { xs: '300px', md: 'auto' },
+                  objectFit: 'cover',
+                }}
+              />
+              <Box sx={{ p: 3, flex: 1 }}>
+                <Typography variant="h5" component="h2" gutterBottom>
+                  {selectedProject.title}
                 </Typography>
-                <Typography variant="p" component="h6" fontFamily="Raleway" paragraph>
-                  Description: <br />
-                  <span style={{ marginLeft: "10px", fontStyle: "italic" }}>
-                    <b>" </b>{selectedProject.description}<b> "</b>
-                  </span>
+                <Typography variant="body1" color="text.secondary" paragraph>
+                  {selectedProject.description}
                 </Typography>
-                <Typography variant="subtitle1" gutterBottom fontFamily="Raleway" fontWeight="600" fontStyle={"italic"}>Skills Used:</Typography>
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                  {selectedProject.skillsUsed.map((skill, index) => (
-                    <Typography
-                      key={index}
-                      sx={{
-                        bgcolor: '#e3f2fd',
-                        px: 2,
-                        py: 1,
-                        borderRadius: 1,
-                        fontFamily: "Raleway",
-                        cursor: "pointer",
-                        transition: "all 0.3s ease",
-                        fontWeight: "600",
-                        "&:hover": {
-                          bgcolor: "#292F37",
-                          color: "#e3f2fd"
-                        }
-                      }}
-                    >
-                      {skill}
+                {selectedProject.technologies && (
+                  <Box sx={{ mt: 2 }}>
+                    <Typography variant="subtitle1" gutterBottom>
+                      Technologies Used:
                     </Typography>
-                  ))}
-                </Box>
-              </Grid>
-            </Grid>
-          )}
-        </DialogContent>
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                      {selectedProject.technologies.map((tech, index) => (
+                        <Box
+                          key={index}
+                          sx={{
+                            bgcolor: '#f0f0f0',
+                            px: 1.5,
+                            py: 0.5,
+                            borderRadius: 1,
+                            fontSize: '0.875rem',
+                          }}
+                        >
+                          {tech}
+                        </Box>
+                      ))}
+                    </Box>
+                  </Box>
+                )}
+                {selectedProject.link && (
+                  <Button
+                    variant="contained"
+                    href={selectedProject.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    sx={{ mt: 2 }}
+                  >
+                    View Project
+                  </Button>
+                )}
+              </Box>
+            </Box>
+          </DialogContent>
+        )}
       </Dialog>
 
       {/* Book Modal */}
       <Dialog
-        open={!!selectedBook}
+        open={Boolean(selectedBook)}
         onClose={handleCloseBookModal}
         maxWidth="md"
         fullWidth
-        PaperProps={{
-          sx: {
-            maxHeight: '90vh',
-            overflow: 'hidden',
-            '@media (max-width: 600px)': {
-              maxHeight: '100vh',
-              margin: 0,
-              borderRadius: 0
-            }
-          }
-        }}
+        TransitionComponent={Fade}
+        TransitionProps={{ timeout: 400 }}
       >
-        <DialogContent sx={{ p: 0, height: '90vh', overflow: 'hidden' }}>
-          <IconButton
-            onClick={handleCloseBookModal}
-            sx={{ position: 'absolute', right: 8, top: 8, zIndex: 1 }}
-          >
-            <CloseIcon />
-          </IconButton>
-          {selectedBook && (
-            <Grid container sx={{ height: '100%' }}>
-              <Grid item xs={12} md={6} sx={{ 
-                height: '100%',
-                position: 'sticky',
-                top: 0,
-                bgcolor: 'background.paper',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                overflow: 'hidden'
-              }}>
-                <Box sx={{
-                  width: '100%',
-                  height: '100%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  p: 2
-                }}>
-                  <CardMedia
-                    component="img"
-                    image={selectedBook.image || 'https://via.placeholder.com/300x200?text=No+Image'}
-                    alt={selectedBook.title}
-                    sx={{ 
-                      width: '100%',
-                      height: '100%',
-                      objectFit: 'contain'
-                    }}
-                  />
-                </Box>
-              </Grid>
-              <Grid item xs={12} md={6} sx={{ 
-                height: '100%',
-                overflowY: 'auto',
-                p: 3,
-                '@media (max-width: 600px)': {
-                  p: 2,
-                  height: 'calc(100% - 40vh)'
-                }
-              }}>
-                <Typography variant="h4" gutterBottom fontFamily="Raleway" fontWeight="600">
+        {selectedBook && (
+          <DialogContent sx={{ p: 0, position: 'relative' }}>
+            <IconButton
+              onClick={handleCloseBookModal}
+              sx={{
+                position: 'absolute',
+                right: 8,
+                top: 8,
+                color: 'grey.500',
+                zIndex: 1,
+                bgcolor: 'white',
+                '&:hover': {
+                  bgcolor: 'grey.200',
+                },
+              }}
+            >
+              <CloseIcon />
+            </IconButton>
+            <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' } }}>
+              <Box
+                component="img"
+                src={selectedBook.image || 'https://via.placeholder.com/600x400?text=No+Image'}
+                alt={selectedBook.title}
+                sx={{
+                  width: { xs: '100%', md: '40%' },
+                  height: { xs: '300px', md: 'auto' },
+                  objectFit: 'cover',
+                }}
+              />
+              <Box sx={{ p: 3, flex: 1 }}>
+                <Typography variant="h5" component="h2" gutterBottom>
                   {selectedBook.title}
                 </Typography>
-                <Typography variant="h6" color="text.secondary" gutterBottom fontFamily="Raleway" fontWeight="600" >
-                  by {selectedBook.author}
-                </Typography>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                  <Rating 
-                    value={selectedBook.averageRating} 
-                    readOnly 
-                    precision={0.5}
-                    sx={{ color: '#FFD700' }}
-                  />
-                  <Typography variant="body2" color="text.secondary" sx={{ ml: 1 }} fontFamily="Raleway" fontWeight="600">
-                    ({reviews.length} reviews)
-                  </Typography>
-                </Box>
-                <Typography variant="body1" paragraph fontFamily="Raleway" fontWeight="600">
+                <Typography variant="body1" color="text.secondary" paragraph>
                   {selectedBook.description}
                 </Typography>
-                <Typography variant="h5" color="primary" gutterBottom fontFamily="Raleway" fontWeight="600">
-                  Rs.{selectedBook.price}
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                  <Rating value={selectedBook.averageRating || 0} precision={0.5} readOnly />
+                  <Typography variant="body2" color="text.secondary" sx={{ ml: 1 }}>
+                    ({selectedBook.averageRating ? selectedBook.averageRating.toFixed(1) : '0'} / 5)
+                  </Typography>
+                </Box>
+                <Typography variant="h6" color="primary" gutterBottom>
+                  ${selectedBook.price}
                 </Typography>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                  <Typography variant="body2" sx={{ mr: 2 }}>
+                    Quantity:
+                  </Typography>
                   <TextField
                     type="number"
-                    label="Quantity"
                     value={quantity}
                     onChange={handleQuantityChange}
                     inputProps={{ min: 1, max: selectedBook.countInStock }}
-                    sx={{ width: '100px', mr: 2 }}
+                    sx={{ width: '80px' }}
+                    size="small"
                   />
-                  <Button
-                    variant="contained"
-                    startIcon={<ShoppingCartIcon />}
-                    onClick={handleAddToCart}
-                    disabled={selectedBook.countInStock === 0}
-                  >
-                    Add to Cart
-                  </Button>
                 </Box>
-
-                {/* Reviews Section */}
-                <Divider sx={{ my: 3 }} />
+                <Button
+                  variant="contained"
+                  startIcon={<ShoppingCartIcon />}
+                  onClick={handleAddToCart}
+                  disabled={selectedBook.countInStock <= 0}
+                  sx={{ mb: 2 }}
+                >
+                  Add to Cart
+                </Button>
+                <Divider sx={{ my: 2 }} />
                 <Typography variant="h6" gutterBottom>
                   Reviews
                 </Typography>
-
-                {/* Add Review Form */}
-                <Box sx={{ mb: 3, p: 2, bgcolor: 'background.paper', borderRadius: 1 }}>
-                  <Typography variant="subtitle1" gutterBottom>
-                    Add a Review
+                {reviews.length === 0 ? (
+                  <Typography variant="body2" color="text.secondary">
+                    No reviews yet. Be the first to review this book!
                   </Typography>
+                ) : (
+                  <Stack spacing={2}>
+                    {reviews.map((review) => (
+                      <Box key={review._id} sx={{ p: 2, bgcolor: 'background.paper', borderRadius: 1 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                            <Avatar src={review.userId?.profilePic} alt={review.userId?.name} sx={{ mr: 1 }} />
+                            <Box>
+                              <Typography variant="subtitle2">
+                                {review.userId?.name || 'Anonymous'}
+                              </Typography>
+                              <Rating value={review.rating} size="small" readOnly />
+                            </Box>
+                          </Box>
+                          {user && (user._id === review.userId?._id || user.role === 'admin') && (
+                            <IconButton 
+                              onClick={() => handleDeleteReview(review._id)}
+                              size="small"
+                              sx={{ color: 'error.main' }}
+                            >
+                              <DeleteIcon />
+                            </IconButton>
+                          )}
+                        </Box>
+                        <Typography variant="body2">{review.comment}</Typography>
+                      </Box>
+                    ))}
+                  </Stack>
+                )}
+                <Divider sx={{ my: 2 }} />
+                <Box sx={{ mt: 2 }}>
+                  <Typography variant="h6" gutterBottom>Add a Review</Typography>
                   <Rating
                     value={newReview.rating}
-                    onChange={(event, newValue) => {
-                      setNewReview({ ...newReview, rating: newValue });
-                    }}
-                    sx={{ mb: 2, color: '#FFD700' }}
+                    onChange={(_, value) => setNewReview(prev => ({ ...prev, rating: value }))}
+                    sx={{ mb: 1 }}
                   />
                   <TextField
                     fullWidth
                     multiline
                     rows={3}
-                    label="Your Review"
                     value={newReview.comment}
-                    onChange={(e) => setNewReview({ ...newReview, comment: e.target.value })}
+                    onChange={(e) => setNewReview(prev => ({ ...prev, comment: e.target.value }))}
+                    placeholder="Write your review here..."
                     sx={{ mb: 2 }}
                   />
-                  <Button
-                    variant="contained"
-                    onClick={handleAddReview}
-                    disabled={!newReview.rating || !newReview.comment}
-                  >
+                  <Button variant="contained" onClick={handleAddReview}>
                     Submit Review
                   </Button>
                 </Box>
-
-                {/* Reviews List */}
-                <Stack spacing={2}>
-                  {reviews.map((review) => (
-                    <Box key={review._id} sx={{ p: 2, bgcolor: 'background.paper', borderRadius: 1 }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                          <Avatar src={review.user?.profilePicture} sx={{ mr: 1 }} />
-                          <Box>
-                            <Typography variant="subtitle1">
-                              {review.user?.name || 'Anonymous'}
-                            </Typography>
-                            <Rating value={review.rating} readOnly size="small" sx={{ color: '#FFD700' }} />
-                          </Box>
-                        </Box>
-                        {review.user?._id === localStorage.getItem('userId') && (
-                          <IconButton 
-                            onClick={() => handleDeleteReview(review._id)}
-                            sx={{ color: 'error.main' }}
-                          >
-                            <DeleteIcon />
-                          </IconButton>
-                        )}
-                      </Box>
-                      <Typography variant="body2" color="text.secondary">
-                        {review.comment}
-                      </Typography>
-                    </Box>
-                  ))}
-                </Stack>
-              </Grid>
-            </Grid>
-          )}
-        </DialogContent>
+              </Box>
+            </Box>
+          </DialogContent>
+        )}
       </Dialog>
     </Box>
   );
-};
+});
+
+export default Portfolio;

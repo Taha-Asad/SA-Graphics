@@ -1,8 +1,8 @@
-import { Button, Container, Grid, IconButton, InputAdornment, Paper, TextField, Typography } from '@mui/material';
+import { Button, Container, Grid, IconButton, InputAdornment, Paper, TextField, Typography, Box } from '@mui/material';
 import React, { useState, useContext } from 'react';
 import { MdVisibility, MdVisibilityOff } from 'react-icons/md';
 import { Link, useNavigate } from 'react-router-dom';
-import { toast, ToastContainer } from 'react-toastify';
+import { toast } from 'react-toastify';
 import { AuthContext } from '../../context/AuthContext';
 import axios from 'axios';
 
@@ -59,116 +59,75 @@ const Login = () => {
 
     const handleChange = (event) => {
         const { name, value } = event.target;
-        
-        // Update user data
-        setUser(prev => ({
-            ...prev,
-            [name]: value
-        }));
-        
-        // Validate and update errors
+        setUser(prev => ({ ...prev, [name]: value }));
         setErrors(prev => ({
             ...prev,
             [name]: validateField(name, value)
         }));
     };
 
-    const validateForm = () => {
-        const newErrors = {
-            email: validateField('email', user.email),
-            password: validateField('password', user.password)
-        };
-        
-        setErrors(newErrors);
-        
-        return !newErrors.email && !newErrors.password;
-    };
-
     const handleSubmit = async (event) => {
         event.preventDefault();
-      
-        if (!validateForm()) {
-          toast.error("Please fix the form errors");
-          return;
-        }
-      
-        setIsSubmitting(true);
-      
-        try {
-          console.log("Attempting login for:", user.email);
-          
-          // Log the exact request data
-          const requestData = {
-            email: user.email.trim(),
-            password: user.password
-          };
-          console.log("Request data:", requestData);
-      
-          const response = await axios.post("http://localhost:5000/api/v1/login", requestData, {
-            headers: {
-              'Content-Type': 'application/json'
-            }
-          });
-      
-          console.log("Full response:", response);
-          console.log("Login response data:", response.data);
-      
-          const { token, user: userData } = response.data;
-      
-          if (!token || !userData) {
-            console.error("Invalid response structure:", response.data);
-            throw new Error("Invalid response from server");
-          }
 
-          // Log the user data before storing
-          console.log("User data before login:", userData);
-      
-          // Store authentication data
-          login(token, userData);
-      
-          toast.success("Login successful!");
-          
-          // Redirect based on user role
-          if (userData.role === "admin") {
-            setTimeout(() => navigate("/admin"), 1500);
-          } else {
-            setTimeout(() => navigate("/"), 1500);
-          }
-      
+        // Validate all fields before submission
+        const emailError = validateField('email', user.email);
+        const passwordError = validateField('password', user.password);
+
+        if (emailError || passwordError) {
+            setErrors({
+                email: emailError,
+                password: passwordError
+            });
+            return;
+        }
+
+        setIsSubmitting(true);
+
+        try {
+            console.log('🔑 Login attempt with:', {
+                email: user.email,
+                password: '***'
+            });
+
+            const response = await axios.post(
+                "http://localhost:5000/api/v1/login",
+                user
+            );
+
+            console.log('✅ Login response:', response.data);
+
+            if (response.data.token) {
+                login(response.data.token, response.data.data.user);
+                toast.success("Login successful!");
+                navigate("/");
+            } else {
+                throw new Error("Login failed - no token received");
+            }
+
         } catch (error) {
-          console.error("Login error details:", {
-            message: error.message,
-            response: error.response?.data,
-            status: error.response?.status
-          });
-          
-          // Handle different types of errors
-          if (error.response) {
-            // Server responded with an error
-            const errorMessage = error.response.data.message || "Invalid email or password";
-            console.log("Server error response:", error.response.data);
+            console.error('❌ Login error:', {
+                message: error.message,
+                response: error.response?.data,
+                status: error.response?.status
+            });
+
+            const errorMessage = error.response?.data?.message || "Login failed";
             toast.error(errorMessage);
-          } else if (error.request) {
-            // No response received
-            console.log("Network error: No response received");
-            toast.error("Unable to connect to server. Please try again later.");
-          } else {
-            // Other errors
-            console.log("Other error:", error.message);
-            toast.error(error.message || "An error occurred. Please try again.");
-          }
         } finally {
-          setIsSubmitting(false);
+            setIsSubmitting(false);
         }
     };
 
     return (
         <Grid
             container
+            component="main"
             sx={{
-                width: '100%',
-                height: '100%',
-                position: 'relative'
+                height: '80vh',
+                bgcolor: "#F4FAFD",
+                padding: { xs: "60px 20px", md: "80px 40px" },
+                position: 'relative',
+                marginTop: { xs: "40px", sm: "60px" }
             }}
         >
             <Grid
@@ -176,92 +135,120 @@ const Login = () => {
                 xs={12}
                 sm={8}
                 md={5}
-                position="absolute"
-                top="30%"
-                left="30%"
-                height="60vh"
                 component={Paper}
                 elevation={6}
-                square
+                square={false}
+                sx={{
+                    margin: 'auto',
+                    padding: { xs: '20px', sm: '30px', md: '40px' },
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: '#ffffff',
+                    boxShadow: '0 8px 24px rgba(0, 0, 0, 0.1)'
+                }}
             >
-                <Container maxWidth="sm" component="form" onSubmit={handleSubmit} noValidate>
-                    <Typography component="h1" variant="h4" textAlign="center" mt="30px">
+                <Box
+                    sx={{
+                        width: '100%',
+                        maxWidth: 400,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center'
+                    }}
+                >
+                    <Typography 
+                        variant="h5" 
+                        component="h1" 
+                        color={"#656565"} 
+                        gutterBottom
+                        sx={{ mb: 4 }}
+                    >
                         Sign In
                     </Typography>
-                    
-                    <TextField
-                        margin="normal"
-                        name="email"
-                        placeholder="Email"
-                        type="email"
-                        label="Email Address"
-                        autoComplete="email"
-                        autoFocus
-                        fullWidth
-                        required
-                        value={user.email}
-                        onChange={handleChange}
-                        onBlur={() => setErrors(prev => ({
-                            ...prev,
-                            email: validateField('email', user.email)
-                        }))}
-                        error={Boolean(errors.email)}
-                        helperText={errors.email}
-                    />
-                    
-                    <TextField
-                        margin="normal"
-                        name="password"
-                        type={showPassword ? "text" : "password"}
-                        fullWidth
-                        placeholder="Password"
-                        label="Password"
-                        required
-                        value={user.password}
-                        onChange={handleChange}
-                        onBlur={() => setErrors(prev => ({
-                            ...prev,
-                            password: validateField('password', user.password)
-                        }))}
-                        error={Boolean(errors.password)}
-                        helperText={errors.password}
-                        InputProps={{
-                            endAdornment: (
-                                <InputAdornment position="end">
-                                    <IconButton 
-                                        onClick={() => setShowPassword(prev => !prev)}
-                                        edge="end"
-                                    >
-                                        {showPassword ? <MdVisibilityOff /> : <MdVisibility />}
-                                    </IconButton>
-                                </InputAdornment>
-                            ),
-                        }}
-                    />
-                    
-                    <Button
-                        type="submit"
-                        variant="contained"
-                        sx={{ mt: 3, mb: 2, py: 1.5 }}
-                        disabled={isSubmitting}
-                        fullWidth
-                    >
-                        {isSubmitting ? 'Signing In...' : 'Sign In'}
-                    </Button>
 
-                    <Typography variant='h6' textAlign={'center'}>
-                        Don't have an account? <Link to={"/register"} style={{color:'#149ddd'}} >Sign Up</Link>
-                    </Typography>
-                    <Typography variant='h6' textAlign={'center'}>
-                        Forgot Password? <Link to={"/forgot-password"} style={{color:'#149ddd'}} >Click Here</Link>
-                    </Typography>
-                    <Typography variant='h6' textAlign={'center'} sx={{ mt: 2 }}>
-                        <Link to={"/"} style={{color:'#149ddd', textDecoration: 'none'}} >
-                            ← Back to Home
-                        </Link>
-                    </Typography>
-                </Container>
-                <ToastContainer/>
+                    <Box component="form" onSubmit={handleSubmit} noValidate sx={{ width: '100%' }}>
+                        <TextField
+                            margin="normal"
+                            required
+                            fullWidth
+                            name="email"
+                            label="Email Address"
+                            type="email"
+                            autoComplete="email"
+                            autoFocus
+                            value={user.email}
+                            onChange={handleChange}
+                            error={!!errors.email}
+                            helperText={errors.email}
+                        />
+                        
+                        <TextField
+                            margin="normal"
+                            required
+                            fullWidth
+                            name="password"
+                            label="Password"
+                            type={showPassword ? "text" : "password"}
+                            autoComplete="current-password"
+                            value={user.password}
+                            onChange={handleChange}
+                            error={!!errors.password}
+                            helperText={errors.password}
+                            InputProps={{
+                                endAdornment: (
+                                    <InputAdornment position="end">
+                                        <IconButton
+                                            aria-label="toggle password visibility"
+                                            onClick={() => setShowPassword(!showPassword)}
+                                            edge="end"
+                                        >
+                                            {showPassword ? <MdVisibilityOff /> : <MdVisibility />}
+                                        </IconButton>
+                                    </InputAdornment>
+                                ),
+                            }}
+                        />
+
+                        <Button
+                            type="submit"
+                            fullWidth
+                            variant="contained"
+                            sx={{ 
+                                mt: 3, 
+                                mb: 2,
+                                backgroundColor: '#149ddd',
+                                '&:hover': {
+                                    backgroundColor: '#1187c1'
+                                }
+                            }}
+                            disabled={isSubmitting}
+                        >
+                            {isSubmitting ? 'Signing In...' : 'Sign In'}
+                        </Button>
+
+                        <Grid container justifyContent="center" spacing={2}>
+                            <Grid item xs={12}>
+                                <Typography variant='h6' textAlign={'center'}>
+                                    Don't have an account? <Link to={"/register"} style={{color:'#149ddd'}} >Sign Up</Link>
+                                </Typography>
+                            </Grid>
+                            <Grid item xs={12}>
+                                <Typography variant='h6' textAlign={'center'}>
+                                    Forgot Password? <Link to={"/forgot-password"} style={{color:'#149ddd'}} >Click Here</Link>
+                                </Typography>
+                            </Grid>
+                            <Grid item xs={12}>
+                                <Typography variant='h6' textAlign={'center'}>
+                                    <Link to={"/"} style={{color:'#149ddd', textDecoration: 'none'}} >
+                                        ← Back to Home
+                                    </Link>
+                                </Typography>
+                            </Grid>
+                        </Grid>
+                    </Box>
+                </Box>
             </Grid>
         </Grid>
     );

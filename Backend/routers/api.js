@@ -15,9 +15,14 @@ const {
   registerSchema,
   loginSchema,
   forgotPasswordSchema,
-  resetPasswordSchema
+  resetPasswordSchema,
+  updateProfileSchema
 } = require("../validations/userValidations");
 const { createContact } = require("../Controllers/contact.controller.js");
+const { updateProfile } = require('../Controllers/auth.controller');
+const orderRoutes = require('./order.routes');
+const wishlistController = require('../Controllers/wishlist.controller');
+const supportController = require('../Controllers/support.controller');
 
 // Auth Routes
 router.post(
@@ -31,6 +36,18 @@ router.post(
   "/login",
   validateJoi(loginSchema),
   authController.loginUser
+);
+
+router.post(
+  "/auth/logout",
+  authMiddleware,
+  authController.logout
+);
+
+router.post(
+  "/auth/change-password",
+  authMiddleware,
+  authController.changePassword
 );
 
 router.put(
@@ -90,20 +107,7 @@ router.delete(
 );
 
 // Order Routes
-router.post("/orders", authMiddleware, orderController.createOrder);
-
-router.post("/orders/:id/pay", authMiddleware, orderController.processPayment);
-
-router.get("/orders", authMiddleware, orderController.getUserOrders);
-
-router.get("/orders/:id", authMiddleware, orderController.getOrderById);
-
-router.put(
-  "/orders/:id/status",
-  authMiddleware,
-  adminMiddleware,
-  orderController.updateOrderStatus
-);
+router.use('/orders', orderRoutes);
 
 // Portfolio Routes
 router.post(
@@ -164,6 +168,21 @@ router.delete("/books/:bookId/reviews/:reviewId", authMiddleware, reviewsControl
 
 // contact routes
 router.post('/contact' , createContact);
+
+// User routes
+router.put('/update-profile', authMiddleware, validateJoi(updateProfileSchema), authController.updateProfile);
+
+// Wishlist routes
+router.get('/wishlist', authMiddleware, wishlistController.getWishlist);
+router.post('/wishlist', authMiddleware, wishlistController.addToWishlist);
+router.delete('/wishlist/:bookId', authMiddleware, wishlistController.removeFromWishlist);
+router.delete('/wishlist', authMiddleware, wishlistController.clearWishlist);
+
+// Support routes
+router.post('/support', authMiddleware, supportController.createSupportTicket);
+router.get('/support/tickets', authMiddleware, supportController.getUserTickets);
+router.get('/support/admin/tickets', authMiddleware, adminMiddleware, supportController.getAllTickets);
+router.put('/support/admin/tickets/:ticketId', authMiddleware, adminMiddleware, supportController.updateTicketStatus);
 
 // Error handling middleware
 router.use(errorHandler);

@@ -15,7 +15,8 @@ const Register = () => {
         name: '',
         email: '',
         phoneNo: '',
-        password: ''
+        password: '',
+        address: ''
     });
 
     const [user, setUser] = useState({
@@ -23,6 +24,7 @@ const Register = () => {
         email: "",
         password: "",
         phoneNo: "",
+        address: "",
         profilePhoto: null
     });
 
@@ -65,6 +67,12 @@ const Register = () => {
                 }
                 break;
 
+            case 'address':
+                if (value && value.length > 200) {
+                    error = 'Address cannot exceed 200 characters';
+                }
+                break;
+
             default:
                 break;
         }
@@ -77,7 +85,8 @@ const Register = () => {
             name: validateField('name', user.name),
             email: validateField('email', user.email),
             phoneNo: validateField('phoneNo', user.phoneNo),
-            password: validateField('password', user.password)
+            password: validateField('password', user.password),
+            address: validateField('address', user.address)
         };
 
         setErrors(newErrors);
@@ -142,6 +151,7 @@ const Register = () => {
             formData.append('email', user.email);
             formData.append('password', user.password);
             formData.append('phoneNo', user.phoneNo);
+            formData.append('address', user.address);
             if (user.profilePhoto) {
                 formData.append('profilePhoto', user.profilePhoto);
             }
@@ -188,8 +198,9 @@ const Register = () => {
             sx={{
                 height: '80vh',
                 bgcolor: "#F4FAFD",
-                padding: { xs: "60px 0", md: "80px 0" },
-                position: 'relative'
+                padding: { xs: "60px 20px", md: "80px 40px" },
+                position: 'relative',
+                marginTop: { xs: "40px", sm: "60px" }
             }}
         >
             <Grid
@@ -199,14 +210,16 @@ const Register = () => {
                 md={5}
                 component={Paper}
                 elevation={6}
-                square
+                square={false}
                 sx={{
                     margin: 'auto',
-                    padding: '20px',
+                    padding: { xs: '20px', sm: '30px', md: '40px' },
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
-                    justifyContent: 'center'
+                    justifyContent: 'center',
+                    backgroundColor: '#ffffff',
+                    boxShadow: '0 8px 24px rgba(0, 0, 0, 0.1)'
                 }}
             >
                 <Box
@@ -308,6 +321,20 @@ const Register = () => {
                             onChange={handleChange}
                             error={!!errors.phoneNo}
                             helperText={errors.phoneNo}
+                        />
+
+                        <TextField
+                            margin="normal"
+                            required
+                            fullWidth
+                            name="address"
+                            label="Address"
+                            multiline
+                            rows={3}
+                            value={user.address}
+                            onChange={handleChange}
+                            error={!!errors.address}
+                            helperText={errors.address}
                         />
 
                         <TextField

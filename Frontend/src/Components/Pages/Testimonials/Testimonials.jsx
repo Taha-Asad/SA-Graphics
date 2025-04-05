@@ -164,7 +164,7 @@ const Testimonials = () => {
         >
           Testimonials
         </Typography>
-        <Typography variant='p' component="h6" sx={{
+        <Typography variant="body1" component="div" sx={{
           fontFamily: "Raleway",
           fontWeight: "500",
           mb: "80px",
@@ -542,7 +542,6 @@ const Testimonials = () => {
           <AddTestimonial onClose={handleCloseModal} onSubmitted={handleTestimonialSubmitted} />
         </DialogContent>
       </Dialog>
-      <ToastContainer />
     </Box>
   );
 };

@@ -33,6 +33,11 @@ const userSchema = new mongoose.Schema({
       message: 'Please provide a valid 11-digit phone number'
     }
   },
+  address: {
+    type: String,
+    trim: true,
+    maxlength: [200, 'Address cannot exceed 200 characters']
+  },
   profilePic: {
     type: String,
     default: 'default.jpg'

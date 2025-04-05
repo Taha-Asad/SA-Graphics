@@ -52,9 +52,26 @@ const resetPasswordSchema = Joi.object({
   })
 });
 
+const updateProfileSchema = Joi.object({
+  name: Joi.string().max(50).messages({
+    'string.max': 'Name cannot exceed 50 characters'
+  }),
+  email: Joi.string().email().messages({
+    'string.email': 'Please enter a valid email address'
+  }),
+  phone: Joi.string().length(11).pattern(/^[0-9]+$/).messages({
+    'string.length': 'Phone number must be 11 digits',
+    'string.pattern.base': 'Phone number must contain only digits'
+  }),
+  address: Joi.string().max(200).messages({
+    'string.max': 'Address cannot exceed 200 characters'
+  })
+});
+
 module.exports = {
   registerSchema,
   loginSchema,
   forgotPasswordSchema,
-  resetPasswordSchema
+  resetPasswordSchema,
+  updateProfileSchema
 };

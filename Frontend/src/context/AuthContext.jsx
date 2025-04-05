@@ -1,35 +1,65 @@
-import React, { createContext, useState, useEffect, useCallback } from "react";
+import React, { createContext, useState, useEffect, useCallback, useContext } from "react";
+import axios from "axios";
 
 const AuthContext = createContext();
 
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
+  return context;
+};
+
 const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
+  // Validate token and auto-login
   useEffect(() => {
-    try {
-      const token = localStorage.getItem("token");
-      const userData = localStorage.getItem("user");
+    const validateToken = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const userData = localStorage.getItem("user");
 
-      if (token && userData && userData !== "undefined") {
-        const parsedUser = JSON.parse(userData);
-        console.log("User data from storage:", parsedUser);
+        if (!token || !userData) {
+          setLoading(false);
+          return;
+        }
+
+        // Try to parse user data
+        let parsedUser;
+        try {
+          parsedUser = JSON.parse(userData);
+        } catch (error) {
+          console.error("Error parsing user data:", error);
+          localStorage.removeItem("token");
+          localStorage.removeItem("user");
+          setLoading(false);
+          return;
+        }
+
+        // Set up axios default headers
+        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+
         // Ensure user has a role property
         if (!parsedUser.role) {
-          console.warn("User data missing role property");
-          parsedUser.role = "user"; // Default role
+          parsedUser.role = "user";
         }
+
+        // Set the user state
         setUser(parsedUser);
-      } else {
+        setLoading(false);
+      } catch (error) {
+        console.error("Token validation error:", error);
         localStorage.removeItem("token");
         localStorage.removeItem("user");
         setUser(null);
+        setLoading(false);
       }
-    } catch (error) {
-      console.error("Error parsing user data:", error);
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
-      setUser(null);
-    }
+    };
+
+    validateToken();
   }, []);
 
   const login = useCallback((token, userData) => {
@@ -40,30 +70,45 @@ const AuthProvider = ({ children }) => {
 
     // Ensure user has a role property
     if (!userData.role) {
-      console.warn("User data missing role property");
-      userData.role = "user"; // Default role
+      userData.role = "user";
     }
 
-    console.log("Saving User:", userData); // Debugging
+    // Set up axios default headers
+    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+
     localStorage.setItem("token", token);
     localStorage.setItem("user", JSON.stringify(userData));
-
     setUser(userData);
   }, []);
+
+  const updateUser = useCallback((updatedData) => {
+    if (!user) {
+      console.error("No user to update!");
+      return;
+    }
+
+    const updatedUser = {
+      ...user,
+      ...updatedData
+    };
+
+    localStorage.setItem("user", JSON.stringify(updatedUser));
+    setUser(updatedUser);
+  }, [user]);
 
   const logout = useCallback(() => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
+    delete axios.defaults.headers.common['Authorization'];
     setUser(null);
   }, []);
 
-  // Debug user state changes
-  useEffect(() => {
-    console.log("Current user state:", user);
-  }, [user]);
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, login, logout, updateUser, loading }}>
       {children}
     </AuthContext.Provider>
   );

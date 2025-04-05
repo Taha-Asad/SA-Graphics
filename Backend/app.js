@@ -6,6 +6,9 @@ const path = require('path');
 const connectDB = require('./config/db');
 const { transporter } = require('./config/nodemailer.js');
 const createError = require('http-errors');
+const mongoose = require('mongoose');
+const settingsRoutes = require('./routes/settings');
+const orderRoutes = require('./routes/orders');
 
 // Load env vars
 dotenv.config()
@@ -18,10 +21,8 @@ const app = express();
 
 // Middlewares
 app.use(cors({
-  origin: true,
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  origin: ['http://localhost:3000', 'http://localhost:5173'],
+  credentials: true
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -32,12 +33,15 @@ if (process.env.NODE_ENV === 'development') {
 
 // Static files - ensure uploads folder is accessible
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-app.use(express.static(path.join(__dirname, '../Frontend/dist')));
 
 // Routes
 app.use('/api/v1/', require('./routers/api.js'));
+app.use('/api/v1/settings', settingsRoutes);
+app.use('/api/v1/reviews', require('./routes/reviews'));
+app.use('/api/v1/orders', orderRoutes);
 
 // Serve frontend for all other routes
+app.use(express.static(path.join(__dirname, '../Frontend/dist')));
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../Frontend/dist/index.html'));
 });
