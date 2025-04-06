@@ -49,8 +49,6 @@ const Login = () => {
         if (name === 'password') {
             if (!value) {
                 error = 'Password is required';
-            } else if (value.length < 6) {
-                error = 'Password must be at least 6 characters';
             }
         }
         
@@ -97,9 +95,20 @@ const Login = () => {
             console.log('✅ Login response:', response.data);
 
             if (response.data.token) {
-                login(response.data.token, response.data.data.user);
+                // Store token in localStorage
+                localStorage.setItem('token', response.data.token);
+                
+                // Update auth context
+                login(response.data.token, response.data.user);
+                
                 toast.success("Login successful!");
-                navigate("/");
+                
+                // Navigate based on user role
+                if (response.data.user.role === 'admin') {
+                    navigate("/admin/dashboard");
+                } else {
+                    navigate("/");
+                }
             } else {
                 throw new Error("Login failed - no token received");
             }
@@ -111,7 +120,7 @@ const Login = () => {
                 status: error.response?.status
             });
 
-            const errorMessage = error.response?.data?.message || "Login failed";
+            const errorMessage = error.response?.data?.message || "Login failed. Please check your credentials.";
             toast.error(errorMessage);
         } finally {
             setIsSubmitting(false);
@@ -127,7 +136,8 @@ const Login = () => {
                 bgcolor: "#F4FAFD",
                 padding: { xs: "60px 20px", md: "80px 40px" },
                 position: 'relative',
-                marginTop: { xs: "40px", sm: "60px" }
+                marginTop: { xs: "25%", md: "10%" , sm: "20%"},
+                marginBottom: { xs: "25%", md: "23%" }
             }}
         >
             <Grid

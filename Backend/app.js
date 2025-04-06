@@ -9,6 +9,7 @@ const createError = require('http-errors');
 const mongoose = require('mongoose');
 const settingsRoutes = require('./routes/settings');
 const orderRoutes = require('./routes/orders');
+const adminRoutes = require('./routes/admin.routes');
 
 // Load env vars
 dotenv.config()
@@ -39,6 +40,7 @@ app.use('/api/v1/', require('./routers/api.js'));
 app.use('/api/v1/settings', settingsRoutes);
 app.use('/api/v1/reviews', require('./routes/reviews'));
 app.use('/api/v1/orders', orderRoutes);
+app.use('/api/v1/admin', adminRoutes);
 
 // Serve frontend for all other routes
 app.use(express.static(path.join(__dirname, '../Frontend/dist')));

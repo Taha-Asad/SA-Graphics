@@ -13,14 +13,11 @@ if (!fs.existsSync(UPLOAD_PATH)) {
 }
 
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
+  destination: function (req, file, cb) {
     cb(null, UPLOAD_PATH);
   },
-  filename: (req, file, cb) => {
-    // Create a clean filename
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-    const ext = path.extname(file.originalname);
-    cb(null, uniqueSuffix + ext);
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + '-' + Math.round(Math.random() * 1E9) + path.extname(file.originalname));
   }
 });
 

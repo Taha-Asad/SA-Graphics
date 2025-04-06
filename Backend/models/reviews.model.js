@@ -7,9 +7,9 @@ const reviewsSchema = mongoose.Schema(
       ref: "User",
       required: true,
     },
-    book: {
+    service: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Book",
+      ref: "Service",
       required: true,
     },
     rating: {
@@ -20,7 +20,16 @@ const reviewsSchema = mongoose.Schema(
     },
     comment: {
       type: String,
+      required: true,
     },
+    status: {
+      type: String,
+      enum: ['pending', 'approved', 'rejected'],
+      default: 'pending'
+    },
+    productName: {
+      type: String
+    }
   },
   {
     timestamps: true,

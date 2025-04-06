@@ -60,7 +60,7 @@ const Contact = () => {
         bgcolor: "#F5F5F5",
         position: "relative",
         padding: { xs: "40px 0", md: "60px 0" },
-        marginBottom: { xs: "40px", md: "60px" },
+        marginBottom: { xs: "150px", md: "150px" },
         overflow: "hidden",
         width: "100%",
       }}

@@ -1,122 +1,134 @@
-import React, { useEffect, useState, useCallback, useMemo } from "react";
-import AOS from "aos";
-import "aos/dist/aos.css";
+import React, { useEffect, useRef } from "react";
 import "./home.css";
-import heroBg from "../../../../public/assets/Hero/hero-bg.jpg"
 import { Box, Typography } from "@mui/material";
 
-const words = ["Freelancer", "Graphic Designer", "Writer", "Entrepreneur"];
+const words = ["Developer", "Freelancer", "Designer"];
 
 const Home = () => {
-  console.log("Home component rendered");
-  
-  const [index, setIndex] = useState(0);
-  const [text, setText] = useState("");
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [speed, setSpeed] = useState(150);
-
-  // Memoize the current word to prevent unnecessary recalculations
-  const currentWord = useMemo(() => words[index], [index]);
-
-  // Use useCallback to memoize the typing effect function
-  const typeEffect = useCallback(() => {
-    if (isDeleting) {
-      setText(prev => prev.slice(0, -1));
-      setSpeed(50);
-    } else {
-      setText(prev => currentWord.slice(0, prev.length + 1));
-      setSpeed(150);
-    }
-
-    if (!isDeleting && text === currentWord) {
-      setTimeout(() => setIsDeleting(true), 1500);
-    } else if (isDeleting && text === "") {
-      setIsDeleting(false);
-      setIndex(prev => (prev + 1) % words.length);
-    }
-  }, [text, isDeleting, currentWord]);
+  const textRef = useRef(words[0]);
+  const indexRef = useRef(0);
+  const isDeletingRef = useRef(false);
+  const speedRef = useRef(150);
+  const timeoutRef = useRef(null);
+  const displayTextRef = useRef(null);
 
   useEffect(() => {
-    // Initialize AOS only once
-    AOS.init({ duration: 1000, once: true });
+    if (displayTextRef.current) {
+      displayTextRef.current.textContent = words[0];
+      document.documentElement.style.setProperty("--underline-width", `${words[0].length * 15}px`);
+    }
 
-    // Set up typing effect timer
-    const timeout = setTimeout(typeEffect, speed);
-    
-    // Update CSS variable for underline width
-    document.documentElement.style.setProperty("--underline-width", `${text.length * 15}px`);
-    
-    return () => clearTimeout(timeout);
-  }, [text, isDeleting, index, speed, typeEffect]);
+    const typeEffect = () => {
+      const currentWord = words[indexRef.current];
+      
+      if (isDeletingRef.current) {
+        textRef.current = textRef.current.slice(0, -1);
+        speedRef.current = 50;
+      } else {
+        textRef.current = currentWord.slice(0, textRef.current.length + 1);
+        speedRef.current = 150;
+      }
+
+      if (displayTextRef.current) {
+        displayTextRef.current.textContent = textRef.current;
+      }
+
+      document.documentElement.style.setProperty("--underline-width", `${textRef.current.length * 15}px`);
+
+      if (!isDeletingRef.current && textRef.current === currentWord) {
+        timeoutRef.current = setTimeout(() => {
+          isDeletingRef.current = true;
+          typeEffect();
+        }, 1500);
+        return;
+      } 
+      
+      if (isDeletingRef.current && textRef.current === "") {
+        isDeletingRef.current = false;
+        indexRef.current = (indexRef.current + 1) % words.length;
+      }
+
+      timeoutRef.current = setTimeout(typeEffect, speedRef.current);
+    };
+
+    timeoutRef.current = setTimeout(typeEffect, 1500);
+
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
 
   return (
-    <>
-      {/* Hero Section with AOS */}
-      <Box
-        id="home"
-        sx={{
-          backgroundImage: `url(${heroBg})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          height: "100vh",
-          width: "100%",
-          position: "relative",
-          filter: "brightness(0.8)",
-          marginTop: "50px",
-          "&::before": {
-            content: '""',
-            position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: "rgba(0, 0, 0, 0.5)",
-          }
-        }}
-        data-aos="fade-in"
-      />
-
-      {/* Content Section with AOS animations */}
+    <Box 
+      id="home"
+      sx={{ 
+        width: '100%', 
+        height: '100vh',
+        position: 'relative',
+        backgroundColor: "#FAF4FD",
+        display: 'flex',
+        alignItems: 'center',
+        mt: '140px',
+        mb: '140px',
+        '&::before': {
+          content: '""',
+          position: 'absolute',
+          top: 0,
+          right: 0,
+          bottom: 0,
+          left: 0,
+          background: 'url(/assets/Hero/hero-bg.jpg) center center/cover no-repeat',
+          opacity: 0.8,
+        }
+      }}
+    >
       <Box 
-        className="content" 
         sx={{ 
-          position: "absolute",
-          top: "50%",
-          transform: "translateY(-50%)",
-          width: "100%",
-          px: { xs: 2, sm: 4, md: 8 },
+          position: 'relative',
+          zIndex: 1,
+          px: { xs: 3, md: 10 },
+          maxWidth: '1200px',
+          mx: 'auto',
+          width: '100%'
         }}
       >
+        <Typography 
+          variant="h1"
+          sx={{
+            color: "#ffffff",
+            fontSize: { xs: "2rem", sm: "3rem", md: "4rem" },
+            fontWeight: 500,
+            lineHeight: 1,
+            mb: { xs: 2, md: 1 },
+            letterSpacing: "-0.02em"
+          }}
+          data-aos="fade-up"
+        >
+          Sheraz <span style={{ color: "#149ddd" }}>Amjad</span>
+        </Typography>
+        
         <Typography 
           variant="h2"
           sx={{
             color: "#ffffff",
-            fontSize: { xs: "2.5rem", sm: "3rem", md: "3.5rem" },
-            textAlign: { xs: "center", md: "left" },
-            ml: { xs: 0, md: "122px" },
-            mb: { xs: 2, md: 0 },
-          }}
-          data-aos="fade-up"
-        >
-          Sheraz Amjad
-        </Typography>
-        <Typography 
-          variant="h3"
-          sx={{
-            color: "#ffffff",
-            fontSize: { xs: "1.8rem", sm: "2rem", md: "2.5rem" },
-            textAlign: { xs: "center", md: "left" },
-            ml: { xs: 0, md: "125px" },
-            mt: { xs: 1, md: "10px" },
+            fontSize: { xs: "1.5rem", sm: "2rem", md: "2.5rem" },
+            fontWeight: 400,
+            opacity: 0.85,
+            mt: 2,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1
           }}
           data-aos="fade-up"
           data-aos-delay="100"
         >
-          <span className="titles">I'm {text}</span>
-          <span className="animate-blink">|</span>
+          I'm <span className="typing" ref={displayTextRef}></span>
+          <span className="cursor"></span>
         </Typography>
       </Box>
-    </>
+    </Box>
   );
 };
 

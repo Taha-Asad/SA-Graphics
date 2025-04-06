@@ -1,6 +1,10 @@
 const Reviews = require("../models/reviews.model.js");
 const Book = require("../models/book.model.js");
+const User = require("../models/user.model.js");
 const { createError } = require("../utils/error.js");
+const { sendEmail } = require("../config/nodemailer.js");
+const ejs = require("ejs");
+const path = require("path");
 
 // Create a new review
 const createReview = async (req, res, next) => {
@@ -41,7 +45,27 @@ const createReview = async (req, res, next) => {
 
     // Populate user details before sending response
     const populatedReview = await Reviews.findById(savedReview._id)
-      .populate("user", "name profilePicture");
+      .populate("user", "name profilePicture")
+      .populate("book", "title");
+
+    // Send email notification to admin
+    try {
+      const templatePath = path.join(__dirname, '../views/emails/newReviewNotification.ejs');
+      const html = await ejs.renderFile(templatePath, { review: populatedReview });
+
+      const mailOptions = {
+        from: process.env.EMAIL_USER,
+        to: process.env.ADMIN_EMAIL,
+        subject: 'New Book Review Received',
+        html
+      };
+
+      await sendEmail(mailOptions);
+      console.log('Review notification email sent to admin');
+    } catch (emailError) {
+      console.error('Error sending review notification email:', emailError);
+      // Don't throw error, just log it - we don't want to fail the review submission if email fails
+    }
 
     res.status(201).json(populatedReview);
   } catch (error) {

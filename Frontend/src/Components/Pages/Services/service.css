@@ -5,6 +5,10 @@
     transition: all 0.3s ease-in-out;
     cursor: pointer;
     background-color: #fff;
+    color: #333;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .service-card:hover {
@@ -28,6 +32,13 @@
 
 .service-card h6 {
     transition: color 0.3s ease-in-out;
+    color: #333;
+    font-size: 1.25rem;
+    margin: 1rem 0;
+}
+
+.service-card p {
+    color: #666;
 }
 
 .service-card:hover h6 {

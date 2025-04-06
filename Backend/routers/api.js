@@ -6,6 +6,8 @@ const orderController = require("../controllers/order.controller");
 const portfolioController = require("../controllers/portfolio.controller");
 const testimonialController = require("../controllers/testimonials.controller");
 const reviewsController = require("../Controllers/reviews.controller.js");
+const userController = require("../Controllers/user.controller.js");
+const projectController = require("../controllers/project.controller");
 const authMiddleware = require("../middlewares/authMiddleware");
 const adminMiddleware = require("../middlewares/adminMiddleware");
 const { upload } = require("../config/multer");
@@ -89,7 +91,7 @@ router.post(
 
 router.get("/books", bookController.getAllBooks);
 
-router.get("/books/:id", bookController.getBookById);
+router.get("/books/:id", bookController.getBook);
 
 router.put(
   "/books/:id",
@@ -160,6 +162,13 @@ router.put(
   testimonialController.updateTestimonialStatus
 );
 
+router.delete(
+  "/admin/testimonials/:id",
+  authMiddleware,
+  adminMiddleware,
+  testimonialController.deleteTestimonial
+);
+
 // Review Routes
 router.post("/books/:bookId/reviews", authMiddleware, reviewsController.createReview);
 router.get("/books/:bookId/reviews", reviewsController.getBookReviews);
@@ -170,6 +179,10 @@ router.delete("/books/:bookId/reviews/:reviewId", authMiddleware, reviewsControl
 router.post('/contact' , createContact);
 
 // User routes
+router.get('/users/me', authMiddleware, (req, res) => {
+  res.json(req.user);
+});
+router.get('/users/stats', authMiddleware, userController.getUserStats);
 router.put('/update-profile', authMiddleware, validateJoi(updateProfileSchema), authController.updateProfile);
 
 // Wishlist routes
@@ -183,6 +196,56 @@ router.post('/support', authMiddleware, supportController.createSupportTicket);
 router.get('/support/tickets', authMiddleware, supportController.getUserTickets);
 router.get('/support/admin/tickets', authMiddleware, adminMiddleware, supportController.getAllTickets);
 router.put('/support/admin/tickets/:ticketId', authMiddleware, adminMiddleware, supportController.updateTicketStatus);
+
+// Admin User Management Routes
+router.get(
+  "/admin/users",
+  authMiddleware,
+  adminMiddleware,
+  userController.getAllUsers
+);
+
+router.put(
+  "/admin/users/:userId",
+  authMiddleware,
+  adminMiddleware,
+  userController.updateUser
+);
+
+router.delete(
+  "/admin/users/:userId",
+  authMiddleware,
+  adminMiddleware,
+  userController.deleteUser
+);
+
+router.patch(
+  "/admin/users/:userId/block",
+  authMiddleware,
+  adminMiddleware,
+  userController.blockUser
+);
+
+router.patch(
+  "/admin/users/:userId/unblock",
+  authMiddleware,
+  adminMiddleware,
+  userController.unblockUser
+);
+
+// Book Routes
+router.post("/admin/books", authMiddleware, adminMiddleware, bookController.createBook);
+router.get("/admin/books", authMiddleware, adminMiddleware, bookController.getAllBooks);
+router.get("/admin/books/:id", authMiddleware, adminMiddleware, bookController.getBook);
+router.put("/admin/books/:id", authMiddleware, adminMiddleware, bookController.updateBook);
+router.delete("/admin/books/:id", authMiddleware, adminMiddleware, bookController.deleteBook);
+
+// Project Routes
+router.post("/admin/projects", authMiddleware, adminMiddleware, projectController.createProject);
+router.get("/admin/projects", authMiddleware, adminMiddleware, projectController.getAllProjects);
+router.get("/admin/projects/:id", authMiddleware, adminMiddleware, projectController.getProject);
+router.put("/admin/projects/:id", authMiddleware, adminMiddleware, projectController.updateProject);
+router.delete("/admin/projects/:id", authMiddleware, adminMiddleware, projectController.deleteProject);
 
 // Error handling middleware
 router.use(errorHandler);

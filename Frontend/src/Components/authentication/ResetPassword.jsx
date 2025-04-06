@@ -71,12 +71,12 @@ const ResetPassword = () => {
             container
             component="main"
             sx={{
-                height: '80vh',
+                height: '85vh',
                 bgcolor: "#F4FAFD",
-                padding: { xs: "60px 20px", md: "80px 40px" },
+                padding: { xs: "80px 20px", md: "100px 40px" },
                 position: 'relative',
-                marginTop: { xs: "40px", sm: "60px" }
-            }}
+                marginTop: { xs: 16, sm: 18 },
+                marginBottom:{xs:30 , sm: 30 , md: 38}          }}
         >
             <Grid
                 item
@@ -126,45 +126,45 @@ const ResetPassword = () => {
                     </Typography>
 
                     <Box component="form" onSubmit={handleSubmit} noValidate sx={{ width: '100%' }}>
-                        <TextField
-                            margin="normal"
+                <TextField
+                    margin="normal"
                             required
                             fullWidth
-                            name="password"
+                    name="password"
                             label="New Password"
-                            type={showPassword ? "text" : "password"}
+                    type={showPassword ? "text" : "password"}
                             autoComplete="new-password"
-                            value={user.password}
-                            onChange={handleChange}
+                    value={user.password}
+                    onChange={handleChange}
                             error={!!errors.password}
-                            helperText={errors.password}
-                            InputProps={{
-                                endAdornment: (
-                                    <InputAdornment position="end">
+                    helperText={errors.password}
+                    InputProps={{
+                        endAdornment: (
+                            <InputAdornment position="end">
                                         <IconButton
                                             aria-label="toggle password visibility"
                                             onClick={() => setShowPassword(!showPassword)}
                                             edge="end"
                                         >
-                                            {showPassword ? <MdVisibilityOff /> : <MdVisibility />}
-                                        </IconButton>
-                                    </InputAdornment>
-                                ),
-                            }}
-                        />
+                                    {showPassword ? <MdVisibilityOff /> : <MdVisibility />}
+                                </IconButton>
+                            </InputAdornment>
+                        ),
+                    }}
+                />
 
-                        <TextField
-                            margin="normal"
+                <TextField
+                    margin="normal"
                             required
                             fullWidth
-                            name="confirmPassword"
-                            label="Confirm Password"
+                    name="confirmPassword"
+                    label="Confirm Password"
                             type={showConfirmPassword ? "text" : "password"}
                             autoComplete="new-password"
-                            value={user.confirmPassword}
-                            onChange={handleChange}
+                    value={user.confirmPassword}
+                    onChange={handleChange}
                             error={!!errors.confirmPassword}
-                            helperText={errors.confirmPassword}
+                    helperText={errors.confirmPassword}
                             InputProps={{
                                 endAdornment: (
                                     <InputAdornment position="end">
@@ -194,8 +194,8 @@ const ResetPassword = () => {
                             }}
                             disabled={isSubmitting}
                         >
-                            {isSubmitting ? 'Resetting...' : 'Reset Password'}
-                        </Button>
+                    {isSubmitting ? 'Resetting...' : 'Reset Password'}
+                </Button>
 
                         <Grid container justifyContent="center" spacing={2}>
                             <Grid item xs={12}>

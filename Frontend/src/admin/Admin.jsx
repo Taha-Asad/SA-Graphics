@@ -1,158 +1,164 @@
 import React, { useState } from 'react';
-import { Box, CssBaseline, Drawer, AppBar, Toolbar, Typography, IconButton, List, ListItem, ListItemIcon, ListItemText, Divider } from '@mui/material';
-import {
-  Menu as MenuIcon,
-  Dashboard as DashboardIcon,
-  People as PeopleIcon,
-  Message as MessageIcon,
-  Settings as SettingsIcon,
-  ExitToApp as LogoutIcon,
-} from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
-import { useContext } from 'react';
-import { AuthContext } from '../context/AuthContext';
-import Dashboard from './adminComponents/Dashboard';
-import Users from './adminComponents/Users';
-import Testimonials from './adminComponents/Testimonials';
-import Settings from './adminComponents/Settings';
+import { Box, CssBaseline, Drawer, AppBar, Toolbar, List, Typography, Divider, IconButton, ListItem, ListItemButton, ListItemIcon, ListItemText, useTheme } from '@mui/material';
+import { Menu as MenuIcon, ChevronLeft as ChevronLeftIcon, ChevronRight as ChevronRightIcon, Dashboard as DashboardIcon, People as PeopleIcon, ShoppingCart as OrdersIcon, RateReview as ReviewsIcon, Settings as SettingsIcon, Logout as LogoutIcon } from '@mui/icons-material';
+import { styled } from '@mui/material/styles';
+import { useNavigate, useLocation, Outlet } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { toast } from 'react-toastify';
 
 const drawerWidth = 240;
 
-const Admin = () => {
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [selectedComponent, setSelectedComponent] = useState('dashboard');
-  const navigate = useNavigate();
-  const { logout } = useContext(AuthContext);
+const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })(
+  ({ theme, open }) => ({
+    flexGrow: 1,
+    padding: theme.spacing(3),
+    transition: theme.transitions.create('margin', {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.leavingScreen,
+    }),
+    marginLeft: `-${drawerWidth}px`,
+    ...(open && {
+      transition: theme.transitions.create('margin', {
+        easing: theme.transitions.easing.easeOut,
+        duration: theme.transitions.duration.enteringScreen,
+      }),
+      marginLeft: 0,
+    }),
+  }),
+);
 
-  const handleDrawerToggle = () => {
-    setMobileOpen(!mobileOpen);
+const AppBarStyled = styled(AppBar, { shouldForwardProp: (prop) => prop !== 'open' })(
+  ({ theme, open }) => ({
+    transition: theme.transitions.create(['margin', 'width'], {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.leavingScreen,
+    }),
+    ...(open && {
+      width: `calc(100% - ${drawerWidth}px)`,
+      marginLeft: `${drawerWidth}px`,
+      transition: theme.transitions.create(['margin', 'width'], {
+        easing: theme.transitions.easing.easeOut,
+        duration: theme.transitions.duration.enteringScreen,
+      }),
+    }),
+  }),
+);
+
+const DrawerHeader = styled('div')(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  padding: theme.spacing(0, 1),
+  ...theme.mixins.toolbar,
+  justifyContent: 'flex-end',
+}));
+
+const menuItems = [
+  { text: 'Dashboard', icon: <DashboardIcon />, path: '/admin/dashboard' },
+  { text: 'Users', icon: <PeopleIcon />, path: '/admin/users' },
+  { text: 'Orders', icon: <OrdersIcon />, path: '/admin/orders' },
+  { text: 'Reviews', icon: <ReviewsIcon />, path: '/admin/reviews' },
+  { text: 'Settings', icon: <SettingsIcon />, path: '/admin/settings' },
+];
+
+const Admin = () => {
+  const theme = useTheme();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { logout } = useAuth();
+  const [open, setOpen] = useState(true);
+
+  const handleDrawerOpen = () => {
+    setOpen(true);
+  };
+
+  const handleDrawerClose = () => {
+    setOpen(false);
   };
 
   const handleLogout = () => {
     logout();
-    navigate('/');
+    toast.success('Logged out successfully');
+    navigate('/login');
   };
 
-  const menuItems = [
-    { text: 'Dashboard', icon: <DashboardIcon />, component: 'dashboard' },
-    { text: 'Users', icon: <PeopleIcon />, component: 'users' },
-    { text: 'Testimonials', icon: <MessageIcon />, component: 'testimonials' },
-    { text: 'Settings', icon: <SettingsIcon />, component: 'settings' },
-  ];
-
-  const drawer = (
-    <div>
-      <Toolbar>
-        <Typography variant="h6" noWrap component="div">
-          Admin Panel
-        </Typography>
-      </Toolbar>
-      <Divider />
-      <List>
-        {menuItems.map((item) => (
-          <ListItem 
-            button 
-            key={item.text}
-            onClick={() => setSelectedComponent(item.component)}
-            selected={selectedComponent === item.component}
-          >
-            <ListItemIcon>{item.icon}</ListItemIcon>
-            <ListItemText primary={item.text} />
-          </ListItem>
-        ))}
-      </List>
-      <Divider />
-      <List>
-        <ListItem button onClick={handleLogout}>
-          <ListItemIcon><LogoutIcon /></ListItemIcon>
-          <ListItemText primary="Logout" />
-        </ListItem>
-      </List>
-    </div>
-  );
-
-  const renderComponent = () => {
-    switch (selectedComponent) {
-      case 'dashboard':
-        return <Dashboard />;
-      case 'users':
-        return <Users />;
-      case 'testimonials':
-        return <Testimonials />;
-      case 'settings':
-        return <Settings />;
-      default:
-        return <Dashboard />;
-    }
+  const getPageTitle = () => {
+    const path = location.pathname;
+    const item = menuItems.find(item => item.path === path);
+    return item ? item.text : 'Admin Panel';
   };
 
   return (
     <Box sx={{ display: 'flex' }}>
       <CssBaseline />
-      <AppBar
-        position="fixed"
-        sx={{
-          width: { sm: `calc(100% - ${drawerWidth}px)` },
-          ml: { sm: `${drawerWidth}px` },
-        }}
-      >
+      <AppBarStyled position="fixed" open={open}>
         <Toolbar>
           <IconButton
             color="inherit"
             aria-label="open drawer"
+            onClick={handleDrawerOpen}
             edge="start"
-            onClick={handleDrawerToggle}
-            sx={{ mr: 2, display: { sm: 'none' } }}
+            sx={{ mr: 2, ...(open && { display: 'none' }) }}
           >
             <MenuIcon />
           </IconButton>
           <Typography variant="h6" noWrap component="div">
-            {menuItems.find(item => item.component === selectedComponent)?.text || 'Dashboard'}
+            {getPageTitle()}
           </Typography>
         </Toolbar>
-      </AppBar>
-      <Box
-        component="nav"
-        sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}
-      >
-        <Drawer
-          variant="temporary"
-          open={mobileOpen}
-          onClose={handleDrawerToggle}
-          ModalProps={{
-            keepMounted: true, // Better open performance on mobile.
-          }}
-          sx={{
-            display: { xs: 'block', sm: 'none' },
-            '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
-          }}
-        >
-          {drawer}
-        </Drawer>
-        <Drawer
-          variant="permanent"
-          sx={{
-            display: { xs: 'none', sm: 'block' },
-            '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
-          }}
-          open
-        >
-          {drawer}
-        </Drawer>
-      </Box>
-      <Box
-        component="main"
+      </AppBarStyled>
+      <Drawer
         sx={{
-          flexGrow: 1,
-          p: 3,
-          width: { sm: `calc(100% - ${drawerWidth}px)` },
-          mt: '64px',
+          width: drawerWidth,
+          flexShrink: 0,
+          '& .MuiDrawer-paper': {
+            width: drawerWidth,
+            boxSizing: 'border-box',
+          },
         }}
+        variant="persistent"
+        anchor="left"
+        open={open}
       >
-        {renderComponent()}
-      </Box>
+        <DrawerHeader>
+          <Typography variant="h6" sx={{ flexGrow: 1, ml: 2 }}>
+            Admin Panel
+          </Typography>
+          <IconButton onClick={handleDrawerClose}>
+            {theme.direction === 'ltr' ? <ChevronLeftIcon /> : <ChevronRightIcon />}
+          </IconButton>
+        </DrawerHeader>
+        <Divider />
+        <List>
+          {menuItems.map((item) => (
+            <ListItem key={item.text} disablePadding>
+              <ListItemButton
+                selected={location.pathname === item.path}
+                onClick={() => navigate(item.path)}
+              >
+                <ListItemIcon>{item.icon}</ListItemIcon>
+                <ListItemText primary={item.text} />
+              </ListItemButton>
+            </ListItem>
+          ))}
+        </List>
+        <Divider />
+        <List>
+          <ListItem disablePadding>
+            <ListItemButton onClick={handleLogout}>
+              <ListItemIcon>
+                <LogoutIcon />
+              </ListItemIcon>
+              <ListItemText primary="Logout" />
+            </ListItemButton>
+          </ListItem>
+        </List>
+      </Drawer>
+      <Main open={open}>
+        <DrawerHeader />
+        <Outlet />
+      </Main>
     </Box>
   );
 };
 
-export default Admin;
+export default Admin; 

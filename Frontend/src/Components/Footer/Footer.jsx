@@ -16,7 +16,7 @@ const Footer = () => {
         color: 'white',
         width: '100%',
         position: 'relative',
-        marginTop: { md:'40%' , xs:'125%' },
+        marginTop: { md:'-10%' , xs:'10%'},
         zIndex: 1
       }}
     >

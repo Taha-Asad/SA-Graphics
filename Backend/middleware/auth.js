@@ -2,7 +2,8 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/user.model');
 const createError = require('http-errors');
 
-const auth = async (req, res, next) => {
+// Verify token middleware
+const verifyToken = async (req, res, next) => {
   try {
     // Get token from header
     const token = req.header('Authorization')?.replace('Bearer ', '');
@@ -38,4 +39,19 @@ const auth = async (req, res, next) => {
   }
 };
 
-module.exports = auth; 
+// Check if user is admin
+const isAdmin = (req, res, next) => {
+  if (req.user && req.user.role === 'admin') {
+    next();
+  } else {
+    res.status(403).json({
+      status: 'fail',
+      message: 'Access denied. Admin privileges required.'
+    });
+  }
+};
+
+// Legacy auth middleware (for backward compatibility)
+const auth = verifyToken;
+
+module.exports = { auth, verifyToken, isAdmin }; 

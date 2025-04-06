@@ -20,60 +20,60 @@ const ProjectCard = memo(({ project, onClick }) => {
   }, [onClick, project]);
 
   return (
-    <Card
-      sx={{
-        cursor: 'pointer',
-        minHeight: '250px',
-        width: '350px',
-        position: 'relative',
-        boxShadow: "rgba(17, 17, 26, 0.1) 0px 4px 16px, rgba(17, 17, 26, 0.05) 0px 8px 32px",
-        '&:hover': {
-          transform: 'translateY(-5px)',
-          boxShadow: "rgba(0, 0, 0, 0.25) 0px 14px 28px, rgba(0, 0, 0, 0.22) 0px 10px 10px"
-        },
-        '&:hover .overlay': {
-          opacity: 1
-        },
-        transition: 'transform 0.2s ease-out, box-shadow 0.2s ease-out'
-      }}
+  <Card
+    sx={{
+      cursor: 'pointer',
+      minHeight: '250px',
+      width: '350px',
+      position: 'relative',
+      boxShadow: "rgba(17, 17, 26, 0.1) 0px 4px 16px, rgba(17, 17, 26, 0.05) 0px 8px 32px",
+      '&:hover': {
+        transform: 'translateY(-5px)',
+        boxShadow: "rgba(0, 0, 0, 0.25) 0px 14px 28px, rgba(0, 0, 0, 0.22) 0px 10px 10px"
+      },
+      '&:hover .overlay': {
+        opacity: 1
+      },
+      transition: 'transform 0.2s ease-out, box-shadow 0.2s ease-out'
+    }}
       onClick={handleClick}
-    >
-      <CardMedia
-        component="img"
-        height="200"
-        image={project.image || 'https://via.placeholder.com/300x200?text=No+Image'}
-        alt={project.title}
-        sx={{
-          objectFit: 'cover',
-          width: '100%',
-          height: '250px',
-          objectPosition: 'center'
-        }}
+  >
+    <CardMedia
+      component="img"
+      height="200"
+      image={project.image || 'https://via.placeholder.com/300x200?text=No+Image'}
+      alt={project.title}
+      sx={{
+        objectFit: 'cover',
+        width: '100%',
+        height: '250px',
+        objectPosition: 'center'
+      }}
         loading="lazy"
-      />
-      <Box
-        className="overlay"
-        sx={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          bgcolor: 'rgba(0, 0, 0, 0.5)',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          opacity: 0,
-          color: 'white',
-          textAlign: 'center',
-          p: 2
-        }}
-      >
-        <ZoomInIcon sx={{ fontSize: 40, mb: 1 }} />
-        <Typography variant="subtitle1">Click to View Details</Typography>
-      </Box>
-    </Card>
+    />
+    <Box
+      className="overlay"
+      sx={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        bgcolor: 'rgba(0, 0, 0, 0.5)',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        opacity: 0,
+        color: 'white',
+        textAlign: 'center',
+        p: 2
+      }}
+    >
+      <ZoomInIcon sx={{ fontSize: 40, mb: 1 }} />
+      <Typography variant="subtitle1">Click to View Details</Typography>
+    </Box>
+  </Card>
   );
 });
 
@@ -85,60 +85,60 @@ const BookCard = memo(({ book, onClick }) => {
   }, [onClick, book]);
 
   return (
-    <Card
-      sx={{
-        cursor: 'pointer',
-        minHeight: '250px',
-        width: '350px',
-        position: 'relative',
-        boxShadow: "rgba(17, 17, 26, 0.1) 0px 4px 16px, rgba(17, 17, 26, 0.05) 0px 8px 32px",
-        '&:hover': {
-          transform: 'translateY(-5px)',
-          boxShadow: "rgba(0, 0, 0, 0.25) 0px 14px 28px, rgba(0, 0, 0, 0.22) 0px 10px 10px"
-        },
-        '&:hover .overlay': {
-          opacity: 1
-        },
-        transition: 'transform 0.2s ease-out, box-shadow 0.2s ease-out'
-      }}
+  <Card
+    sx={{
+      cursor: 'pointer',
+      minHeight: '250px',
+      width: '350px',
+      position: 'relative',
+      boxShadow: "rgba(17, 17, 26, 0.1) 0px 4px 16px, rgba(17, 17, 26, 0.05) 0px 8px 32px",
+      '&:hover': {
+        transform: 'translateY(-5px)',
+        boxShadow: "rgba(0, 0, 0, 0.25) 0px 14px 28px, rgba(0, 0, 0, 0.22) 0px 10px 10px"
+      },
+      '&:hover .overlay': {
+        opacity: 1
+      },
+      transition: 'transform 0.2s ease-out, box-shadow 0.2s ease-out'
+    }}
       onClick={handleClick}
-    >
-      <CardMedia
-        component="img"
-        height="250"
-        image={book.image || 'https://via.placeholder.com/300x200?text=No+Image'}
-        alt={book.title}
-        sx={{
-          objectFit: 'cover',
-          width: '100%',
-          height: '250px',
-          objectPosition: 'center'
-        }}
+  >
+    <CardMedia
+      component="img"
+      height="250"
+      image={book.image || 'https://via.placeholder.com/300x200?text=No+Image'}
+      alt={book.title}
+      sx={{
+        objectFit: 'cover',
+        width: '100%',
+        height: '250px',
+        objectPosition: 'center'
+      }}
         loading="lazy"
-      />
-      <Box
-        className="overlay"
-        sx={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          bgcolor: 'rgba(0, 0, 0, 0.5)',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          opacity: 0,
-          color: 'white',
-          textAlign: 'center',
-          p: 2
-        }}
-      >
-        <ZoomInIcon sx={{ fontSize: 40, mb: 1 }} />
-        <Typography variant="subtitle1">Click to View Details</Typography>
-      </Box>
-    </Card>
+    />
+    <Box
+      className="overlay"
+      sx={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        bgcolor: 'rgba(0, 0, 0, 0.5)',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        opacity: 0,
+        color: 'white',
+        textAlign: 'center',
+        p: 2
+      }}
+    >
+      <ZoomInIcon sx={{ fontSize: 40, mb: 1 }} />
+      <Typography variant="subtitle1">Click to View Details</Typography>
+    </Box>
+  </Card>
   );
 });
 
@@ -452,7 +452,7 @@ const Portfolio = React.memo(function Portfolio() {
               <PaginatedGrid 
                 items={memoizedProjects} 
                 renderItem={(project) => (
-                  <ProjectCard project={project} onClick={handleProjectClick} />
+                    <ProjectCard project={project} onClick={handleProjectClick} />
                 )}
               />
             </TabPanel>
@@ -467,7 +467,7 @@ const Portfolio = React.memo(function Portfolio() {
               <PaginatedGrid 
                 items={memoizedBooks} 
                 renderItem={(book) => (
-                  <BookCard book={book} onClick={handleBookClick} />
+                    <BookCard book={book} onClick={handleBookClick} />
                 )}
               />
             </TabPanel>
@@ -486,8 +486,8 @@ const Portfolio = React.memo(function Portfolio() {
       >
         {selectedProject && (
           <DialogContent sx={{ p: 0, position: 'relative' }}>
-            <IconButton
-              onClick={handleCloseProjectModal}
+          <IconButton
+            onClick={handleCloseProjectModal}
               sx={{
                 position: 'absolute',
                 right: 8,
@@ -499,14 +499,14 @@ const Portfolio = React.memo(function Portfolio() {
                   bgcolor: 'grey.200',
                 },
               }}
-            >
-              <CloseIcon />
-            </IconButton>
+          >
+            <CloseIcon />
+          </IconButton>
             <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' } }}>
               <Box
                 component="img"
                 src={selectedProject.image || 'https://via.placeholder.com/600x400?text=No+Image'}
-                alt={selectedProject.title}
+                  alt={selectedProject.title}
                 sx={{
                   width: { xs: '100%', md: '50%' },
                   height: { xs: '300px', md: 'auto' },
@@ -525,22 +525,22 @@ const Portfolio = React.memo(function Portfolio() {
                     <Typography variant="subtitle1" gutterBottom>
                       Technologies Used:
                     </Typography>
-                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                       {selectedProject.technologies.map((tech, index) => (
                         <Box
-                          key={index}
-                          sx={{
+                      key={index}
+                      sx={{
                             bgcolor: '#f0f0f0',
                             px: 1.5,
                             py: 0.5,
-                            borderRadius: 1,
+                        borderRadius: 1,
                             fontSize: '0.875rem',
                           }}
                         >
                           {tech}
                         </Box>
-                      ))}
-                    </Box>
+                  ))}
+                </Box>
                   </Box>
                 )}
                 {selectedProject.link && (
@@ -556,7 +556,7 @@ const Portfolio = React.memo(function Portfolio() {
                 )}
               </Box>
             </Box>
-          </DialogContent>
+        </DialogContent>
         )}
       </Dialog>
 
@@ -571,8 +571,8 @@ const Portfolio = React.memo(function Portfolio() {
       >
         {selectedBook && (
           <DialogContent sx={{ p: 0, position: 'relative' }}>
-            <IconButton
-              onClick={handleCloseBookModal}
+          <IconButton
+            onClick={handleCloseBookModal}
               sx={{
                 position: 'absolute',
                 right: 8,
@@ -584,15 +584,15 @@ const Portfolio = React.memo(function Portfolio() {
                   bgcolor: 'grey.200',
                 },
               }}
-            >
-              <CloseIcon />
-            </IconButton>
+          >
+            <CloseIcon />
+          </IconButton>
             <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' } }}>
               <Box
-                component="img"
+                    component="img"
                 src={selectedBook.image || 'https://via.placeholder.com/600x400?text=No+Image'}
-                alt={selectedBook.title}
-                sx={{
+                    alt={selectedBook.title}
+                    sx={{ 
                   width: { xs: '100%', md: '40%' },
                   height: { xs: '300px', md: 'auto' },
                   objectFit: 'cover',
@@ -627,15 +627,15 @@ const Portfolio = React.memo(function Portfolio() {
                     size="small"
                   />
                 </Box>
-                <Button
-                  variant="contained"
-                  startIcon={<ShoppingCartIcon />}
-                  onClick={handleAddToCart}
+                  <Button
+                    variant="contained"
+                    startIcon={<ShoppingCartIcon />}
+                    onClick={handleAddToCart}
                   disabled={selectedBook.countInStock <= 0}
                   sx={{ mb: 2 }}
-                >
-                  Add to Cart
-                </Button>
+                  >
+                    Add to Cart
+                  </Button>
                 <Divider sx={{ my: 2 }} />
                 <Typography variant="h6" gutterBottom>
                   Reviews
@@ -694,8 +694,8 @@ const Portfolio = React.memo(function Portfolio() {
                     Submit Review
                   </Button>
                 </Box>
-              </Box>
-            </Box>
+                          </Box>
+                        </Box>
           </DialogContent>
         )}
       </Dialog>

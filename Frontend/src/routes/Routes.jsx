@@ -20,11 +20,11 @@ import Register from '../Components/authentication/Register';
 import ForgotPassword from '../Components/authentication/ForgotPassword';
 import ResetPassword from '../Components/authentication/ResetPassword';
 import ProtectedRoute from '../Components/ProtectedRoute';
-import Admin from '../admin/Admin';
-import Dashboard from '../admin/adminComponents/Dashboard';
-import Users from '../admin/adminComponents/Users';
-import AdminTestimonials from '../admin/adminComponents/Testimonials';
-import AdminSettings from '../admin/adminComponents/Settings';
+import Admin from '../admin/components/Admin';
+import Dashboard from '../admin/components/Dashboard';
+import Users from '../admin/components/Users';
+import AdminTestimonials from '../admin/components/Testimonials';
+import AdminSettings from '../admin/components/Settings';
 import AdminRoute from '../admin/routes/AdminRoute';
 
 const AppRoutes = () => {

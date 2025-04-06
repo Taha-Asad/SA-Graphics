@@ -81,3 +81,22 @@ exports.updateTestimonialStatus = async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
+
+// Delete a Testimonial (Admin Only)
+exports.deleteTestimonial = async (req, res) => {
+  try {
+    const testimonialId = req.params.id;
+    const deletedTestimonial = await Testimonial.findByIdAndDelete(testimonialId);
+
+    if (!deletedTestimonial) {
+      return res.status(404).json({ message: "Testimonial not found" });
+    }
+
+    res.status(200).json({
+      message: "Testimonial deleted successfully",
+      testimonial: deletedTestimonial
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};

@@ -57,7 +57,8 @@ const ForgotPassword = () => {
                 bgcolor: "#F4FAFD",
                 padding: { xs: "60px 20px", md: "80px 40px" },
                 position: 'relative',
-                marginTop: { xs: "40px", sm: "60px" }
+                marginTop: { xs: 20, sm: 20 },
+                marginBottom:{xs:10 , sm: 10 , md: 30}
             }}
         >
             <Grid

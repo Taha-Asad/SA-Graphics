@@ -7,6 +7,14 @@ const path = require('path');
 const ejs = require('ejs');
 const { sendEmail } = require('../config/nodemailer');
 
+// Helper function to construct profile picture URL
+const getProfilePicUrl = (profilePic) => {
+  if (!profilePic) return null;
+  if (profilePic.startsWith('http://') || profilePic.startsWith('https://')) {
+    return profilePic;
+  }
+  return `http://localhost:5000/uploads/${profilePic}`;
+};
 
 const registerUser = async (req, res, next) => {
   try {
@@ -67,8 +75,8 @@ const registerUser = async (req, res, next) => {
     savedUser.password = undefined;
 
     // Construct the full profile pic URL for response
-    if (savedUser.profilePic && !savedUser.profilePic.startsWith('http')) {
-      savedUser.profilePic = `http://localhost:5000/uploads/${savedUser.profilePic}`;
+    if (savedUser.profilePic) {
+      savedUser.profilePic = getProfilePicUrl(savedUser.profilePic);
     }
 
     res.status(201).json({
@@ -82,12 +90,6 @@ const registerUser = async (req, res, next) => {
     next(error);
   }
 };
-
-
-
-
-
-
 
 const loginUser = async (req, res, next) => {
   try {
@@ -136,9 +138,9 @@ const loginUser = async (req, res, next) => {
     }
 
     // Construct full profile pic URL
-    const profilePic = user.profilePic.startsWith('http') 
-      ? user.profilePic 
-      : `http://localhost:5000/uploads/${user.profilePic}`;
+    if (user.profilePic) {
+      user.profilePic = getProfilePicUrl(user.profilePic);
+    }
 
     console.log('✅ Login successful:', {
       email: user.email,
@@ -154,7 +156,7 @@ const loginUser = async (req, res, next) => {
         name: user.name,
         email: user.email,
         role: user.role,
-        profilePic
+        profilePic: user.profilePic
       }
     });
 
@@ -357,6 +359,45 @@ const logout = async (req, res, next) => {
     next(error);
   }
 };
+
+// Create admin user
+const createAdminUser = async () => {
+  try {
+    // Check if admin already exists
+    const adminExists = await User.findOne({ email: 'tahaasad709@gmail.com' });
+    
+    if (adminExists) {
+      // Update existing admin with new details
+      await User.findOneAndUpdate(
+        { email: 'tahaasad709@gmail.com' },
+        {
+          phoneNo: '03259881310',
+          address: 'House no 240 Block E-1 Wapda Town Lahore'
+        },
+        { new: true }
+      );
+      console.log('Admin user details updated');
+      return;
+    }
+
+    // Create admin user
+    const admin = await User.create({
+      name: 'Taha Asad',
+      email: 'tahaasad709@gmail.com',
+      password: 'TahaAsad@1234',
+      role: 'admin',
+      phoneNo: '03259881310',
+      address: 'House no 240 Block E-1 Wapda Town Lahore'
+    });
+
+    console.log('Admin user created successfully');
+  } catch (error) {
+    console.error('Error creating/updating admin user:', error);
+  }
+};
+
+// Call createAdminUser when the server starts
+createAdminUser();
 
 module.exports = {
   registerUser,

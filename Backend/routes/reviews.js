@@ -1,7 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const Review = require('../models/Review');
-const auth = require('../middleware/auth');
+const User = require('../models/user.model');
+const { auth } = require('../middleware/auth');
+const { sendEmail } = require('../config/nodemailer');
+const ejs = require('ejs');
+const path = require('path');
 
 // Get all reviews for the current user
 router.get('/user', auth, async (req, res) => {
@@ -35,8 +39,32 @@ router.post('/', auth, async (req, res) => {
       comment
     });
 
-    await review.save();
-    res.status(201).json(review);
+    const savedReview = await review.save();
+
+    // Populate user details for email
+    const populatedReview = await Review.findById(savedReview._id)
+      .populate('user', 'name email');
+
+    // Send email notification to admin
+    try {
+      const templatePath = path.join(__dirname, '../views/emails/newReviewNotification.ejs');
+      const html = await ejs.renderFile(templatePath, { review: populatedReview });
+
+      const mailOptions = {
+        from: process.env.EMAIL_USER,
+        to: process.env.ADMIN_EMAIL,
+        subject: 'New General Review Received',
+        html
+      };
+
+      await sendEmail(mailOptions);
+      console.log('Review notification email sent to admin');
+    } catch (emailError) {
+      console.error('Error sending review notification email:', emailError);
+      // Don't throw error, just log it - we don't want to fail the review submission if email fails
+    }
+
+    res.status(201).json(savedReview);
   } catch (error) {
     console.error('Error creating review:', error);
     res.status(500).json({ message: 'Server error' });

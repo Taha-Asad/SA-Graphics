@@ -3,13 +3,12 @@ import { ThemeProvider, createTheme, CssBaseline } from '@mui/material';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import "./App.css";
-import MainLayout from './Components/Layout/MainLayout';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import LoadingFallback from './Components/LoadingFallback';
-import Navbar from './Components/Navbar/Navbar';
 import AppRoutes from './routes/index';
 import { Box } from '@mui/material';
+import ScrollToTop from './Components/ScrollToTop';
 
 // Create theme
 const theme = createTheme({
@@ -18,9 +17,17 @@ const theme = createTheme({
       main: '#149ddd',
     },
     background: {
-      default: '#F4FAFD',
+      default: '#F5F5F5',
+      paper: '#fff',
     },
+    text: {
+      primary: '#333',
+      secondary: '#666',
+    }
   },
+  typography: {
+    fontFamily: 'Raleway, sans-serif',
+  }
 });
 
 function App() {
@@ -29,19 +36,20 @@ function App() {
       <CartProvider>
         <ThemeProvider theme={theme}>
           <CssBaseline />
-          <MainLayout>
-            <Navbar />
-            <Box 
-              component="div" 
-              sx={{ 
-                width: '100%',
-                minHeight: '100%'
-              }}
-            >
-              <Suspense fallback={<LoadingFallback />}>
-                <AppRoutes />
-              </Suspense>
-            </Box>
+          <ScrollToTop />
+          <Box 
+            component="div" 
+            sx={{ 
+              width: '100%',
+              minHeight: '100vh',
+              overflowX: 'hidden',
+              display: 'flex',
+              flexDirection: 'column',
+            }}
+          >
+            <Suspense fallback={<LoadingFallback />}>
+              <AppRoutes />
+            </Suspense>
             <ToastContainer 
               position="top-right"
               autoClose={3000}
@@ -52,8 +60,9 @@ function App() {
               pauseOnFocusLoss
               draggable
               pauseOnHover
+              theme="light"
             />
-          </MainLayout>
+          </Box>
         </ThemeProvider>
       </CartProvider>
     </AuthProvider>

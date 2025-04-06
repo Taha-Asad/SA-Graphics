@@ -1,5 +1,3 @@
-@import "tailwindcss/preflight";
-
 .titles {
   position: relative;
   display: inline-block;
@@ -36,4 +34,57 @@
   display: inline-block;
   color: #149ddd;
   animation: blink 1.5s infinite;
+}
+
+.typing {
+  position: relative;
+  display: inline-block;
+  color: #149ddd;
+}
+
+.typing::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -5px;
+  width: 100%;
+  height: 2px;
+  background-color: #149ddd;
+  transition: width 0.3s ease;
+}
+
+.cursor {
+  display: inline-block;
+  width: 3px;
+  height: 1em;
+  background-color: #149ddd;
+  margin-left: 5px;
+  animation: blink 0.7s infinite;
+  vertical-align: middle;
+}
+
+@keyframes blink {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+#home {
+  width: 100%;
+  height: 100vh;
+  background-color: #040404;
+}
+
+#home::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background: url('/assets/Hero/hero-bg.jpg') center center/cover no-repeat;
+  opacity: 0.3;
 }

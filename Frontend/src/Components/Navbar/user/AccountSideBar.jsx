@@ -61,15 +61,24 @@ const AccountSideBar = ({ onClose, open }) => {
       }
 
       try {
+        console.log('Fetching user stats for user:', user._id);
         const token = localStorage.getItem('token');
         const response = await axios.get('http://localhost:5000/api/v1/users/stats', {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { 
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
         });
         
+        console.log('Received user stats:', response.data);
         setUserStats(response.data);
         setError(null);
       } catch (err) {
-        console.error('Error fetching user stats:', err);
+        console.error('Detailed error fetching user stats:', {
+          message: err.message,
+          response: err.response?.data,
+          status: err.response?.status
+        });
         setError('Failed to load user statistics');
         toast.error('Failed to load user statistics');
       } finally {
@@ -77,7 +86,9 @@ const AccountSideBar = ({ onClose, open }) => {
       }
     };
 
-    fetchUserStats();
+    if (user) {
+      fetchUserStats();
+    }
   }, [user]);
 
   // Update form data when user changes
@@ -220,62 +231,49 @@ const AccountSideBar = ({ onClose, open }) => {
 
   // Dynamic menu items based on user role
   const getMenuItems = () => {
-    const baseItems = [
+    const items = [
       {
-        title: 'Home',
-        icon: <FiHome />,
-        path: '/'
+        icon: <BsPerson size={20} />,
+        text: 'Profile',
+        path: '/account/profile'
       },
-      { 
-        title: 'Orders', 
-        icon: <FiPackage />, 
-        path: '/orders'
+      {
+        icon: <FiPackage size={20} />,
+        text: 'Orders',
+        path: '/account/orders'
       },
-      { 
-        title: 'Track Order', 
-        icon: <FiTruck />, 
-        onClick: () => {
-          const lastOrderId = localStorage.getItem('lastOrderId');
-          if (lastOrderId) {
-            return `/track-order/${lastOrderId}`;
-          } else {
-            toast.info('Please select an order to track from your orders page');
-            return '/orders';
-          }
-        }
+      {
+        icon: <FiHeart size={20} />,
+        text: 'Wishlist',
+        path: '/account/wishlist'
       },
-      { 
-        title: 'Wishlist', 
-        icon: <FiHeart />, 
-        path: '/wishlist'
+      {
+        icon: <MdReviews size={20} />,
+        text: 'Reviews',
+        path: '/account/reviews'
       },
-      { 
-        title: 'Reviews', 
-        icon: <MdReviews />, 
-        path: '/my-reviews'
+      {
+        icon: <MdSecurity size={20} />,
+        text: 'Security',
+        path: '/account/security'
       },
-      { 
-        title: 'Security', 
-        icon: <MdSecurity />, 
-        path: '/security'
-      },
-      { 
-        title: 'Support', 
-        icon: <RiCustomerService2Line />, 
-        path: '/support'
+      {
+        icon: <RiCustomerService2Line size={20} />,
+        text: 'Support',
+        path: '/account/support'
       }
     ];
 
-    // Add admin-specific menu items
+    // Add admin dashboard link for admin users
     if (user?.role === 'admin') {
-      baseItems.unshift({
-        title: 'Admin Dashboard',
-        icon: <MdDashboard />,
+      items.unshift({
+        icon: <MdDashboard size={20} />,
+        text: 'Admin Dashboard',
         path: '/admin/dashboard'
       });
     }
 
-    return baseItems;
+    return items;
   };
 
   return (
@@ -551,19 +549,12 @@ const AccountSideBar = ({ onClose, open }) => {
               },
             }}>
               {getMenuItems().map((item) => (
-                <ListItem key={item.title} disablePadding>
+                <ListItem key={item.text} disablePadding>
                   <ListItemButton
-                    component={item.onClick ? 'button' : Link}
-                    to={!item.onClick ? item.path : undefined}
-                    onClick={(e) => {
-                      if (item.onClick) {
-                        e.preventDefault();
-                        const path = item.onClick();
-                        navigate(path);
-                      }
-                if (onClose) onClose();
-              }}
-              sx={{
+                    component={Link}
+                    to={item.path}
+                    onClick={onClose}
+                    sx={{
                       borderRadius: 1,
                       color: 'rgba(255, 255, 255, 0.85)',
                 '&:hover': {
@@ -580,7 +571,7 @@ const AccountSideBar = ({ onClose, open }) => {
                       {item.icon}
                     </ListItemIcon>
                     <ListItemText 
-                      primary={item.title}
+                      primary={item.text}
                       sx={{
                         '& .MuiTypography-root': {
                           fontSize: '0.95rem',
@@ -604,11 +595,11 @@ const AccountSideBar = ({ onClose, open }) => {
                 border: '1px solid rgba(255, 255, 255, 0.05)'
               }}
             >
-              <Typography variant="subtitle2" sx={{ 
+            <Typography variant="subtitle2" sx={{ 
                 color: 'rgba(255, 255, 255, 0.5)', 
                 mb: 1.5,
                 fontSize: '0.75rem',
-                letterSpacing: '1px',
+              letterSpacing: '1px',
                 fontWeight: 500
               }}>
                 ACCOUNT OVERVIEW
@@ -622,45 +613,122 @@ const AccountSideBar = ({ onClose, open }) => {
                   </>
                 ) : (
                   <>
-                    <Box sx={{ textAlign: 'center' }}>
-                      <Typography variant="h6" sx={{ 
-                        color: 'white',
-                        fontWeight: 500,
-                        fontSize: '1.1rem'
-                      }}>{userStats.orders}</Typography>
-                      <Typography variant="caption" sx={{ 
-                        color: 'rgba(255, 255, 255, 0.5)',
-                        fontSize: '0.75rem',
-                        letterSpacing: '0.5px'
-                      }}>
-                        Orders
+                    <Box 
+                      component={Link}
+                      to="/account/orders"
+                      onClick={onClose}
+                      sx={{
+                        textAlign: 'center',
+                        textDecoration: 'none',
+                        flex: 1,
+                        cursor: 'pointer',
+                        '&:hover': {
+                          '& .stat-number': { color: '#149ddd' }
+                        }
+                      }}
+                    >
+                      <Typography 
+                        className="stat-number"
+                        variant="h6" 
+                        sx={{ 
+                          color: 'white',
+                          fontWeight: 600,
+                          fontSize: '1.5rem',
+                          mb: 0.5,
+                          transition: 'color 0.2s ease'
+                        }}
+                      >
+                        {userStats.orders}
                       </Typography>
+                      <Typography 
+                        variant="caption" 
+                        sx={{ 
+                          color: 'rgba(255, 255, 255, 0.7)',
+                          fontSize: '0.75rem',
+                          letterSpacing: '0.5px',
+                          display: 'block'
+                        }}
+                      >
+                        Orders
+            </Typography>
                     </Box>
-                    <Box sx={{ textAlign: 'center' }}>
-                      <Typography variant="h6" sx={{ 
-                        color: 'white',
-                        fontWeight: 500,
-                        fontSize: '1.1rem'
-                      }}>{userStats.reviews}</Typography>
-                      <Typography variant="caption" sx={{ 
-                        color: 'rgba(255, 255, 255, 0.5)',
-                        fontSize: '0.75rem',
-                        letterSpacing: '0.5px'
-                      }}>
+
+                    <Box 
+                      component={Link}
+                      to="/account/reviews"
+                      onClick={onClose}
+                      sx={{
+                        textAlign: 'center',
+                        textDecoration: 'none',
+                        flex: 1,
+                        cursor: 'pointer',
+                        '&:hover': {
+                          '& .stat-number': { color: '#149ddd' }
+                        }
+                      }}
+                    >
+                      <Typography 
+                        className="stat-number"
+                        variant="h6" 
+                        sx={{ 
+                          color: 'white',
+                          fontWeight: 600,
+                          fontSize: '1.5rem',
+                          mb: 0.5,
+                          transition: 'color 0.2s ease'
+                        }}
+                      >
+                        {userStats.reviews}
+                      </Typography>
+                      <Typography 
+                        variant="caption" 
+                        sx={{ 
+                          color: 'rgba(255, 255, 255, 0.7)',
+                          fontSize: '0.75rem',
+                          letterSpacing: '0.5px',
+                          display: 'block'
+                        }}
+                      >
                         Reviews
                       </Typography>
                     </Box>
-                    <Box sx={{ textAlign: 'center' }}>
-                      <Typography variant="h6" sx={{ 
-                        color: 'white',
-                        fontWeight: 500,
-                        fontSize: '1.1rem'
-                      }}>{userStats.wishlist}</Typography>
-                      <Typography variant="caption" sx={{ 
-                        color: 'rgba(255, 255, 255, 0.5)',
-                        fontSize: '0.75rem',
-                        letterSpacing: '0.5px'
-                      }}>
+
+                    <Box 
+                      component={Link}
+                      to="/account/wishlist"
+                      onClick={onClose}
+              sx={{
+                        textAlign: 'center',
+                        textDecoration: 'none',
+                        flex: 1,
+                        cursor: 'pointer',
+                '&:hover': {
+                          '& .stat-number': { color: '#149ddd' }
+                        }
+                      }}
+                    >
+                      <Typography 
+                        className="stat-number"
+                        variant="h6" 
+                        sx={{ 
+                          color: 'white',
+                          fontWeight: 600,
+                          fontSize: '1.5rem',
+                          mb: 0.5,
+                          transition: 'color 0.2s ease'
+                        }}
+                      >
+                        {userStats.wishlist}
+                      </Typography>
+                      <Typography 
+                        variant="caption" 
+                        sx={{ 
+                          color: 'rgba(255, 255, 255, 0.7)',
+                          fontSize: '0.75rem',
+                          letterSpacing: '0.5px',
+                          display: 'block'
+                        }}
+                      >
                         Wishlist
                       </Typography>
                     </Box>
@@ -671,20 +739,20 @@ const AccountSideBar = ({ onClose, open }) => {
 
             {/* Logout Button */}
             <Box sx={{ p: 2, borderTop: '1px solid rgba(255, 255, 255, 0.08)' }}>
-              <Button
+            <Button
                 fullWidth
                 variant="contained"
-                onClick={handleLogout}
+              onClick={handleLogout}
                 startIcon={<BiLogOut />}
-                sx={{
+              sx={{
                   backgroundColor: '#149ddd',
                   color: 'white',
                   py: 1,
-                  '&:hover': {
+                '&:hover': {
                     backgroundColor: '#1187c1',
                   }
-                }}
-              >
+              }}
+            >
                 Logout
             </Button>
             </Box>

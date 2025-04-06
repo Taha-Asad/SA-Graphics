@@ -1,5 +1,6 @@
 import React, { createContext, useState, useEffect, useCallback, useContext } from "react";
 import axios from "axios";
+import LoadingFallback from "../Components/LoadingFallback";
 
 const AuthContext = createContext();
 
@@ -104,7 +105,7 @@ const AuthProvider = ({ children }) => {
   }, []);
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <LoadingFallback />;
   }
 
   return (

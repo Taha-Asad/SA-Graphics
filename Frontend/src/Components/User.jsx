@@ -1,8 +1,10 @@
-import React, { useEffect, useState, Suspense } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import { Element } from "react-scroll";
-import { Box, CircularProgress } from "@mui/material";
+import { Box } from "@mui/material";
+import Navbar from "./Navbar/Navbar";
+import Footer from "./Footer/Footer";
 
 // Direct imports instead of lazy loading
 import Home from "./Pages/Home/Home";
@@ -12,132 +14,114 @@ import Portfolio from "./Pages/Portfolio/Portfolio";
 import Services from "./Pages/Services/Services";
 import Testimonials from "./Pages/Testimonials/Testimonials";
 import Contact from "./Pages/Contact/Contact";
-import AddTestimonial from "./Pages/Testimonials/AddTestimonial";
-
-// Loading component
-const LoadingFallback = () => (
-  <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-    <CircularProgress />
-  </Box>
-);
 
 const User = () => {
   const [aosInitialized, setAosInitialized] = useState(false);
+  const scrollTimeoutRef = useRef(null);
+  const aosInitTimeoutRef = useRef(null);
 
   useEffect(() => {
-    console.log("User component mounted");
+    // Force scroll to top on mount
+    window.scrollTo({
+      top: 0,
+      left: 0,
+      behavior: 'instant'
+    });
     
-    // Force scroll to top first
-    window.scrollTo(0, 0);
-    document.body.scrollTop = 0;
+    // Prevent scroll restoration
+    if ('scrollRestoration' in history) {
+      history.scrollRestoration = 'manual';
+    }
 
     // Initialize AOS with optimized settings
     const initAOS = () => {
-      AOS.init({
-        duration: 800,
-        offset: 100,
-        easing: "ease-in-out",
-        once: true,
-        disable: window.innerWidth < 768,
-        startEvent: 'load',
-        mirror: false,
-        anchorPlacement: 'top-bottom',
-      });
-      setAosInitialized(true);
+      if (!aosInitialized) {
+        console.log("Initializing AOS");
+        AOS.init({
+          duration: 800,
+          offset: 100,
+          easing: "ease-in-out",
+          once: true,
+          mirror: false,
+          anchorPlacement: 'top-bottom',
+        });
+        setAosInitialized(true);
+      }
     };
 
-    const timer = setTimeout(initAOS, 300);
+    // Delay AOS initialization slightly to ensure DOM is ready
+    aosInitTimeoutRef.current = setTimeout(initAOS, 100);
 
-    let scrollTimeout;
     const handleScroll = () => {
-      if (scrollTimeout) clearTimeout(scrollTimeout);
-      scrollTimeout = setTimeout(() => {
-        if (aosInitialized) AOS.refresh();
+      if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
+      scrollTimeoutRef.current = setTimeout(() => {
+        if (aosInitialized) {
+          AOS.refresh();
+        }
       }, 150);
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
 
     return () => {
-      clearTimeout(timer);
-      clearTimeout(scrollTimeout);
+      if (aosInitTimeoutRef.current) clearTimeout(aosInitTimeoutRef.current);
+      if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
       window.removeEventListener('scroll', handleScroll);
+      
+      // Reset scroll restoration on unmount
+      if ('scrollRestoration' in history) {
+        history.scrollRestoration = 'auto';
+      }
     };
   }, [aosInitialized]);
 
-  const sectionStyle = {
-    py: { xs: 8, md: 4 }, // Consistent vertical padding
-    minHeight: '100vh', // Ensure minimum height
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'center',
-  };
-
   return (
-    <div className="user-container">
-      <Element 
-        name="home" 
-        data-aos="fade-up" 
-        data-aos-duration="800"
-        style={{ minHeight: '100vh' }} // Special case for home section
+    <Box 
+      sx={{ 
+        display: 'flex', 
+        flexDirection: 'column', 
+        minHeight: '100vh',
+        overflowX: 'hidden'
+      }}
+    >
+      <Navbar />
+      <Box 
+        component="main" 
+        sx={{ 
+          flex: '1 0 auto',
+          overflowX: 'hidden'
+        }}
       >
-        <Home />
-      </Element>
-      
-      <Element 
-        name="about" 
-        data-aos="fade-up" 
-        data-aos-duration="800"
-        style={sectionStyle}
-      >
-        <About />
-      </Element>
-      
-      <Element 
-        name="resume" 
-        data-aos="fade-up" 
-        data-aos-duration="800"
-        style={sectionStyle}
-      >
-        <Resume />
-      </Element>
-      
-      <Element 
-        name="portfolio" 
-        data-aos="fade-up" 
-        data-aos-duration="800"
-        style={sectionStyle}
-      >
-        <Portfolio/>
-      </Element>
-      
-      <Element 
-        name="service" 
-        data-aos="fade-up" 
-        data-aos-duration="800"
-        style={sectionStyle}
-      >
-        <Services />
-      </Element>
-      
-      <Element 
-        name="testimonials" 
-        data-aos="fade-up" 
-        data-aos-duration="800"
-        style={sectionStyle}
-      >
-        <Testimonials />
-      </Element>
-      
-      <Element 
-        name="contact" 
-        data-aos="fade-up" 
-        data-aos-duration="800"
-        style={sectionStyle}
-      >
-        <Contact />
-      </Element>
-    </div>
+        <Element name="home">
+          <Home />
+        </Element>
+        
+        <Element name="about">
+          <About />
+        </Element>
+        
+        <Element name="resume">
+          <Resume />
+        </Element>
+        
+        <Element name="portfolio">
+          <Portfolio />
+        </Element>
+        
+        <Element name="services">
+          <Services />
+        </Element>
+        
+        <Element name="testimonials">
+          <Testimonials />
+        </Element>
+        
+        <Element name="contact">
+          <Contact />
+        </Element>
+      </Box>
+      <Footer />
+    </Box>
   );
 };
 

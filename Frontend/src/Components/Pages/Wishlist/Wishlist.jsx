@@ -46,7 +46,7 @@ const Wishlist = () => {
       });
       setWishlistItems(response.data.data.items);
     } catch (error) {
-      toast.error('Failed to fetch wishlist');
+      toast.error('Failed to fetch wishlist' , error);
     } finally {
       setLoading(false);
     }
@@ -62,7 +62,7 @@ const Wishlist = () => {
       setWishlistItems(items => items.filter(item => item.book._id !== bookId));
       toast.success('Removed from wishlist');
     } catch (error) {
-      toast.error('Failed to remove from wishlist');
+      toast.error('Failed to remove from wishlist' , error);
     }
   };
 
@@ -87,7 +87,7 @@ const Wishlist = () => {
   }
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Container maxWidth="lg" sx={{ py: 4}}>
       <Button
         startIcon={<BiArrowBack />}
         onClick={() => navigate(-1)}

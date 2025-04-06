@@ -5,24 +5,23 @@ const crypto = require('crypto');
 const userSchema = new mongoose.Schema({
   name: {
     type: String,
-    required: [true, 'Please provide your name'],
+    required: [true, 'Please provide a name'],
     trim: true,
-    maxlength: [50, 'Name cannot exceed 50 characters']
+    minlength: [3, 'Name must be at least 3 characters long'],
+    maxlength: [50, 'Name cannot be more than 50 characters']
   },
   email: {
     type: String,
-    required: [true, 'Please provide your email'],
+    required: [true, 'Please provide an email'],
     unique: true,
+    trim: true,
     lowercase: true,
-    validate: {
-      validator: (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email),
-      message: 'Please provide a valid email address'
-    }
+    match: [/^\S+@\S+\.\S+$/, 'Please provide a valid email']
   },
   password: {
     type: String,
     required: [true, 'Please provide a password'],
-    minlength: [6, 'Password must be at least 6 characters'],
+    minlength: [6, 'Password must be at least 6 characters long'],
     select: false
   },
   phoneNo: {
@@ -40,15 +39,19 @@ const userSchema = new mongoose.Schema({
   },
   profilePic: {
     type: String,
-    default: 'default.jpg'
+    default: null
   },
   role: {
     type: String,
     enum: ['user', 'admin'],
     default: 'user'
   },
+  createdAt: {
+    type: Date,
+    default: Date.now
+  },
   resetPasswordToken: String,
-  resetPasswordExpires: Date,
+  resetPasswordExpire: Date,
   active: {
     type: Boolean,
     default: true,
@@ -60,34 +63,28 @@ const userSchema = new mongoose.Schema({
   toObject: { virtuals: true }
 });
 
-// Password hashing middleware
+// Hash password before saving
 userSchema.pre('save', async function(next) {
+  // Only hash the password if it has been modified (or is new)
   if (!this.isModified('password')) return next();
-  
-  this.password = await bcrypt.hash(this.password, 12);
-  next();
+
+  try {
+    // Generate salt
+    const salt = await bcrypt.genSalt(10);
+    // Hash password
+    this.password = await bcrypt.hash(this.password, salt);
+    next();
+  } catch (error) {
+    next(error);
+  }
 });
 
-// Method to compare passwords
-userSchema.methods.correctPassword = async function(candidatePassword) {
+// Method to compare password
+userSchema.methods.comparePassword = async function(candidatePassword) {
   try {
-    console.log('🔐 Password comparison details:', {
-      candidatePasswordLength: candidatePassword?.length,
-      storedHashLength: this.password?.length,
-      hasStoredHash: !!this.password
-    });
-
-    if (!this.password) {
-      console.error('❌ No stored password hash found');
-      return false;
-    }
-
-    const isMatch = await bcrypt.compare(candidatePassword, this.password);
-    console.log('🔑 Password comparison result:', isMatch);
-    return isMatch;
+    return await bcrypt.compare(candidatePassword, this.password);
   } catch (error) {
-    console.error('❌ Password comparison error:', error);
-    return false;
+    throw new Error(error);
   }
 };
 
@@ -100,7 +97,7 @@ userSchema.methods.createPasswordResetToken = function() {
     .update(resetToken)
     .digest('hex');
   
-  this.resetPasswordExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
+  this.resetPasswordExpire = Date.now() + 10 * 60 * 1000; // 10 minutes
   
   return resetToken;
 };

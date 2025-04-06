@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Order = require('../models/Order.model');
-const auth = require('../middleware/auth');
+const { auth } = require('../middleware/auth');
 const { sendOrderConfirmationEmail } = require('../utils/sendEmail');
 
 // Create a new order (checkout)

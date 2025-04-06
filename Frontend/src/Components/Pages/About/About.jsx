@@ -2,7 +2,6 @@ import React from 'react'
 import image from "/assets/PFP/my-profile-img.jpg"
 import { IoIosArrowForward } from "react-icons/io";
 
-import "../../../index.css"
 import { Box, Container, Grid, Stack, Typography } from '@mui/material';
 const About = () => {
   return (
@@ -11,6 +10,7 @@ const About = () => {
       id='about'
        sx={
         {
+          backgroundColor: "#FAF4FD",
           position: "relative",
           marginTop: "-80px",
         }
