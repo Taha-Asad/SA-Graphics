@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const Review = require('../models/Review');
-const User = require('../models/user.model');
-const { auth } = require('../middleware/auth');
-const { sendEmail } = require('../config/nodemailer');
+const Review = require("../models/reviews.model.js")
+const User = require('../models/user.model.js');
+const { auth } = require('../middleware/auth.js');
+const { sendEmail } = require('../config/nodemailer.js');
 const ejs = require('ejs');
 const path = require('path');
 

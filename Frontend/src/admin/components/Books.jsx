@@ -21,8 +21,12 @@ import {
 } from '@mui/material';
 import { Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import axiosInstance from '../../config/axios';
+import { useAuth } from '../../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const Books = () => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const [books, setBooks] = useState([]);
   const [open, setOpen] = useState(false);
   const [selectedBook, setSelectedBook] = useState(null);
@@ -36,15 +40,22 @@ const Books = () => {
     stock: '',
     publishDate: '',
     countInStock: '',
-    image: null,
+    discount: 0,
+    coverImage: null,
   });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Check if user is logged in and is an admin
+    if (!user || user.role !== 'admin') {
+      navigate('/login');
+      return;
+    }
+    
     fetchBooks();
-  }, []);
+  }, [user, navigate]);
 
   const fetchBooks = async () => {
     try {
@@ -75,7 +86,8 @@ const Books = () => {
         stock: book.stock || '',
         publishDate: book.publishDate ? new Date(book.publishDate).toISOString().split('T')[0] : '',
         countInStock: book.countInStock || '',
-        image: null,
+        discount: book.discount || 0,
+        coverImage: null,
       });
     } else {
       setSelectedBook(null);
@@ -89,7 +101,8 @@ const Books = () => {
         stock: '',
         publishDate: '',
         countInStock: '',
-        image: null,
+        discount: 0,
+        coverImage: null,
       });
     }
     setOpen(true);
@@ -108,13 +121,14 @@ const Books = () => {
       stock: '',
       publishDate: '',
       countInStock: '',
-      image: null,
+      discount: 0,
+      coverImage: null,
     });
   };
 
   const handleChange = (e) => {
-    if (e.target.name === 'image') {
-      setFormData({ ...formData, image: e.target.files[0] });
+    if (e.target.name === 'coverImage') {
+      setFormData({ ...formData, coverImage: e.target.files[0] });
     } else {
       setFormData({ ...formData, [e.target.name]: e.target.value });
     }
@@ -122,29 +136,52 @@ const Books = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Check if user is logged in and is an admin
+    if (!user || user.role !== 'admin') {
+      setError('You must be logged in as an admin to perform this action');
+      navigate('/login');
+      return;
+    }
+    
     try {
+      // Validate required fields
+      const requiredFields = ['title', 'author', 'description', 'isbn', 'category', 'publishDate'];
+      const missingFields = requiredFields.filter(field => !formData[field]);
+      
+      if (missingFields.length > 0) {
+        setError(`Missing required fields: ${missingFields.join(', ')}`);
+        return;
+      }
+
+      // Validate image for new books
+      if (!selectedBook && !formData.coverImage) {
+        setError('Cover image is required for new books');
+        return;
+      }
+
       const formDataToSend = new FormData();
       
       // First append the image if it exists
-      if (formData.image) {
-        formDataToSend.append('image', formData.image);
+      if (formData.coverImage) {
+        formDataToSend.append('coverImage', formData.coverImage);
       }
 
-      // Convert numeric fields
+      // Convert and validate numeric fields
       const numericFields = {
-        price: formData.price,
-        stock: formData.stock,
-        countInStock: formData.countInStock
+        price: parseFloat(formData.price) || 0,
+        stock: parseInt(formData.stock) || 0,
+        countInStock: parseInt(formData.countInStock) || 0
       };
 
-      // Append all other fields
+      // Append all fields to FormData
       Object.keys(formData).forEach(key => {
-        if (key !== 'image') {
+        if (key !== 'coverImage') {
           let value = formData[key];
           
           // Convert numeric fields
           if (key in numericFields) {
-            value = Number(value);
+            value = numericFields[key];
           }
           
           // Convert date field
@@ -156,11 +193,36 @@ const Books = () => {
         }
       });
 
+      // Get the token from localStorage
+      const token = localStorage.getItem('token');
+      
+      // Set up the config with the token
       const config = {
         headers: {
-          'Content-Type': 'multipart/form-data',
+          'Authorization': `Bearer ${token}`,
+          // Don't set Content-Type here, let the browser set it with the boundary
         },
       };
+
+      console.log('Submitting form data:', {
+        title: formDataToSend.get('title'),
+        author: formDataToSend.get('author'),
+        description: formDataToSend.get('description'),
+        price: formDataToSend.get('price'),
+        isbn: formDataToSend.get('isbn'),
+        category: formDataToSend.get('category'),
+        publishDate: formDataToSend.get('publishDate'),
+        stock: formDataToSend.get('stock'),
+        countInStock: formDataToSend.get('countInStock'),
+        discount: formDataToSend.get('discount'),
+        coverImage: formDataToSend.get('coverImage')
+      });
+      
+      console.log('Request config:', {
+        headers: config.headers,
+        url: selectedBook ? `/books/${selectedBook._id}` : '/books',
+        method: selectedBook ? 'PUT' : 'POST'
+      });
 
       if (selectedBook) {
         await axiosInstance.put(`/books/${selectedBook._id}`, formDataToSend, config);
@@ -174,8 +236,39 @@ const Books = () => {
       handleClose();
     } catch (error) {
       console.error('Error saving book:', error);
-      const errorMessage = error.response?.data?.message || error.response?.data?.error || 'Failed to save book';
+      console.error('Error details:', {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status,
+        headers: error.response?.headers
+      });
+      
+      let errorMessage = 'Failed to save book';
+      
+      if (error.response) {
+        // The request was made and the server responded with a status code
+        // that falls out of the range of 2xx
+        errorMessage = error.response.data?.message || error.response.data?.error || errorMessage;
+        
+        // If there are validation errors, display them
+        if (error.response.data?.errors) {
+          const validationErrors = Object.values(error.response.data.errors).join(', ');
+          errorMessage = `Validation errors: ${validationErrors}`;
+        }
+      } else if (error.request) {
+        // The request was made but no response was received
+        errorMessage = 'No response from server. Please check your connection.';
+      } else {
+        // Something happened in setting up the request that triggered an Error
+        errorMessage = error.message;
+      }
+      
       setError(errorMessage);
+      
+      // If unauthorized, redirect to login
+      if (error.response?.status === 401) {
+        navigate('/login');
+      }
     }
   };
 
@@ -186,6 +279,7 @@ const Books = () => {
         setSuccess('Book deleted successfully');
         fetchBooks();
       } catch (error) {
+        console.error('Error deleting book:', error);
         setError('Failed to delete book');
       }
     }
@@ -218,7 +312,7 @@ const Books = () => {
               <TableRow key={book._id}>
                 <TableCell>{book.title}</TableCell>
                 <TableCell>{book.author}</TableCell>
-                <TableCell>${book.price}</TableCell>
+                <TableCell>Rs. {book.price}</TableCell>
                 <TableCell>
                   <IconButton onClick={() => handleOpen(book)}>
                     <EditIcon />
@@ -289,12 +383,27 @@ const Books = () => {
               />
               <TextField
                 name="price"
-                label="Price"
+                label="Price (Rs.)"
                 type="number"
                 value={formData.price}
                 onChange={handleChange}
                 fullWidth
                 required
+                helperText="Enter price in Rupees"
+              />
+              <TextField
+                name="discount"
+                label="Discount (%)"
+                type="number"
+                value={formData.discount}
+                onChange={handleChange}
+                fullWidth
+                InputProps={{
+                  inputProps: {
+                    min: 0,
+                    max: 100
+                  }
+                }}
               />
               <TextField
                 name="stock"
@@ -322,20 +431,37 @@ const Books = () => {
                 onChange={handleChange}
                 fullWidth
                 required
-                InputLabelProps={{ shrink: true }}
+                InputLabelProps={{
+                  shrink: true,
+                }}
               />
               <input
                 accept="image/*"
+                id="coverImage"
+                name="coverImage"
                 type="file"
-                name="image"
                 onChange={handleChange}
-                style={{ marginTop: '1rem' }}
+                style={{ display: 'none' }}
               />
+              <label htmlFor="coverImage">
+                <Button
+                  variant="outlined"
+                  component="span"
+                  fullWidth
+                >
+                  {selectedBook ? 'Change Cover Image' : 'Upload Cover Image'}
+                </Button>
+              </label>
+              {formData.coverImage && (
+                <Typography variant="caption">
+                  Selected file: {formData.coverImage.name}
+                </Typography>
+              )}
             </Stack>
           </DialogContent>
           <DialogActions>
             <Button onClick={handleClose}>Cancel</Button>
-            <Button type="submit" variant="contained" color="primary">
+            <Button type="submit" variant="contained">
               {selectedBook ? 'Update' : 'Create'}
             </Button>
           </DialogActions>

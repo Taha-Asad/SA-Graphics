@@ -1,5 +1,5 @@
 import React, { createContext, useState, useEffect, useCallback, useContext } from "react";
-import axios from "axios";
+import axiosInstance from "../config/axios";
 import LoadingFallback from "../Components/LoadingFallback";
 
 const AuthContext = createContext();
@@ -41,7 +41,7 @@ const AuthProvider = ({ children }) => {
         }
 
         // Set up axios default headers
-        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
         // Ensure user has a role property
         if (!parsedUser.role) {
@@ -75,7 +75,7 @@ const AuthProvider = ({ children }) => {
     }
 
     // Set up axios default headers
-    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
     localStorage.setItem("token", token);
     localStorage.setItem("user", JSON.stringify(userData));
@@ -100,7 +100,7 @@ const AuthProvider = ({ children }) => {
   const logout = useCallback(() => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
-    delete axios.defaults.headers.common['Authorization'];
+    delete axiosInstance.defaults.headers.common['Authorization'];
     setUser(null);
   }, []);
 

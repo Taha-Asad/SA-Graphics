@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { Box, CssBaseline, Drawer, AppBar, Toolbar, List, Typography, Divider, IconButton, ListItem, ListItemButton, ListItemIcon, ListItemText, useTheme } from '@mui/material';
-import { Menu as MenuIcon, ChevronLeft as ChevronLeftIcon, ChevronRight as ChevronRightIcon, Dashboard as DashboardIcon, People as PeopleIcon, ShoppingCart as OrdersIcon, RateReview as ReviewsIcon, Settings as SettingsIcon, Logout as LogoutIcon } from '@mui/icons-material';
+import { Menu as MenuIcon, ChevronLeft as ChevronLeftIcon, ChevronRight as ChevronRightIcon, Dashboard as DashboardIcon, People as PeopleIcon, ShoppingCart as OrdersIcon, RateReview as ReviewsIcon, Settings as SettingsIcon, Logout as LogoutIcon, Email as EmailIcon } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
-import { useNavigate, useLocation, Outlet } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
+import AdminRoutes from './AdminRoutes';
 
 const drawerWidth = 240;
 
@@ -53,11 +54,12 @@ const DrawerHeader = styled('div')(({ theme }) => ({
 }));
 
 const menuItems = [
-  { text: 'Dashboard', icon: <DashboardIcon />, path: '/admin/dashboard' },
+  { text: 'Dashboard', icon: <DashboardIcon />, path: '/admin' },
   { text: 'Users', icon: <PeopleIcon />, path: '/admin/users' },
   { text: 'Orders', icon: <OrdersIcon />, path: '/admin/orders' },
   { text: 'Reviews', icon: <ReviewsIcon />, path: '/admin/reviews' },
-  { text: 'Settings', icon: <SettingsIcon />, path: '/admin/settings' },
+  { text: 'Contact Forms', icon: <EmailIcon />, path: '/admin/contacts' },
+  { text: 'Settings', icon: <SettingsIcon />, path: '/admin/settings' }
 ];
 
 const Admin = () => {
@@ -155,7 +157,7 @@ const Admin = () => {
       </Drawer>
       <Main open={open}>
         <DrawerHeader />
-        <Outlet />
+        <AdminRoutes />
       </Main>
     </Box>
   );

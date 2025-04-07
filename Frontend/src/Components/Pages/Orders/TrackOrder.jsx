@@ -83,10 +83,10 @@ const getImageUrl = (item) => {
   }
 
   // If we have a populated bookId with image
-  if (item.bookId?.image) {
-    const url = item.bookId.image.startsWith('http') 
-      ? item.bookId.image 
-      : `/uploads/${item.bookId.image}`; // Remove API_URL for relative path
+  if (item.bookId?.coverImage) {
+    const url = item.bookId.coverImage.startsWith('http')
+      ? item.bookId.coverImage
+      : `/uploads/${item.bookId.coverImage}`; // Remove API_URL for relative path
     console.log('Book image URL:', url);
     return url;
   }
@@ -102,6 +102,67 @@ const getImageUrl = (item) => {
   
   console.log('No image found, using placeholder');
   return PLACEHOLDER_IMAGE;
+};
+
+const getItemPrice = (item) => {
+  if (item.service) return item.price;
+  
+  // If we have a populated bookId with discount
+  if (item.bookId?.discount > 0) {
+    const discountedPrice = item.bookId.price - (item.bookId.price * item.bookId.discount / 100);
+    return discountedPrice;
+  }
+  
+  // If we have a direct discount
+  if (item.discount > 0) {
+    const discountedPrice = item.price - (item.price * item.discount / 100);
+    return discountedPrice;
+  }
+  
+  // If we have a direct discountedPrice
+  if (item.discountedPrice) {
+    return item.discountedPrice;
+  }
+  
+  // Default to regular price
+  return item.price;
+};
+
+const getItemDisplayPrice = (item) => {
+  if (item.service) return `Rs. ${item.price}`;
+  
+  // If we have a populated bookId with discount
+  if (item.bookId?.discount > 0) {
+    return (
+      <>
+        <span style={{ textDecoration: 'line-through', color: 'gray', marginRight: '8px' }}>
+          Rs. {item.bookId.price}
+        </span>
+        Rs. {item.bookId.price - (item.bookId.price * item.bookId.discount / 100)}
+        <span style={{ color: 'red', marginLeft: '8px' }}>
+          ({item.bookId.discount}% off)
+        </span>
+      </>
+    );
+  }
+  
+  // If we have a direct discount
+  if (item.discount > 0) {
+    return (
+      <>
+        <span style={{ textDecoration: 'line-through', color: 'gray', marginRight: '8px' }}>
+          Rs. {item.price}
+        </span>
+        Rs. {item.price - (item.price * item.discount / 100)}
+        <span style={{ color: 'red', marginLeft: '8px' }}>
+          ({item.discount}% off)
+        </span>
+      </>
+    );
+  }
+  
+  // Default to regular price
+  return `Rs. ${item.price}`;
 };
 
 const OrderItem = React.memo(({ item }) => {
@@ -182,11 +243,11 @@ const OrderItem = React.memo(({ item }) => {
           {title}
         </Typography>
         <Typography variant="body2" color="textSecondary">
-          Quantity: {item.quantity} × Rs. {item.price}
+          Quantity: {item.quantity} × {getItemDisplayPrice(item)}
         </Typography>
       </Box>
       <Typography variant="subtitle1">
-        Rs. {item.quantity * item.price}
+        Rs. {getItemPrice(item) * item.quantity}
       </Typography>
     </Box>
   );

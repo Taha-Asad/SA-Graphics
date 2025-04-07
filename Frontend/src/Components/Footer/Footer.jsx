@@ -1,7 +1,11 @@
 import React from 'react';
-import { Box, Container, Grid, Typography, Link, IconButton, Divider } from '@mui/material';
-import { FaFacebook, FaTwitter, FaInstagram, FaLinkedin, FaYoutube } from 'react-icons/fa';
+import { Box, Container, Grid, Typography, Link } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
+import FacebookIcon from '@mui/icons-material/Facebook';
+import TwitterIcon from '@mui/icons-material/Twitter';
+import InstagramIcon from '@mui/icons-material/Instagram';
+import LinkedInIcon from '@mui/icons-material/LinkedIn';
+import YouTubeIcon from '@mui/icons-material/YouTube';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -10,132 +14,259 @@ const Footer = () => {
     <Box
       component="footer"
       sx={{
-        py: 6,
-        px: 2,
-        backgroundColor: '#1a1a1a',
+        backgroundColor: '#040B14',
         color: 'white',
-        width: '100%',
-        position: 'relative',
-        marginTop: { md:'-10%' , xs:'10%'},
-        zIndex: 1
+        py: 4,
+        borderTop: '1px solid rgba(255, 255, 255, 0.1)'
       }}
     >
       <Container maxWidth="lg">
-        <Grid container spacing={4}>
+        <Grid container spacing={2}>
           {/* Company Info */}
-          <Grid item xs={12} sm={6} md={3}>
-            <Typography variant="h6" component="div" gutterBottom>
-              SA Graphics
+          <Grid item xs={12} md={3}>
+            <Typography 
+              variant="h6" 
+              sx={{ 
+                color: '#fff',
+                fontSize: '1.3rem',
+                fontWeight: 600,
+                lineHeight: 1,
+                mb: 1
+              }}
+            >
+              SHERAZ
             </Typography>
-            <Typography variant="body2" component="div" color="rgba(255, 255, 255, 0.7)">
-              Your trusted partner for high-quality printing and design services.
+            <Typography 
+              variant="h6" 
+              sx={{ 
+                color: '#149ddd',
+                fontSize: '1.3rem',
+                fontWeight: 600,
+                lineHeight: 1,
+                mb: 3
+              }}
+            >
+              AMJAD
             </Typography>
-            <Box sx={{ mt: 2 }}>
-              <IconButton color="inherit" aria-label="Facebook">
-                <FaFacebook />
-              </IconButton>
-              <IconButton color="inherit" aria-label="Twitter">
-                <FaTwitter />
-              </IconButton>
-              <IconButton color="inherit" aria-label="Instagram">
-                <FaInstagram />
-              </IconButton>
-              <IconButton color="inherit" aria-label="LinkedIn">
-                <FaLinkedin />
-              </IconButton>
-              <IconButton color="inherit" aria-label="YouTube">
-                <FaYoutube />
-              </IconButton>
+            <Box 
+              sx={{ 
+                display: 'flex',
+                gap: 2,
+                '& a': {
+                  color: '#f5f5f5',
+                  backgroundColor: '#1e242c',
+                  p: 1,
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'all 1s ease',
+                  '&:hover': {
+                    backgroundColor: '#149ddd',
+                    transform: 'translateY(-3px)'
+                  }
+                }
+              }}
+            >
+              <Link href="#" aria-label="Facebook">
+                <FacebookIcon />
+              </Link>
+              <Link href="#" aria-label="Twitter">
+                <TwitterIcon />
+              </Link>
+              <Link href="#" aria-label="Instagram">
+                <InstagramIcon />
+              </Link>
+              <Link href="#" aria-label="LinkedIn">
+                <LinkedInIcon />
+              </Link>
+              <Link href="#" aria-label="YouTube">
+                <YouTubeIcon />
+              </Link>
             </Box>
           </Grid>
 
           {/* Quick Links */}
-          <Grid item xs={12} sm={6} md={3}>
-            <Typography variant="h6" component="div" gutterBottom>
+          <Grid item xs={12} md={3}>
+            <Typography 
+              variant="h6" 
+              sx={{ 
+                color: '#fff',
+                fontSize: '1.2rem',
+                fontWeight: 600,
+                mb: 2
+              }}
+            >
               Quick Links
             </Typography>
-            <Link component={RouterLink} to="/" color="inherit" display="block" sx={{ mb: 1 }}>
-              Home
-            </Link>
-            <Link component={RouterLink} to="/about" color="inherit" display="block" sx={{ mb: 1 }}>
-              About Us
-            </Link>
-            <Link component={RouterLink} to="/services" color="inherit" display="block" sx={{ mb: 1 }}>
-              Services
-            </Link>
-            <Link component={RouterLink} to="/portfolio" color="inherit" display="block" sx={{ mb: 1 }}>
-              Portfolio
-            </Link>
-            <Link component={RouterLink} to="/contact" color="inherit" display="block" sx={{ mb: 1 }}>
-              Contact
-            </Link>
+            <Box sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 1,
+              '& a': {
+                color: '#fff',
+                textDecoration: 'none',
+                fontSize: '1.1rem',
+                position: 'relative',
+                padding: '5px 0',
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  color: '#149ddd',
+                  transform: 'translateY(-3px)'
+                },
+                '&::before': {
+                  content: '""',
+                  position: 'absolute',
+                  width: '100%',
+                  height: '2px',
+                  bottom: 0,
+                  left: 0,
+                  backgroundColor: '#149ddd',
+                  transform: 'scaleX(0)',
+                  transformOrigin: 'right',
+                  transition: 'transform 0.3s ease'
+                },
+                '&:hover::before': {
+                  transform: 'scaleX(1)',
+                  transformOrigin: 'left'
+                }
+              }
+            }}>
+              <Link component={RouterLink} to="/">Home</Link>
+              <Link component={RouterLink} to="/about">About Us</Link>
+              <Link component={RouterLink} to="/services">Services</Link>
+              <Link component={RouterLink} to="/portfolio">Portfolio</Link>
+              <Link component={RouterLink} to="/contact">Contact</Link>
+            </Box>
           </Grid>
 
           {/* Services */}
-          <Grid item xs={12} sm={6} md={3}>
-            <Typography variant="h6" component="div" gutterBottom>
+          <Grid item xs={12} md={3}>
+            <Typography 
+              variant="h6" 
+              sx={{ 
+                color: '#fff',
+                fontSize: '1.2rem',
+                fontWeight: 600,
+                mb: 2
+              }}
+            >
               Services
             </Typography>
-            <Link component={RouterLink} to="/services/printing" color="inherit" display="block" sx={{ mb: 1 }}>
-              Printing
-            </Link>
-            <Link component={RouterLink} to="/services/design" color="inherit" display="block" sx={{ mb: 1 }}>
-              Design
-            </Link>
-            <Link component={RouterLink} to="/services/branding" color="inherit" display="block" sx={{ mb: 1 }}>
-              Branding
-            </Link>
-            <Link component={RouterLink} to="/services/signage" color="inherit" display="block" sx={{ mb: 1 }}>
-              Signage
-            </Link>
-            <Link component={RouterLink} to="/services/packaging" color="inherit" display="block" sx={{ mb: 1 }}>
-              Packaging
-            </Link>
+            <Box sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 1,
+              '& a': {
+                color: '#fff',
+                textDecoration: 'none',
+                fontSize: '1.1rem',
+                position: 'relative',
+                padding: '5px 0',
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  color: '#149ddd',
+                  transform: 'translateY(-3px)'
+                },
+                '&::before': {
+                  content: '""',
+                  position: 'absolute',
+                  width: '100%',
+                  height: '2px',
+                  bottom: 0,
+                  left: 0,
+                  backgroundColor: '#149ddd',
+                  transform: 'scaleX(0)',
+                  transformOrigin: 'right',
+                  transition: 'transform 0.3s ease'
+                },
+                '&:hover::before': {
+                  transform: 'scaleX(1)',
+                  transformOrigin: 'left'
+                }
+              }
+            }}>
+              <Link component={RouterLink} to="/services/printing">Printing</Link>
+              <Link component={RouterLink} to="/services/design">Design</Link>
+              <Link component={RouterLink} to="/services/branding">Branding</Link>
+              <Link component={RouterLink} to="/services/signage">Signage</Link>
+              <Link component={RouterLink} to="/services/packaging">Packaging</Link>
+            </Box>
           </Grid>
 
           {/* Contact Info */}
-          <Grid item xs={12} sm={6} md={3}>
-            <Typography variant="h6" component="div" gutterBottom>
+          <Grid item xs={12} md={3}>
+            <Typography 
+              variant="h6" 
+              sx={{ 
+                color: '#fff',
+                fontSize: '1.2rem',
+                fontWeight: 600,
+                mb: 2
+              }}
+            >
               Contact Us
             </Typography>
-            <Typography variant="body2" component="div" color="rgba(255, 255, 255, 0.7)" sx={{ mb: 1 }}>
-              123 Business Street
-            </Typography>
-            <Typography variant="body2" component="div" color="rgba(255, 255, 255, 0.7)" sx={{ mb: 1 }}>
-              City, State 12345
-            </Typography>
-            <Typography variant="body2" component="div" color="rgba(255, 255, 255, 0.7)" sx={{ mb: 1 }}>
-              Phone: (123) 456-7890
-            </Typography>
-            <Typography variant="body2" component="div" color="rgba(255, 255, 255, 0.7)" sx={{ mb: 1 }}>
-              Email: info@sagraphics.com
-            </Typography>
-          </Grid>
-        </Grid>
-
-        <Divider sx={{ my: 4, borderColor: 'rgba(255, 255, 255, 0.1)' }} />
-
-        {/* Copyright and Disclaimer */}
-        <Grid container spacing={2} justifyContent="space-between" alignItems="center">
-          <Grid item xs={12} sm={6}>
-            <Typography variant="body2" component="div" color="rgba(255, 255, 255, 0.7)" align="center" sx={{ textAlign: { sm: 'left' } }}>
-              © {currentYear} SA Graphics. All rights reserved.
-            </Typography>
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <Box sx={{ textAlign: { xs: 'center', sm: 'right' } }}>
-              <Link component={RouterLink} to="/privacy" color="inherit" sx={{ mx: 1 }}>
-                Privacy Policy
-              </Link>
-              <Link component={RouterLink} to="/terms" color="inherit" sx={{ mx: 1 }}>
-                Terms of Service
-              </Link>
-              <Link component={RouterLink} to="/disclaimer" color="inherit" sx={{ mx: 1 }}>
-                Disclaimer
-              </Link>
+            <Box sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 1,
+              '& p': {
+                color: '#fff',
+                fontSize: '1.1rem',
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  color: '#149ddd'
+                }
+              }
+            }}>
+              <Typography>123 Business Street</Typography>
+              <Typography>City, State 12345</Typography>
+              <Typography>Phone: (123) 456-7890</Typography>
+              <Typography>Email: info@sagraphics.com</Typography>
             </Box>
           </Grid>
         </Grid>
+
+        {/* Copyright Section */}
+        <Box 
+          sx={{
+            mt: 4,
+            pt: 3,
+            borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+            display: 'flex',
+            flexDirection: { xs: 'column', md: 'row' },
+            justifyContent: 'space-between',
+            alignItems: { xs: 'center', md: 'center' },
+            gap: 2
+          }}
+        >
+          <Typography 
+            sx={{ 
+              color: 'rgba(255, 255, 255, 0.7)',
+              fontSize: '0.9rem'
+            }}
+          >
+            © {currentYear} SA Graphics. All rights reserved.
+          </Typography>
+          <Box sx={{
+            display: 'flex',
+            gap: 3,
+            '& a': {
+              color: 'rgba(255, 255, 255, 0.7)',
+              textDecoration: 'none',
+              fontSize: '1rem',
+              transition: 'color 0.3s ease',
+              '&:hover': {
+                color: '#149ddd'
+              }
+            }
+          }}>
+            <Link component={RouterLink} to="/privacy">Privacy Policy</Link>
+            <Link component={RouterLink} to="/terms">Terms of Service</Link>
+            <Link component={RouterLink} to="/disclaimer">Disclaimer</Link>
+          </Box>
+        </Box>
       </Container>
     </Box>
   );

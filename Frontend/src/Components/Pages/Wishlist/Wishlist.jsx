@@ -147,10 +147,9 @@ const Wishlist = () => {
               >
                 <CardMedia
                   component="img"
-                  height="200"
-                  image={item.book.image}
+                  height="140"
+                  image={item.book.coverImage || 'https://via.placeholder.com/300x200?text=No+Image'}
                   alt={item.book.title}
-                  sx={{ objectFit: 'cover' }}
                 />
                 <IconButton
                   onClick={() => handleRemoveFromWishlist(item.book._id)}
@@ -210,7 +209,19 @@ const Wishlist = () => {
                     color="primary"
                     sx={{ mb: 2 }}
                   >
-                    Rs. {item.book.price}
+                    {item.book.discount > 0 ? (
+                      <>
+                        <span style={{ textDecoration: 'line-through', color: 'gray', marginRight: '8px' }}>
+                          Rs. {item.book.price}
+                        </span>
+                        Rs. {item.book.price - (item.book.price * item.book.discount / 100)}
+                        <span style={{ color: 'red', marginLeft: '8px' }}>
+                          ({item.book.discount}% off)
+                        </span>
+                      </>
+                    ) : (
+                      `Rs. ${item.book.price}`
+                    )}
                   </Typography>
                   <Button
                     variant="contained"

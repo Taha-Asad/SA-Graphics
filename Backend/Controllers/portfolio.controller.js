@@ -13,7 +13,7 @@ exports.createProject = async (req, res) => {
       });
     }
 
-    const { title, description, category, skillsUsed } = req.body;
+    const { title, description, category, skillsUsed, githubLink, liveLink } = req.body;
 
     // Parse skillsUsed if it's a string array
     let parsedSkills;
@@ -30,7 +30,9 @@ exports.createProject = async (req, res) => {
       description,
       category,
       skillsUsed: parsedSkills,
-      image: req.file.filename
+      image: req.file.filename,
+      githubLink,
+      liveLink
     });
 
     // Save the project
@@ -94,7 +96,7 @@ exports.getProjectById = async (req, res) => {
 // Update Project
 exports.updateProject = async (req, res) => {
   try {
-    const { title, description, category, skillsUsed } = req.body;
+    const { title, description, category, skillsUsed, githubLink, liveLink } = req.body;
 
     // Parse skillsUsed if provided
     let parsedSkills;
@@ -111,7 +113,9 @@ exports.updateProject = async (req, res) => {
       title,
       description,
       category,
-      skillsUsed: parsedSkills
+      skillsUsed: parsedSkills,
+      githubLink,
+      liveLink
     };
 
     // Only update image if new file is uploaded

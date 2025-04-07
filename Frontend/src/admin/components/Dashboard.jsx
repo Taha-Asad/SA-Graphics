@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Typography, Grid, Paper, CircularProgress, Alert } from '@mui/material';
-import { getDashboardStats } from '../../services/adminService';
 import { PeopleAlt, ShoppingCart, RateReview, Comment } from '@mui/icons-material';
+import axios from 'axios';
 
 const StatCard = ({ title, value, icon, loading, error }) => (
   <Paper
@@ -45,22 +45,25 @@ const Dashboard = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        setLoading(true);
-        const data = await getDashboardStats();
-        setStats(data);
-        setError(null);
-      } catch (err) {
-        console.error('Error fetching dashboard stats:', err);
-        setError('Failed to load dashboard statistics');
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchStats();
   }, []);
+
+  const fetchStats = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('token');
+      const response = await axios.get('http://localhost:5000/api/v1/admin/dashboard', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setStats(response.data);
+      setError(null);
+    } catch (err) {
+      console.error('Error fetching dashboard stats:', err);
+      setError(err.response?.data?.message || 'Failed to load dashboard statistics');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const statCards = [
     {

@@ -1,6 +1,7 @@
 const User = require('../models/user.model');
 const bcrypt = require('bcryptjs');
 const createError = require('http-errors');
+const Settings = require('../models/settings.model.js');
 
 // Update password
 const updatePassword = async (req, res, next) => {
@@ -60,8 +61,77 @@ const deleteAccount = async (req, res, next) => {
   }
 };
 
+// Get settings
+const getSettings = async (req, res) => {
+  try {
+    let settings = await Settings.findOne();
+    
+    // If no settings exist, create default settings
+    if (!settings) {
+      settings = await Settings.create({});
+    }
+    
+    res.json(settings);
+  } catch (err) {
+    console.error('Error getting settings:', err);
+    res.status(500).json({ 
+      message: 'Server Error', 
+      error: err.message 
+    });
+  }
+};
+
+// Update settings
+const updateSettings = async (req, res) => {
+  try {
+    const {
+      siteName,
+      siteDescription,
+      contactEmail,
+      contactPhone,
+      enableNotifications,
+      enableTestimonials,
+      enableReviews,
+      enableWishlist
+    } = req.body;
+
+    let settings = await Settings.findOne();
+    
+    // If no settings exist, create new settings
+    if (!settings) {
+      settings = new Settings({});
+    }
+
+    // Update fields
+    settings.siteName = siteName;
+    settings.siteDescription = siteDescription;
+    settings.contactEmail = contactEmail;
+    settings.contactPhone = contactPhone;
+    settings.enableNotifications = enableNotifications;
+    settings.enableTestimonials = enableTestimonials;
+    settings.enableReviews = enableReviews;
+    settings.enableWishlist = enableWishlist;
+
+    // Save settings
+    await settings.save();
+
+    res.json({ 
+      message: 'Settings updated successfully', 
+      settings 
+    });
+  } catch (err) {
+    console.error('Error updating settings:', err);
+    res.status(500).json({ 
+      message: 'Server Error', 
+      error: err.message 
+    });
+  }
+};
+
 module.exports = {
   updatePassword,
   updateProfile,
-  deleteAccount
+  deleteAccount,
+  getSettings,
+  updateSettings
 }; 

@@ -19,8 +19,6 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import axios from 'axios';
 
-const API_URL = 'http://localhost:5000/api/v1';
-
 const Support = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -28,9 +26,10 @@ const Support = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
+    name: user?.name || '',
+    email: user?.email || '',
     subject: '',
-    message: '',
-    email: user?.email || ''
+    message: ''
   });
 
   const handleSubmit = async (e) => {
@@ -38,22 +37,20 @@ const Support = () => {
     setLoading(true);
 
     try {
-      await axios.post(
-        `${API_URL}/support`,
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`
-          }
-        }
-      );
+      await axios.post('/api/v1/contact', {
+        ...formData,
+        type: 'support' // Add type to differentiate support messages
+      });
+      
       toast.success('Your message has been sent successfully');
       setFormData({
+        name: user?.name || '',
+        email: user?.email || '',
         subject: '',
-        message: '',
-        email: user?.email || ''
+        message: ''
       });
     } catch (error) {
+      console.error('Error sending support message:', error.response || error);
       toast.error(error.response?.data?.message || 'Failed to send message');
     } finally {
       setLoading(false);
@@ -105,6 +102,14 @@ const Support = () => {
             </Typography>
 
             <form onSubmit={handleSubmit}>
+              <TextField
+                fullWidth
+                label="Name"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                required
+                sx={{ mb: 2 }}
+              />
               <TextField
                 fullWidth
                 label="Email"

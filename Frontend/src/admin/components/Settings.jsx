@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Paper,
@@ -10,27 +10,54 @@ import {
   FormControlLabel,
   Divider,
   Alert,
-  Snackbar
+  Snackbar,
+  CircularProgress
 } from '@mui/material';
 import { Save as SaveIcon } from '@mui/icons-material';
+import axios from 'axios';
 
 const Settings = () => {
   const [settings, setSettings] = useState({
-    siteName: 'SA Graphics',
-    siteDescription: 'Professional Graphics Design Services',
-    contactEmail: 'contact@sagraphics.com',
-    contactPhone: '+1234567890',
+    siteName: '',
+    siteDescription: '',
+    contactEmail: '',
+    contactPhone: '',
     enableNotifications: true,
     enableTestimonials: true,
     enableReviews: true,
     enableWishlist: true
   });
 
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: '',
     severity: 'success'
   });
+
+  useEffect(() => {
+    fetchSettings();
+  }, []);
+
+  const fetchSettings = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get('http://localhost:5000/api/v1/settings', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setSettings(response.data);
+    } catch (error) {
+      console.error('Error fetching settings:', error);
+      setSnackbar({
+        open: true,
+        message: 'Failed to load settings',
+        severity: 'error'
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleChange = (event) => {
     const { name, value, checked } = event.target;
@@ -40,16 +67,33 @@ const Settings = () => {
     });
   };
 
-  const handleSave = () => {
-    // Here you would typically save the settings to your backend
-    console.log('Saving settings:', settings);
-    
-    // Show success message
-    setSnackbar({
-      open: true,
-      message: 'Settings saved successfully',
-      severity: 'success'
-    });
+  const handleSave = async () => {
+    try {
+      setSaving(true);
+      const token = localStorage.getItem('token');
+      const response = await axios.put(
+        'http://localhost:5000/api/v1/settings',
+        settings,
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+      
+      setSnackbar({
+        open: true,
+        message: 'Settings saved successfully',
+        severity: 'success'
+      });
+    } catch (error) {
+      console.error('Error saving settings:', error);
+      setSnackbar({
+        open: true,
+        message: error.response?.data?.message || 'Failed to save settings',
+        severity: 'error'
+      });
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleCloseSnackbar = () => {
@@ -58,6 +102,14 @@ const Settings = () => {
       open: false
     });
   };
+
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   return (
     <Box>
@@ -83,6 +135,7 @@ const Settings = () => {
               value={settings.siteName}
               onChange={handleChange}
               margin="normal"
+              required
             />
           </Grid>
 
@@ -94,6 +147,7 @@ const Settings = () => {
               value={settings.siteDescription}
               onChange={handleChange}
               margin="normal"
+              required
             />
           </Grid>
 
@@ -113,6 +167,8 @@ const Settings = () => {
               value={settings.contactEmail}
               onChange={handleChange}
               margin="normal"
+              required
+              type="email"
             />
           </Grid>
 
@@ -124,6 +180,7 @@ const Settings = () => {
               value={settings.contactPhone}
               onChange={handleChange}
               margin="normal"
+              required
             />
           </Grid>
 
@@ -196,11 +253,12 @@ const Settings = () => {
             <Button
               variant="contained"
               color="primary"
-              startIcon={<SaveIcon />}
+              startIcon={saving ? <CircularProgress size={20} color="inherit" /> : <SaveIcon />}
               onClick={handleSave}
               size="large"
+              disabled={saving}
             >
-              Save Settings
+              {saving ? 'Saving...' : 'Save Settings'}
             </Button>
           </Grid>
         </Grid>

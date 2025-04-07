@@ -163,8 +163,8 @@ const Reviews = () => {
 
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' , mb: 8 }}>
           <Typography variant="h5" sx={{ color: '#333', fontWeight: 500  }}>
-            My Reviews
-          </Typography>
+        My Reviews
+      </Typography>
           <Button
             variant="contained"
             color="primary"
@@ -210,8 +210,8 @@ const Reviews = () => {
           </Paper>
         ) : (
           <Grid container spacing={2}>
-            {reviews.map((review) => (
-              <Grid item xs={12} key={review.id}>
+        {reviews.map((review) => (
+          <Grid item xs={12} key={review.id}>
                 <Paper
                   elevation={1}
                   sx={{
@@ -223,7 +223,7 @@ const Reviews = () => {
                   }}
                 >
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                       <Avatar
                         sx={{
                           mr: 2,
@@ -232,17 +232,17 @@ const Reviews = () => {
                       >
                         {review.productName[0]}
                       </Avatar>
-                      <Box>
+                <Box>
                         <Typography variant="h6" sx={{ color: '#333' }}>
-                          {review.productName}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
+                    {review.productName}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
                           {new Date(review.date).toLocaleDateString('en-US', {
                             year: 'numeric',
                             month: 'long',
                             day: 'numeric'
                           })}
-                        </Typography>
+                  </Typography>
                       </Box>
                     </Box>
                     <Box>
@@ -260,9 +260,9 @@ const Reviews = () => {
                       >
                         <DeleteIcon />
                       </IconButton>
-                    </Box>
-                  </Box>
-
+                </Box>
+              </Box>
+              
                   <Rating
                     value={review.rating}
                     readOnly
@@ -272,12 +272,12 @@ const Reviews = () => {
                   />
 
                   <Typography sx={{ mt: 2, color: '#555' }}>
-                    {review.comment}
-                  </Typography>
-                </Paper>
-              </Grid>
-            ))}
+                {review.comment}
+              </Typography>
+            </Paper>
           </Grid>
+        ))}
+      </Grid>
         )}
 
         {/* Review Dialog */}
@@ -315,7 +315,7 @@ const Reviews = () => {
                 multiline
                 rows={4}
               />
-            </Box>
+    </Box>
           </DialogContent>
           <DialogActions>
             <Button onClick={handleCloseDialog}>Cancel</Button>

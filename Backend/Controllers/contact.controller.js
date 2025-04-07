@@ -1,4 +1,5 @@
 const Contact = require('../models/contact.modal');
+const NotificationService = require('../services/notification.service');
 const createError = require('http-errors');
 
 
@@ -41,4 +42,45 @@ module.exports.getAllContact = async (req, res , next) => {
         res.status(500).json({success:false , message: 'Error in fetching all contacts', error: error.message})
     }
 }
+
+// Delete contact
+module.exports.deleteContact = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const contact = await Contact.findById(id);
+    
+    if (!contact) {
+      throw createError(404, 'Contact not found');
+    }
+    
+    await Contact.findByIdAndDelete(id);
+    res.status(200).json({
+      success: true,
+      message: 'Contact deleted successfully'
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Submit contact form
+module.exports.submitContact = async (req, res) => {
+  try {
+    const newContact = await Contact.create(req.body);
+    
+    // Send notification
+    await NotificationService.notifyContactForm(newContact);
+    
+    res.status(201).json({
+      status: 'success',
+      message: 'Contact form submitted successfully',
+      data: newContact
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'error',
+      message: error.message
+    });
+  }
+};
 

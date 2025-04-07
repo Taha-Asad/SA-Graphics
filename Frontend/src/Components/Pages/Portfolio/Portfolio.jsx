@@ -1,4 +1,4 @@
-import { Box, Card, CardContent, CardMedia, Container, Grid, Typography, Dialog, DialogContent, IconButton, Button, Rating, TextField, Divider, Avatar, Stack, Fade, Pagination } from '@mui/material'
+import { Box, Card, CardContent, CardMedia, Container, Grid, Typography, Dialog, DialogContent, IconButton, Button, Rating, TextField, Divider, Avatar, Stack, Fade, Pagination, Link, Chip } from '@mui/material'
 import React, { useEffect, useState, useMemo, memo, useCallback } from 'react'
 import Tab from '@mui/material/Tab';
 import TabContext from '@mui/lab/TabContext';
@@ -8,10 +8,13 @@ import CloseIcon from '@mui/icons-material/Close';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import ZoomInIcon from '@mui/icons-material/ZoomIn';
 import DeleteIcon from '@mui/icons-material/Delete';
+import GitHubIcon from '@mui/icons-material/GitHub';
+import LaunchIcon from '@mui/icons-material/Launch';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useCart } from '../../../context/CartContext';
+import { getImageUrl } from '../../../utils/imageUtils';
 
 // Memoized Card Components
 const ProjectCard = memo(({ project, onClick }) => {
@@ -85,60 +88,66 @@ const BookCard = memo(({ book, onClick }) => {
   }, [onClick, book]);
 
   return (
-  <Card
-    sx={{
-      cursor: 'pointer',
-      minHeight: '250px',
-      width: '350px',
-      position: 'relative',
-      boxShadow: "rgba(17, 17, 26, 0.1) 0px 4px 16px, rgba(17, 17, 26, 0.05) 0px 8px 32px",
-      '&:hover': {
-        transform: 'translateY(-5px)',
-        boxShadow: "rgba(0, 0, 0, 0.25) 0px 14px 28px, rgba(0, 0, 0, 0.22) 0px 10px 10px"
-      },
-      '&:hover .overlay': {
-        opacity: 1
-      },
-      transition: 'transform 0.2s ease-out, box-shadow 0.2s ease-out'
-    }}
+    <Card
+      sx={{
+        cursor: 'pointer',
+        minHeight: '250px',
+        width: '350px',
+        position: 'relative',
+        boxShadow: "rgba(17, 17, 26, 0.1) 0px 4px 16px, rgba(17, 17, 26, 0.05) 0px 8px 32px",
+        '&:hover': {
+          transform: 'translateY(-5px)',
+          boxShadow: "rgba(0, 0, 0, 0.25) 0px 14px 28px, rgba(0, 0, 0, 0.22) 0px 10px 10px"
+        },
+        '&:hover .overlay': {
+          opacity: 1
+        },
+        transition: 'transform 0.2s ease-out, box-shadow 0.2s ease-out'
+      }}
       onClick={handleClick}
-  >
-    <CardMedia
-      component="img"
-      height="250"
-      image={book.image || 'https://via.placeholder.com/300x200?text=No+Image'}
-      alt={book.title}
-      sx={{
-        objectFit: 'cover',
-        width: '100%',
-        height: '250px',
-        objectPosition: 'center'
-      }}
-        loading="lazy"
-    />
-    <Box
-      className="overlay"
-      sx={{
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        width: '100%',
-        height: '100%',
-        bgcolor: 'rgba(0, 0, 0, 0.5)',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        opacity: 0,
-        color: 'white',
-        textAlign: 'center',
-        p: 2
-      }}
     >
-      <ZoomInIcon sx={{ fontSize: 40, mb: 1 }} />
-      <Typography variant="subtitle1">Click to View Details</Typography>
-    </Box>
-  </Card>
+      <CardMedia
+        component="img"
+        height="140"
+        image={getImageUrl(book.coverImage)}
+        alt={book.title}
+        sx={{
+          objectFit: 'cover',
+          width: '100%',
+          height: '200px'
+        }}
+      />
+      <CardContent>
+        <Typography variant="h6" noWrap>
+          {book.title}
+        </Typography>
+        <Typography variant="body2" color="text.secondary" noWrap>
+          by {book.author}
+        </Typography>
+      </CardContent>
+      <Box
+        className="overlay"
+        sx={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          bgcolor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          opacity: 0,
+          color: 'white',
+          textAlign: 'center',
+          p: 2
+        }}
+      >
+        <ZoomInIcon sx={{ fontSize: 40, mb: 1 }} />
+        <Typography variant="subtitle1">Click to View Details</Typography>
+      </Box>
+    </Card>
   );
 });
 
@@ -215,6 +224,7 @@ const Portfolio = React.memo(function Portfolio() {
   const [newReview, setNewReview] = useState({ rating: 0, comment: '' });
   const { addToCart } = useCart();
   const [user, setUser] = useState(null);
+  const [open, setOpen] = useState(false);
 
   const handleChange = useCallback((event, newValue) => {
     setValue(newValue);
@@ -222,6 +232,7 @@ const Portfolio = React.memo(function Portfolio() {
 
   const handleProjectClick = useCallback((project) => {
     setSelectedProject(project);
+    setOpen(true);
   }, []);
 
   const handleBookClick = useCallback(async (book) => {
@@ -231,6 +242,7 @@ const Portfolio = React.memo(function Portfolio() {
 
   const handleCloseProjectModal = useCallback(() => {
     setSelectedProject(null);
+    setOpen(false);
   }, []);
 
   const handleCloseBookModal = useCallback(() => {
@@ -477,7 +489,7 @@ const Portfolio = React.memo(function Portfolio() {
 
       {/* Project Modal */}
       <Dialog
-        open={Boolean(selectedProject)}
+        open={open}
         onClose={handleCloseProjectModal}
         maxWidth="md"
         fullWidth
@@ -520,40 +532,66 @@ const Portfolio = React.memo(function Portfolio() {
                 <Typography variant="body1" color="text.secondary" paragraph>
                   {selectedProject.description}
                 </Typography>
-                {selectedProject.technologies && (
+                {selectedProject.skillsUsed && (
                   <Box sx={{ mt: 2 }}>
                     <Typography variant="subtitle1" gutterBottom>
                       Technologies Used:
                     </Typography>
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                      {selectedProject.technologies.map((tech, index) => (
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                      {selectedProject.skillsUsed.map((tech, index) => (
                         <Box
-                      key={index}
-                      sx={{
+                          key={index}
+                          sx={{
                             bgcolor: '#f0f0f0',
                             px: 1.5,
                             py: 0.5,
-                        borderRadius: 1,
+                            borderRadius: 1,
                             fontSize: '0.875rem',
                           }}
                         >
                           {tech}
                         </Box>
-                  ))}
-                </Box>
+                      ))}
+                    </Box>
                   </Box>
                 )}
-                {selectedProject.link && (
-                  <Button
-                    variant="contained"
-                    href={selectedProject.link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    sx={{ mt: 2 }}
-                  >
-                    View Project
-                  </Button>
-                )}
+                <Box sx={{ mt: 2 }}>
+                  <Typography variant="subtitle1" gutterBottom>
+                    Links:
+                  </Typography>
+                  <Stack direction="row" spacing={2}>
+                    {(selectedProject.githubLink || selectedProject.githubUrl) && (
+                      <Link
+                        href={selectedProject.githubLink || selectedProject.githubUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          textDecoration: 'none',
+                        }}
+                      >
+                        <GitHubIcon sx={{ mr: 0.5 }} />
+                        View on GitHub
+                      </Link>
+                    )}
+                    {(selectedProject.liveLink || selectedProject.liveUrl) && (
+                      <Link
+                        href={selectedProject.liveLink || selectedProject.liveUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          textDecoration: 'none',
+                        }}
+                      >
+                        <LaunchIcon sx={{ mr: 0.5 }} />
+                        Live Demo
+                      </Link>
+                    )}
+                  </Stack>
+                </Box>
               </Box>
             </Box>
         </DialogContent>
@@ -589,10 +627,10 @@ const Portfolio = React.memo(function Portfolio() {
           </IconButton>
             <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' } }}>
               <Box
-                    component="img"
-                src={selectedBook.image || 'https://via.placeholder.com/600x400?text=No+Image'}
-                    alt={selectedBook.title}
-                    sx={{ 
+                component="img"
+                src={getImageUrl(selectedBook.coverImage)}
+                alt={selectedBook.title}
+                sx={{ 
                   width: { xs: '100%', md: '40%' },
                   height: { xs: '300px', md: 'auto' },
                   objectFit: 'cover',
@@ -611,8 +649,24 @@ const Portfolio = React.memo(function Portfolio() {
                     ({selectedBook.averageRating ? selectedBook.averageRating.toFixed(1) : '0'} / 5)
                   </Typography>
                 </Box>
-                <Typography variant="h6" color="primary" gutterBottom>
-                  ${selectedBook.price}
+                <Typography 
+                  variant="h6" 
+                  color="primary"
+                  sx={{ mb: 2 }}
+                >
+                  {selectedBook.discount > 0 ? (
+                    <>
+                      <span style={{ textDecoration: 'line-through', color: 'gray', marginRight: '8px' }}>
+                        Rs. {selectedBook.price}
+                      </span>
+                      Rs. {selectedBook.price - (selectedBook.price * selectedBook.discount / 100)}
+                      <span style={{ color: 'red', marginLeft: '8px' }}>
+                        ({selectedBook.discount}% off)
+                      </span>
+                    </>
+                  ) : (
+                    `Rs. ${selectedBook.price}`
+                  )}
                 </Typography>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                   <Typography variant="body2" sx={{ mr: 2 }}>

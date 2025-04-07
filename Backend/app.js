@@ -10,6 +10,8 @@ const mongoose = require('mongoose');
 const settingsRoutes = require('./routes/settings');
 const orderRoutes = require('./routes/orders');
 const adminRoutes = require('./routes/admin.routes');
+const { UPLOAD_PATH } = require('./config/multer');
+const fs = require('fs');
 
 // Load env vars
 dotenv.config()
@@ -30,6 +32,18 @@ app.use(express.urlencoded({ extended: true }));
 
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
+}
+
+// Ensure uploads directory exists
+try {
+  if (!fs.existsSync(UPLOAD_PATH)) {
+    fs.mkdirSync(UPLOAD_PATH, { recursive: true });
+    console.log(`Created uploads directory at: ${UPLOAD_PATH}`);
+  } else {
+    console.log(`Uploads directory exists at: ${UPLOAD_PATH}`);
+  }
+} catch (error) {
+  console.error('Error creating uploads directory:', error);
 }
 
 // Static files - ensure uploads folder is accessible
@@ -74,6 +88,12 @@ const server = app.listen(PORT, () => {
 // Handle unhandled promise rejections
 process.on('unhandledRejection', (err) => {
   console.error('Unhandled Rejection:', err.name, err.message);
+  server.close(() => process.exit(1));
+});
+
+// Handle uncaught exceptions
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception:', err.name, err.message);
   server.close(() => process.exit(1));
 });
 

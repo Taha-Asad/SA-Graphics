@@ -33,14 +33,17 @@ export const CartProvider = ({ children }) => {
       }
 
       toast.success('Item added to cart!');
-      return [...prevItems, {
-        id: book._id,
+      const cartItem = {
+        _id: book._id,
         title: book.title,
+        author: book.author,
         price: book.price,
-        image: book.image,
-        quantity,
-        maxQuantity: book.countInStock
-      }];
+        discount: book.discount || 0,
+        discountedPrice: book.discount > 0 ? book.price - (book.price * book.discount / 100) : book.price,
+        coverImage: book.coverImage,
+        quantity: 1
+      };
+      return [...prevItems, cartItem];
     });
   };
 
@@ -65,11 +68,23 @@ export const CartProvider = ({ children }) => {
   };
 
   const getCartTotal = () => {
-    return cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
+    return cartItems.reduce((total, item) => {
+      const itemPrice = item.discount > 0 
+        ? item.price - (item.price * item.discount / 100) 
+        : item.price;
+      return total + (itemPrice * item.quantity);
+    }, 0);
   };
 
   const getCartCount = () => {
     return cartItems.reduce((count, item) => count + item.quantity, 0);
+  };
+
+  const getItemTotal = (item) => {
+    const itemPrice = item.discount > 0 
+      ? item.price - (item.price * item.discount / 100) 
+      : item.price;
+    return itemPrice * item.quantity;
   };
 
   return (
@@ -81,7 +96,8 @@ export const CartProvider = ({ children }) => {
         removeFromCart,
         clearCart,
         getCartTotal,
-        getCartCount
+        getCartCount,
+        getItemTotal
       }}
     >
       {children}

@@ -17,7 +17,7 @@ import Resume from '../Components/Pages/Resume/Resume';
 import Testimonials from '../Components/Pages/Testimonials/Testimonials';
 import AddTestimonial from '../Components/Pages/Testimonials/AddTestimonial';
 import ProtectedRoute from '../Components/ProtectedRoute';
-import Admin from '../admin/components/Admin';
+import Admin from '../admin/Admin';
 import AdminRoute from '../admin/routes/AdminRoute';
 import NotFound from '../Components/Pages/NotFound/NotFound';
 import LoadingSpinner from '../Components/LoadingFallback';
@@ -73,18 +73,12 @@ const AppRoutes = () => {
           </AuthLayout>
         } />
 
-        {/* Admin routes with nested routing */}
-        <Route path="/admin" element={<AdminRoute><Admin /></AdminRoute>}>
-          <Route index element={<Dashboard />} />
-          <Route path="dashboard" element={<Dashboard />} />
-          <Route path="users" element={<Users />} />
-          <Route path="books" element={<Books />} />
-          <Route path="projects" element={<Projects />} />
-          <Route path="orders" element={<OrdersManagement />} />
-          <Route path="reviews" element={<ReviewsManagement />} />
-          <Route path="testimonials" element={<AdminTestimonials />} />
-          <Route path="settings" element={<Settings />} />
-        </Route>
+        {/* Admin routes */}
+        <Route path="/admin/*" element={
+          <AdminRoute>
+            <Admin />
+          </AdminRoute>
+        } />
 
         {/* User account routes - wrapped in MainLayout and AccountLayout */}
         <Route element={<MainLayout />}>

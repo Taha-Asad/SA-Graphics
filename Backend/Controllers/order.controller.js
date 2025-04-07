@@ -5,6 +5,7 @@ const { sendEmail } = require("../config/nodemailer");
 const ejs = require("ejs");
 const path = require("path");
 const createError = require('http-errors');
+const NotificationService = require('../services/notification.service');
 
 // Create Order
 const createOrder = async (req, res, next) => {
@@ -17,6 +18,8 @@ const createOrder = async (req, res, next) => {
 
     // Validate and process each item
     const orderItems = [];
+    let calculatedTotalAmount = 0;
+    
     for (const orderItem of item) {
       const book = await Book.findById(orderItem.bookId);
       if (!book) {
@@ -26,6 +29,15 @@ const createOrder = async (req, res, next) => {
         throw createError(400, `Insufficient stock for ${book.title}`);
       }
 
+      // Calculate discounted price
+      const discountedPrice = book.discount > 0 
+        ? book.price - (book.price * book.discount / 100) 
+        : book.price;
+      
+      // Calculate item total with discount
+      const itemTotal = discountedPrice * orderItem.quantity;
+      calculatedTotalAmount += itemTotal;
+
       // Update book stock
       book.countInStock -= orderItem.quantity;
       await book.save();
@@ -33,17 +45,26 @@ const createOrder = async (req, res, next) => {
       orderItems.push({
         bookId: book._id,
         title: book.title,
-        image: book.image,
+        author: book.author,
+        price: book.price,
+        discount: book.discount,
+        discountedPrice: discountedPrice,
+        coverImage: book.coverImage,
         quantity: orderItem.quantity,
-        price: orderItem.price
+        itemTotal: itemTotal
       });
+    }
+
+    // Verify that the calculated total matches the provided total
+    if (Math.abs(calculatedTotalAmount - totalAmount) > 0.01) {
+      throw createError(400, 'Total amount mismatch. Please recalculate your cart.');
     }
 
     // Create the order
     const order = new Order({
       userId: req.user._id,
       item: orderItems,
-      totalAmount,
+      totalAmount: calculatedTotalAmount,
       shippingAddress,
       paymentMethod,
       paymentStatus: 'pending',
@@ -78,8 +99,11 @@ const createOrder = async (req, res, next) => {
       .populate({
         path: 'item.bookId',
         model: 'Book',
-        select: 'title image price'
+        select: 'title author price coverImage discount'
       });
+    
+    // Send notification
+    await NotificationService.notifyNewOrder(savedOrder);
     
     res.status(201).json({
       status: 'success',
@@ -163,7 +187,7 @@ const getUserOrders = async (req, res, next) => {
       .populate({
         path: 'item.bookId',
         model: 'Book',
-        select: 'title image price'
+        select: 'title author price coverImage'
       })
       .sort({ createdAt: -1 });
 
@@ -185,7 +209,7 @@ const getOrderById = async (req, res, next) => {
       .populate({
         path: 'item.bookId',
         model: 'Book',
-        select: 'title image price'
+        select: 'title author price coverImage'
       });
     
     if (!order) {

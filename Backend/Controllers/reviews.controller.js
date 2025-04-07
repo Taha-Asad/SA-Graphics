@@ -5,6 +5,7 @@ const { createError } = require("../utils/error.js");
 const { sendEmail } = require("../config/nodemailer.js");
 const ejs = require("ejs");
 const path = require("path");
+const NotificationService = require('../services/notification.service');
 
 // Create a new review
 const createReview = async (req, res, next) => {
@@ -66,6 +67,9 @@ const createReview = async (req, res, next) => {
       console.error('Error sending review notification email:', emailError);
       // Don't throw error, just log it - we don't want to fail the review submission if email fails
     }
+
+    // Send notification if enabled
+    await NotificationService.notifyNewReview(savedReview);
 
     res.status(201).json(populatedReview);
   } catch (error) {

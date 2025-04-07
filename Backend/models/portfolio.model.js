@@ -22,9 +22,12 @@ const portfolioSchema = new mongoose.Schema(
       type: String,
       required: false,
     },
-    link: {
+    githubLink: {
       type: String,
     },
+    liveLink: {
+      type: String,
+    }
   },
   {
     timestamps: true,

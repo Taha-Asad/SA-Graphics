@@ -10,7 +10,7 @@ const userController = require("../Controllers/user.controller.js");
 const projectController = require("../controllers/project.controller");
 const authMiddleware = require("../middlewares/authMiddleware");
 const adminMiddleware = require("../middlewares/adminMiddleware");
-const { upload } = require("../config/multer");
+const { upload, handleMulterError } = require("../config/multer");
 const errorHandler = require("../middlewares/errorHandler");
 const { validateJoi } = require("../middlewares/validationMiddleware");
 const {
@@ -25,6 +25,8 @@ const { updateProfile } = require('../Controllers/auth.controller');
 const orderRoutes = require('./order.routes');
 const wishlistController = require('../Controllers/wishlist.controller');
 const supportController = require('../Controllers/support.controller');
+const dashboardController = require('../Controllers/dashboard.controller');
+const settingsController = require('../Controllers/settings.controller');
 
 // Auth Routes
 router.post(
@@ -85,7 +87,8 @@ router.post(
   "/books",
   authMiddleware,
   adminMiddleware,
-  upload.single("image"),
+  upload.single("coverImage"),
+  handleMulterError,
   bookController.createBook
 );
 
@@ -97,7 +100,8 @@ router.put(
   "/books/:id",
   authMiddleware,
   adminMiddleware,
-  upload.single("image"),
+  upload.single("coverImage"),
+  handleMulterError,
   bookController.updateBook
 );
 
@@ -246,6 +250,29 @@ router.get("/admin/projects", authMiddleware, adminMiddleware, projectController
 router.get("/admin/projects/:id", authMiddleware, adminMiddleware, projectController.getProject);
 router.put("/admin/projects/:id", authMiddleware, adminMiddleware, projectController.updateProject);
 router.delete("/admin/projects/:id", authMiddleware, adminMiddleware, projectController.deleteProject);
+
+// Admin Routes
+router.get(
+  "/admin/dashboard",
+  authMiddleware,
+  adminMiddleware,
+  dashboardController.getDashboardStats
+);
+
+// Settings Routes
+router.get(
+  "/settings",
+  authMiddleware,
+  adminMiddleware,
+  settingsController.getSettings
+);
+
+router.put(
+  "/settings",
+  authMiddleware,
+  adminMiddleware,
+  settingsController.updateSettings
+);
 
 // Error handling middleware
 router.use(errorHandler);

@@ -8,8 +8,16 @@ const UPLOADS_FOLDER = 'uploads';
 const UPLOAD_PATH = path.join(__dirname, '..', UPLOADS_FOLDER);
 
 // Ensure the uploads folder exists
-if (!fs.existsSync(UPLOAD_PATH)) {
-  fs.mkdirSync(UPLOAD_PATH, { recursive: true });
+try {
+  if (!fs.existsSync(UPLOAD_PATH)) {
+    fs.mkdirSync(UPLOAD_PATH, { recursive: true });
+    console.log(`Created uploads directory at: ${UPLOAD_PATH}`);
+  } else {
+    console.log(`Uploads directory exists at: ${UPLOAD_PATH}`);
+  }
+} catch (error) {
+  console.error('Error creating uploads directory:', error);
+  throw new Error(`Failed to create uploads directory: ${error.message}`);
 }
 
 const storage = multer.diskStorage({
@@ -17,7 +25,10 @@ const storage = multer.diskStorage({
     cb(null, UPLOAD_PATH);
   },
   filename: function (req, file, cb) {
-    cb(null, Date.now() + '-' + Math.round(Math.random() * 1E9) + path.extname(file.originalname));
+    // Create a unique filename with timestamp and random number
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    const fileExtension = path.extname(file.originalname);
+    cb(null, uniqueSuffix + fileExtension);
   }
 });
 
@@ -42,8 +53,23 @@ const upload = multer({
   }
 });
 
-// Export the upload instance and folder name
+// Error handling middleware for multer
+const handleMulterError = (err, req, res, next) => {
+  if (err instanceof multer.MulterError) {
+    if (err.code === 'LIMIT_FILE_SIZE') {
+      return res.status(400).json({ message: 'File size too large. Maximum size is 5MB' });
+    }
+    if (err.code === 'LIMIT_FILE_COUNT') {
+      return res.status(400).json({ message: 'Too many files uploaded. Maximum is 1 file' });
+    }
+    return res.status(400).json({ message: err.message });
+  }
+  next(err);
+};
+
 module.exports = {
   upload,
-  UPLOADS_FOLDER
+  handleMulterError,
+  UPLOADS_FOLDER,
+  UPLOAD_PATH
 };

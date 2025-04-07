@@ -4,10 +4,10 @@ import { MdVisibility, MdVisibilityOff } from 'react-icons/md';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { AuthContext } from '../../context/AuthContext';
-import axios from 'axios';
+import axiosInstance from '../../config/axios';
 
 // Add request interceptor
-axios.interceptors.request.use(request => {
+axiosInstance.interceptors.request.use(request => {
   if (request.url.includes('/login')) {
     console.log('Login Request:', {
       url: request.url,
@@ -87,8 +87,8 @@ const Login = () => {
                 password: '***'
             });
 
-            const response = await axios.post(
-                "http://localhost:5000/api/v1/login",
+            const response = await axiosInstance.post(
+                "/login",
                 user
             );
 
