@@ -1,243 +1,280 @@
 import React, { useState, useEffect } from 'react';
 import {
   Box,
-  Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  IconButton,
   Typography,
-  Chip,
-  Snackbar,
+  Paper,
+  Grid,
+  Button,
+  IconButton,
   Alert,
+  Snackbar,
+  Container,
+  CircularProgress,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
-  Button,
-  Rating,
-  CircularProgress
+  Card,
+  CardContent,
+  CardActions,
+  Chip
 } from '@mui/material';
-import { Check, Close, Delete } from '@mui/icons-material';
-import axios from 'axios';
-
-const BASE_URL = 'http://localhost:5000/api/v1';
+import {
+  CheckCircle as ApproveIcon,
+  Cancel as RejectIcon,
+  Delete as DeleteIcon
+} from '@mui/icons-material';
+import * as testimonialService from '../../services/testimonialService';
 
 const Testimonials = () => {
   const [testimonials, setTestimonials] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
-  const [deleteDialog, setDeleteDialog] = useState({ open: false, testimonialId: null });
-
-  // Fetch testimonials
-  const fetchTestimonials = async () => {
-    try {
-      console.log('Fetching testimonials...');
-      const response = await axios.get(`${BASE_URL}/admin/testimonials`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      console.log('Testimonials response:', response.data);
-      
-      // Check if response.data is an array or if it has a nested data property
-      const testimonialsData = Array.isArray(response.data) ? response.data : response.data.data || [];
-      console.log('Processed testimonials data:', testimonialsData);
-      
-      setTestimonials(testimonialsData);
-      setLoading(false);
-    } catch (error) {
-      console.error('Error fetching testimonials:', error.response || error);
-      const message = error.response?.data?.message || 'Failed to fetch testimonials';
-      setError(message);
-      setTestimonials([]);
-      setLoading(false);
-      showSnackbar(message, 'error');
-    }
-  };
+  const [selectedTestimonial, setSelectedTestimonial] = useState(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: '',
+    severity: 'success'
+  });
 
   useEffect(() => {
     fetchTestimonials();
   }, []);
 
-  // Handle testimonial approval
-  const handleApprove = async (id) => {
+  const fetchTestimonials = async () => {
     try {
-      await axios.put(`${BASE_URL}/admin/testimonials/${id}`, { status: 'approved' }, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
+      setLoading(true);
+      setError(null);
+      const response = await testimonialService.getAllTestimonials();
+      console.log('Testimonials response:', response); // Debug log
+      
+      // Ensure we always set an array
+      setTestimonials(Array.isArray(response) ? response : []);
+      
+      if (!Array.isArray(response) || response.length === 0) {
+        setError('No testimonials found.');
+      }
+    } catch (err) {
+      console.error('Error fetching testimonials:', err);
+      setError(err.message || 'Failed to fetch testimonials');
+      setTestimonials([]); // Ensure testimonials is always an array
+      setSnackbar({
+        open: true,
+        message: err.message || 'Failed to fetch testimonials',
+        severity: 'error'
       });
-      showSnackbar('Testimonial approved successfully', 'success');
-      fetchTestimonials();
-    } catch (error) {
-      console.error('Approve error:', error.response || error);
-      const message = error.response?.data?.message || 'Failed to approve testimonial';
-      showSnackbar(message, 'error');
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Handle testimonial rejection
-  const handleReject = async (id) => {
+  const handleApprove = async (testimonialId) => {
     try {
-      await axios.put(`${BASE_URL}/admin/testimonials/${id}`, { status: 'rejected' }, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
+      await testimonialService.approveTestimonial(testimonialId);
+      setSnackbar({
+        open: true,
+        message: 'Testimonial approved successfully',
+        severity: 'success'
       });
-      showSnackbar('Testimonial rejected successfully', 'success');
       fetchTestimonials();
-    } catch (error) {
-      console.error('Reject error:', error.response || error);
-      const message = error.response?.data?.message || 'Failed to reject testimonial';
-      showSnackbar(message, 'error');
+    } catch (err) {
+      setSnackbar({
+        open: true,
+        message: err.message || 'Failed to approve testimonial',
+        severity: 'error'
+      });
     }
   };
 
-  const handleDelete = (id) => {
-    setDeleteDialog({ open: true, testimonialId: id });
-  };
-
-  const confirmDelete = async () => {
+  const handleReject = async (testimonialId) => {
     try {
-      await axios.delete(`${BASE_URL}/admin/testimonials/${deleteDialog.testimonialId}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
+      await testimonialService.rejectTestimonial(testimonialId);
+      setSnackbar({
+        open: true,
+        message: 'Testimonial rejected successfully',
+        severity: 'success'
       });
-      showSnackbar('Testimonial deleted successfully', 'success');
       fetchTestimonials();
-    } catch (error) {
-      console.error('Delete error:', error.response || error);
-      const message = error.response?.data?.message || 'Failed to delete testimonial';
-      showSnackbar(message, 'error');
+    } catch (err) {
+      setSnackbar({
+        open: true,
+        message: err.message || 'Failed to reject testimonial',
+        severity: 'error'
+      });
     }
-    setDeleteDialog({ open: false, testimonialId: null });
   };
 
-  const showSnackbar = (message, severity) => {
-    setSnackbar({ open: true, message, severity });
+  const handleDelete = async () => {
+    try {
+      await testimonialService.deleteTestimonial(selectedTestimonial._id);
+      setSnackbar({
+        open: true,
+        message: 'Testimonial deleted successfully',
+        severity: 'success'
+      });
+      setDeleteDialogOpen(false);
+      setSelectedTestimonial(null);
+      fetchTestimonials();
+    } catch (err) {
+      setSnackbar({
+        open: true,
+        message: err.message || 'Failed to delete testimonial',
+        severity: 'error'
+      });
+    }
   };
 
   const handleCloseSnackbar = () => {
     setSnackbar({ ...snackbar, open: false });
   };
 
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'approved':
+        return 'success';
+      case 'rejected':
+        return 'error';
+      default:
+        return 'warning';
+    }
+  };
+
   if (loading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
         <CircularProgress />
       </Box>
     );
   }
 
   return (
-    <Box sx={{ p: 3 }}>
-      <Typography variant="h4" sx={{ mb: 3 }}>
-        Manage Testimonials
-      </Typography>
+    <Container maxWidth="lg">
+      <Box sx={{ mb: 4 }}>
+        <Typography variant="h4" gutterBottom>
+          Manage Testimonials
+        </Typography>
 
-      {error ? (
-        <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>
-      ) : testimonials.length === 0 ? (
-        <Paper sx={{ p: 3, textAlign: 'center' }}>
-          <Typography color="textSecondary">
-            No testimonials found.
-          </Typography>
-        </Paper>
-      ) : (
-        <TableContainer component={Paper}>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>Name</TableCell>
-                <TableCell>Message</TableCell>
-                <TableCell>Status</TableCell>
-                <TableCell>Actions</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {testimonials.map((testimonial) => (
-                <TableRow key={testimonial._id}>
-                  <TableCell>
-                    {testimonial.userId?.name || testimonial.name || 'Anonymous'}
-                  </TableCell>
-                  <TableCell>{testimonial.text || testimonial.message || 'No message'}</TableCell>
-                  <TableCell>
-                    <Chip
-                      label={testimonial.status || 'pending'}
-                      color={
-                        testimonial.status === 'approved'
-                          ? 'success'
-                          : testimonial.status === 'rejected'
-                          ? 'error'
-                          : 'warning'
-                      }
-                      size="small"
-                    />
-                  </TableCell>
-                  <TableCell>
-                    {(!testimonial.status || testimonial.status === 'pending') && (
-                      <>
-                        <IconButton
-                          color="success"
-                          onClick={() => handleApprove(testimonial._id)}
-                          title="Approve"
-                        >
-                          <Check />
-                        </IconButton>
-                        <IconButton
-                          color="error"
-                          onClick={() => handleReject(testimonial._id)}
-                          title="Reject"
-                        >
-                          <Close />
-                        </IconButton>
-                      </>
+        {error && (
+          <Alert 
+            severity="error" 
+            sx={{ mb: 2 }}
+            action={
+              <Button 
+                color="inherit" 
+                size="small" 
+                onClick={fetchTestimonials}
+              >
+                Retry
+              </Button>
+            }
+          >
+            {error}
+          </Alert>
+        )}
+
+        <Grid container spacing={3}>
+          {testimonials.length > 0 ? (
+            testimonials.map((testimonial) => (
+              <Grid item xs={12} md={6} key={testimonial._id}>
+                <Card>
+                  <CardContent>
+                    <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+                      <Typography variant="h6">
+                        {testimonial.user?.name || 'Anonymous'}
+                      </Typography>
+                      <Chip 
+                        label={testimonial.status} 
+                        color={getStatusColor(testimonial.status)}
+                        size="small"
+                      />
+                    </Box>
+                    <Typography variant="body1" paragraph>
+                      {testimonial.content}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      Submitted on: {new Date(testimonial.createdAt).toLocaleDateString()}
+                    </Typography>
+                  </CardContent>
+                  <CardActions>
+                    {testimonial.status !== 'approved' && (
+                      <IconButton 
+                        onClick={() => handleApprove(testimonial._id)}
+                        color="success"
+                        title="Approve"
+                      >
+                        <ApproveIcon />
+                      </IconButton>
                     )}
-                    <IconButton
+                    {testimonial.status !== 'rejected' && (
+                      <IconButton 
+                        onClick={() => handleReject(testimonial._id)}
+                        color="error"
+                        title="Reject"
+                      >
+                        <RejectIcon />
+                      </IconButton>
+                    )}
+                    <IconButton 
+                      onClick={() => {
+                        setSelectedTestimonial(testimonial);
+                        setDeleteDialogOpen(true);
+                      }}
                       color="error"
-                      onClick={() => handleDelete(testimonial._id)}
                       title="Delete"
                     >
-                      <Delete />
+                      <DeleteIcon />
                     </IconButton>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      )}
+                  </CardActions>
+                </Card>
+              </Grid>
+            ))
+          ) : (
+            <Grid item xs={12}>
+              <Paper sx={{ p: 3, textAlign: 'center' }}>
+                <Typography variant="body1" color="text.secondary">
+                  No testimonials found.
+                </Typography>
+              </Paper>
+            </Grid>
+          )}
+        </Grid>
+      </Box>
 
-      <Dialog open={deleteDialog.open} onClose={() => setDeleteDialog({ open: false, testimonialId: null })}>
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+      >
         <DialogTitle>Confirm Delete</DialogTitle>
         <DialogContent>
-          Are you sure you want to delete this testimonial? This action cannot be undone.
+          <Typography>
+            Are you sure you want to delete this testimonial? This action cannot be undone.
+          </Typography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setDeleteDialog({ open: false, testimonialId: null })}>Cancel</Button>
-          <Button onClick={confirmDelete} color="error">
+          <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
+          <Button onClick={handleDelete} color="error" variant="contained">
             Delete
           </Button>
         </DialogActions>
       </Dialog>
 
+      {/* Snackbar for notifications */}
       <Snackbar
         open={snackbar.open}
         autoHideDuration={6000}
         onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
       >
-        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: '100%' }}>
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity={snackbar.severity}
+          sx={{ width: '100%' }}
+        >
           {snackbar.message}
         </Alert>
       </Snackbar>
-    </Box>
+    </Container>
   );
 };
 

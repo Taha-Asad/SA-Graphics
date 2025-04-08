@@ -1,6 +1,7 @@
 import React from 'react';
 import { Box, Container, Grid, Typography, Link } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
+import { Link as ScrollLink } from 'react-scroll';
 import FacebookIcon from '@mui/icons-material/Facebook';
 import TwitterIcon from '@mui/icons-material/Twitter';
 import InstagramIcon from '@mui/icons-material/Instagram';
@@ -17,11 +18,12 @@ const Footer = () => {
         backgroundColor: '#040B14',
         color: 'white',
         py: 4,
-        borderTop: '1px solid rgba(255, 255, 255, 0.1)'
+        borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+        mt: 10
       }}
     >
       <Container maxWidth="lg">
-        <Grid container spacing={2}>
+          <Grid container spacing={2}>
           {/* Company Info */}
           <Grid item xs={12} md={3}>
             <Typography 
@@ -82,7 +84,7 @@ const Footer = () => {
               </Link>
               <Link href="#" aria-label="YouTube">
                 <YouTubeIcon />
-              </Link>
+                    </Link>
             </Box>
           </Grid>
 
@@ -110,6 +112,7 @@ const Footer = () => {
                 position: 'relative',
                 padding: '5px 0',
                 transition: 'all 0.3s ease',
+                cursor: 'pointer',
                 '&:hover': {
                   color: '#149ddd',
                   transform: 'translateY(-3px)'
@@ -132,13 +135,23 @@ const Footer = () => {
                 }
               }
             }}>
-              <Link component={RouterLink} to="/">Home</Link>
-              <Link component={RouterLink} to="/about">About Us</Link>
-              <Link component={RouterLink} to="/services">Services</Link>
-              <Link component={RouterLink} to="/portfolio">Portfolio</Link>
-              <Link component={RouterLink} to="/contact">Contact</Link>
+              <ScrollLink to="home" spy={true} smooth={true} offset={-70} duration={500}>
+                Home
+              </ScrollLink>
+              <ScrollLink to="about" spy={true} smooth={true} offset={-70} duration={500}>
+                About Us
+              </ScrollLink>
+              <ScrollLink to="services" spy={true} smooth={true} offset={-70} duration={500}>
+                Services
+              </ScrollLink>
+              <ScrollLink to="portfolio" spy={true} smooth={true} offset={-70} duration={500}>
+                Portfolio
+              </ScrollLink>
+              <ScrollLink to="contact" spy={true} smooth={true} offset={-70} duration={500}>
+                Contact
+              </ScrollLink>
             </Box>
-          </Grid>
+                  </Grid>
 
           {/* Services */}
           <Grid item xs={12} md={3}>
@@ -191,8 +204,8 @@ const Footer = () => {
               <Link component={RouterLink} to="/services/branding">Branding</Link>
               <Link component={RouterLink} to="/services/signage">Signage</Link>
               <Link component={RouterLink} to="/services/packaging">Packaging</Link>
-            </Box>
-          </Grid>
+              </Box>
+            </Grid>
 
           {/* Contact Info */}
           <Grid item xs={12} md={3}>
@@ -267,8 +280,8 @@ const Footer = () => {
             <Link component={RouterLink} to="/disclaimer">Disclaimer</Link>
           </Box>
         </Box>
-      </Container>
-    </Box>
+        </Container>
+      </Box>
   );
 };
 

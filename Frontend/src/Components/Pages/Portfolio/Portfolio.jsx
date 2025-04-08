@@ -15,6 +15,7 @@ import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useCart } from '../../../context/CartContext';
 import { getImageUrl } from '../../../utils/imageUtils';
+import * as reviewService from '../../../services/reviewService';
 
 // Memoized Card Components
 const ProjectCard = memo(({ project, onClick }) => {
@@ -88,32 +89,32 @@ const BookCard = memo(({ book, onClick }) => {
   }, [onClick, book]);
 
   return (
-    <Card
-      sx={{
-        cursor: 'pointer',
-        minHeight: '250px',
-        width: '350px',
-        position: 'relative',
-        boxShadow: "rgba(17, 17, 26, 0.1) 0px 4px 16px, rgba(17, 17, 26, 0.05) 0px 8px 32px",
-        '&:hover': {
-          transform: 'translateY(-5px)',
-          boxShadow: "rgba(0, 0, 0, 0.25) 0px 14px 28px, rgba(0, 0, 0, 0.22) 0px 10px 10px"
-        },
-        '&:hover .overlay': {
-          opacity: 1
-        },
-        transition: 'transform 0.2s ease-out, box-shadow 0.2s ease-out'
-      }}
+  <Card
+    sx={{
+      cursor: 'pointer',
+      minHeight: '250px',
+      width: '350px',
+      position: 'relative',
+      boxShadow: "rgba(17, 17, 26, 0.1) 0px 4px 16px, rgba(17, 17, 26, 0.05) 0px 8px 32px",
+      '&:hover': {
+        transform: 'translateY(-5px)',
+        boxShadow: "rgba(0, 0, 0, 0.25) 0px 14px 28px, rgba(0, 0, 0, 0.22) 0px 10px 10px"
+      },
+      '&:hover .overlay': {
+        opacity: 1
+      },
+      transition: 'transform 0.2s ease-out, box-shadow 0.2s ease-out'
+    }}
       onClick={handleClick}
-    >
-      <CardMedia
-        component="img"
+  >
+    <CardMedia
+      component="img"
         height="140"
         image={getImageUrl(book.coverImage)}
-        alt={book.title}
-        sx={{
-          objectFit: 'cover',
-          width: '100%',
+      alt={book.title}
+      sx={{
+        objectFit: 'cover',
+        width: '100%',
           height: '200px'
         }}
       />
@@ -125,29 +126,29 @@ const BookCard = memo(({ book, onClick }) => {
           by {book.author}
         </Typography>
       </CardContent>
-      <Box
-        className="overlay"
-        sx={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          bgcolor: 'rgba(0, 0, 0, 0.5)',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          opacity: 0,
-          color: 'white',
-          textAlign: 'center',
-          p: 2
-        }}
-      >
-        <ZoomInIcon sx={{ fontSize: 40, mb: 1 }} />
-        <Typography variant="subtitle1">Click to View Details</Typography>
-      </Box>
-    </Card>
+    <Box
+      className="overlay"
+      sx={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        bgcolor: 'rgba(0, 0, 0, 0.5)',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        opacity: 0,
+        color: 'white',
+        textAlign: 'center',
+        p: 2
+      }}
+    >
+      <ZoomInIcon sx={{ fontSize: 40, mb: 1 }} />
+      <Typography variant="subtitle1">Click to View Details</Typography>
+    </Box>
+  </Card>
   );
 });
 
@@ -290,8 +291,8 @@ const Portfolio = React.memo(function Portfolio() {
 
   const fetchBookReviews = useCallback(async (bookId) => {
     try {
-      const response = await axios.get(`http://localhost:5000/api/v1/books/${bookId}/reviews`);
-      setReviews(response.data || []);
+      const response = await reviewService.getBookReviews(bookId);
+      setReviews(response || []);
     } catch (error) {
       console.log("Error fetching reviews:", error);
       toast.error("Failed to load reviews. Please try again later.");
@@ -311,21 +312,15 @@ const Portfolio = React.memo(function Portfolio() {
         return;
       }
 
-      const response = await axios.post(
-        `http://localhost:5000/api/v1/books/${selectedBook._id}/reviews`,
-        newReview,
-        {
-          headers: { 
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        }
-      );
+      const response = await reviewService.createBookReview(selectedBook._id, {
+        rating: newReview.rating,
+        comment: newReview.comment
+      });
 
-      if (response.data) {
+      if (response) {
         // Update the book's average rating
         const updatedBook = { ...selectedBook };
-        const newReviews = [...reviews, response.data];
+        const newReviews = [...reviews, response];
         const totalRating = newReviews.reduce((sum, review) => sum + review.rating, 0);
         updatedBook.averageRating = totalRating / newReviews.length;
         setSelectedBook(updatedBook);
@@ -337,7 +332,7 @@ const Portfolio = React.memo(function Portfolio() {
       }
     } catch (error) {
       console.log("Error adding review:", error);
-      const errorMessage = error.response?.data?.message || "Failed to add review. Please try again.";
+      const errorMessage = error.message || "Failed to add review. Please try again.";
       toast.error(errorMessage);
     }
   }, [selectedBook, newReview, reviews]);
@@ -350,12 +345,7 @@ const Portfolio = React.memo(function Portfolio() {
         return;
       }
 
-      await axios.delete(
-        `http://localhost:5000/api/v1/books/${selectedBook._id}/reviews/${reviewId}`,
-        {
-          headers: { Authorization: `Bearer ${token}` }
-        }
-      );
+      await reviewService.deleteBookReview(selectedBook._id, reviewId);
 
       // Update the book's average rating
       const updatedBook = { ...selectedBook };
@@ -369,7 +359,7 @@ const Portfolio = React.memo(function Portfolio() {
       toast.success("Review deleted successfully!");
     } catch (error) {
       console.log("Error deleting review:", error);
-      const errorMessage = error.response?.data?.message || "Failed to delete review. Please try again.";
+      const errorMessage = error.message || "Failed to delete review. Please try again.";
       toast.error(errorMessage);
     }
   }, [selectedBook, reviews]);
@@ -537,15 +527,15 @@ const Portfolio = React.memo(function Portfolio() {
                     <Typography variant="subtitle1" gutterBottom>
                       Technologies Used:
                     </Typography>
-                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                       {selectedProject.skillsUsed.map((tech, index) => (
                         <Box
-                          key={index}
-                          sx={{
+                      key={index}
+                      sx={{
                             bgcolor: '#f0f0f0',
                             px: 1.5,
                             py: 0.5,
-                            borderRadius: 1,
+                        borderRadius: 1,
                             fontSize: '0.875rem',
                           }}
                         >
@@ -558,7 +548,7 @@ const Portfolio = React.memo(function Portfolio() {
                 <Box sx={{ mt: 2 }}>
                   <Typography variant="subtitle1" gutterBottom>
                     Links:
-                  </Typography>
+                    </Typography>
                   <Stack direction="row" spacing={2}>
                     {(selectedProject.githubLink || selectedProject.githubUrl) && (
                       <Link
@@ -627,10 +617,10 @@ const Portfolio = React.memo(function Portfolio() {
           </IconButton>
             <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' } }}>
               <Box
-                component="img"
+                    component="img"
                 src={getImageUrl(selectedBook.coverImage)}
-                alt={selectedBook.title}
-                sx={{ 
+                    alt={selectedBook.title}
+                    sx={{ 
                   width: { xs: '100%', md: '40%' },
                   height: { xs: '300px', md: 'auto' },
                   objectFit: 'cover',

@@ -320,9 +320,9 @@ const TrackOrder = () => {
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
       <ButtonGroup sx={{ mb: 3 }}>
-        <Button
-          startIcon={<BiArrowBack />}
-          onClick={handleBack}
+      <Button
+        startIcon={<BiArrowBack />}
+        onClick={handleBack}
           sx={{
             mr: 1,
             borderColor: '#149ddd',
@@ -332,9 +332,9 @@ const TrackOrder = () => {
               backgroundColor: 'rgba(20, 157, 221, 0.04)'
             }
           }}
-        >
-          Back to Orders
-        </Button>
+      >
+        Back to Orders
+      </Button>
         <Button
           startIcon={<FiHome />}
           onClick={() => navigate('/')}

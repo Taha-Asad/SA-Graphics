@@ -16,20 +16,26 @@ import {
   IconButton,
   Alert,
   Snackbar,
-  Container
+  Container,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel
 } from '@mui/material';
 import { Link } from 'react-router-dom';
 import { Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import * as reviewService from '../../../services/reviewService';
+import axios from 'axios';
 
 const Reviews = () => {
   const [reviews, setReviews] = useState([]);
+  const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedReview, setSelectedReview] = useState(null);
   const [reviewForm, setReviewForm] = useState({
-    productName: '',
+    serviceId: '',
     rating: 5,
     comment: ''
   });
@@ -39,315 +45,356 @@ const Reviews = () => {
     severity: 'success'
   });
 
-  // Fetch reviews on component mount
   useEffect(() => {
     fetchReviews();
+    fetchServices();
   }, []);
+
+  const fetchServices = async () => {
+    try {
+      console.log('Fetching services...');
+      const response = await axios.get('http://localhost:5000/api/v1/services');
+      console.log('Services response:', response.data);
+      if (Array.isArray(response.data)) {
+        setServices(response.data);
+      } else {
+        console.error('Invalid services data:', response.data);
+        setSnackbar({
+          open: true,
+          message: 'Invalid services data received from server',
+          severity: 'error'
+        });
+      }
+    } catch (err) {
+      console.error('Error fetching services:', err);
+      setSnackbar({
+        open: true,
+        message: 'Failed to fetch services: ' + (err.response?.data?.message || err.message),
+        severity: 'error'
+      });
+    }
+  };
 
   const fetchReviews = async () => {
     try {
       setLoading(true);
-      const data = await reviewService.getUserReviews();
-      setReviews(data.reviews || []);
-      setError(null);
+      setError(null); // Clear any existing errors
+      console.log('Initiating reviews fetch...');
+      
+      const response = await reviewService.getUserReviews();
+      console.log('Reviews fetch successful:', response);
+      
+      if (Array.isArray(response)) {
+        setReviews(response);
+        if (response.length === 0) {
+          setError('You have not written any reviews yet.');
+        }
+      } else {
+        console.error('Unexpected response format:', response);
+        setError('Unable to load reviews. Please try again.');
+        setReviews([]);
+      }
     } catch (err) {
-      setError(err.message || 'Failed to fetch reviews');
+      console.error('Error in fetchReviews:', err);
+      let errorMessage = 'Failed to fetch reviews';
+      let severity = 'error';
+      
+      if (err.message.includes('No authentication token found')) {
+        errorMessage = 'Please login to view your reviews';
+      } else if (err.message.includes('Server configuration error')) {
+        errorMessage = 'Server configuration issue. Our team has been notified.';
+        severity = 'warning';
+      } else if (err.message.includes('Cannot connect to review service')) {
+        errorMessage = 'Unable to connect to review service. Please try again later.';
+        severity = 'warning';
+      } else if (err.response?.status === 404) {
+        errorMessage = 'Review service is currently unavailable';
+      }
+      
+      setError(errorMessage);
+      setReviews([]);
+      
+      // Show error in snackbar
+      setSnackbar({
+        open: true,
+        message: errorMessage,
+        severity: severity
+      });
     } finally {
       setLoading(false);
     }
   };
 
-  const handleOpenDialog = (review = null) => {
-    if (review) {
-      setSelectedReview(review);
-      setReviewForm({
-        productName: review.productName,
-        rating: review.rating,
-        comment: review.comment
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      if (!reviewForm.serviceId || !reviewForm.rating || !reviewForm.comment.trim()) {
+        setSnackbar({
+          open: true,
+          message: 'Please fill in all required fields',
+          severity: 'error'
+        });
+        return;
+      }
+
+      const reviewData = {
+        serviceId: reviewForm.serviceId,
+        rating: reviewForm.rating,
+        comment: reviewForm.comment.trim()
+      };
+
+      if (selectedReview) {
+        await reviewService.updateServiceReview(selectedReview._id, reviewData);
+      } else {
+        await reviewService.createServiceReview(reviewData);
+      }
+
+      setSnackbar({
+        open: true,
+        message: selectedReview ? 'Review updated successfully' : 'Review added successfully',
+        severity: 'success'
       });
-    } else {
-      setSelectedReview(null);
-      setReviewForm({
-        productName: '',
-        rating: 5,
-        comment: ''
+      
+      setOpenDialog(false);
+      setReviewForm({ serviceId: '', rating: 5, comment: '' });
+      fetchReviews();
+    } catch (err) {
+      setSnackbar({
+        open: true,
+        message: err.message || 'Failed to submit review',
+        severity: 'error'
       });
     }
+  };
+
+  const handleEdit = (review) => {
+    if (!review.service?._id) {
+      setSnackbar({
+        open: true,
+        message: 'Cannot edit review: service information is missing',
+        severity: 'error'
+      });
+      return;
+    }
+    
+    setSelectedReview(review);
+    setReviewForm({
+      serviceId: review.service._id,
+      rating: review.rating || 5,
+      comment: review.comment || ''
+    });
     setOpenDialog(true);
+  };
+
+  const handleDelete = async (reviewId) => {
+    try {
+      await reviewService.deleteServiceReview(reviewId);
+      setSnackbar({
+        open: true,
+        message: 'Review deleted successfully',
+        severity: 'success'
+      });
+      fetchReviews();
+    } catch (err) {
+      setSnackbar({
+        open: true,
+        message: err.message || 'Failed to delete review',
+        severity: 'error'
+      });
+    }
   };
 
   const handleCloseDialog = () => {
     setOpenDialog(false);
     setSelectedReview(null);
     setReviewForm({
-      productName: '',
+      serviceId: '',
       rating: 5,
       comment: ''
     });
   };
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setReviewForm(prev => ({
-      ...prev,
-      [name]: value
-    }));
+  const handleCloseSnackbar = () => {
+    setSnackbar({ ...snackbar, open: false });
   };
 
-  const handleRatingChange = (value) => {
-    setReviewForm(prev => ({
-      ...prev,
-      rating: value
-    }));
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      if (selectedReview) {
-        await reviewService.updateReview(selectedReview.id, reviewForm);
-        setSnackbar({
-          open: true,
-          message: 'Review updated successfully',
-          severity: 'success'
-        });
-      } else {
-        await reviewService.addReview(reviewForm);
-        setSnackbar({
-          open: true,
-          message: 'Review added successfully',
-          severity: 'success'
-        });
-      }
-      handleCloseDialog();
-      fetchReviews();
-    } catch (err) {
-      setSnackbar({
-        open: true,
-        message: err.message || 'Failed to save review',
-        severity: 'error'
-      });
+  // Format price in Pakistani Rupees
+  const formatPrice = (price) => {
+    if (price === undefined || price === null) {
+      return 'Price not available';
     }
+    return `Rs. ${price.toLocaleString('en-PK')}`;
   };
 
-  const handleDelete = async (reviewId) => {
-    if (window.confirm('Are you sure you want to delete this review?')) {
-      try {
-        await reviewService.deleteReview(reviewId);
-        setSnackbar({
-          open: true,
-          message: 'Review deleted successfully',
-          severity: 'success'
-        });
-        fetchReviews();
-      } catch (err) {
-        setSnackbar({
-          open: true,
-          message: err.message || 'Failed to delete review',
-          severity: 'error'
-        });
-      }
-    }
+  // Add a retry button to the error alert
+  const renderError = () => {
+    if (!error) return null;
+    
+    return (
+      <Alert 
+        severity="error" 
+        sx={{ mb: 2 }}
+        action={
+          <Button 
+            color="inherit" 
+            size="small" 
+            onClick={() => {
+              fetchReviews();
+              fetchServices();
+            }}
+          >
+            Retry
+          </Button>
+        }
+      >
+        {error}
+      </Alert>
+    );
   };
 
   if (loading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
         <CircularProgress />
       </Box>
     );
   }
 
   return (
-    <>
+    <Container maxWidth="lg">
+      <Box sx={{ mb: 4 }}>
+        <Typography variant="h4" gutterBottom>
+          My Reviews
+        </Typography>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => setOpenDialog(true)}
+          sx={{ mb: 3 }}
+        >
+          Add New Review
+        </Button>
 
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' , mb: 8 }}>
-          <Typography variant="h5" sx={{ color: '#333', fontWeight: 500  }}>
-        My Reviews
-      </Typography>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={() => handleOpenDialog()}
-            sx={{
-              bgcolor: '#149DDD',
-              '&:hover': {
-                bgcolor: '#1180B7'
-              }
-            }}
-          >
-            ADD REVIEW
-          </Button>
-        </Box>
+        {renderError()}
 
-        {error && (
-          <Alert severity="error" sx={{ mb: 3 }}>
-            {error}
-          </Alert>
-        )}
-
-        {reviews.length === 0 ? (
-          <Paper sx={{ p: 4, textAlign: 'center', bgcolor: '#fff' }}>
-            <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-              You haven't written any reviews yet.
-            </Typography>
-            <Button
-              component={Link}
-              to="/"
-              variant="outlined"
-              color="primary"
-              sx={{
-                borderColor: '#149DDD',
-                color: '#149DDD',
-                '&:hover': {
-                  borderColor: '#1180B7',
-                  bgcolor: 'rgba(20, 157, 221, 0.04)'
-                }
-              }}
-            >
-              BACK TO HOME
-            </Button>
-          </Paper>
-        ) : (
-          <Grid container spacing={2}>
-        {reviews.map((review) => (
-          <Grid item xs={12} key={review.id}>
-                <Paper
-                  elevation={1}
-                  sx={{
-                    p: 3,
-                    bgcolor: '#fff',
-                    '&:hover': {
-                      boxShadow: 3
-                    }
-                  }}
-                >
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                      <Avatar
-                        sx={{
-                          mr: 2,
-                          bgcolor: '#149DDD'
-                        }}
-                      >
-                        {review.productName[0]}
-                      </Avatar>
-                <Box>
-                        <Typography variant="h6" sx={{ color: '#333' }}>
-                    {review.productName}
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                          {new Date(review.date).toLocaleDateString('en-US', {
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric'
-                          })}
-                  </Typography>
-                      </Box>
+        <Grid container spacing={3}>
+          {reviews.length > 0 ? (
+            reviews.map((review) => (
+              <Grid item xs={12} key={review._id}>
+                <Paper sx={{ p: 3 }}>
+                  <Box display="flex" justifyContent="space-between" alignItems="flex-start">
+                    <Box>
+                      <Typography variant="h6">
+                        {review.service?.name || review.book?.title || 'Service'}
+                      </Typography>
+                      {review.service && (
+                        <Typography variant="subtitle2" color="text.secondary">
+                          {review.service.category || 'No category'} - {review.service.price ? formatPrice(review.service.price) : 'Price not available'}
+                        </Typography>
+                      )}
+                      <Rating value={review.rating} readOnly />
+                      <Typography variant="body1" sx={{ mt: 1 }}>
+                        {review.comment}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {new Date(review.createdAt).toLocaleDateString()}
+                      </Typography>
                     </Box>
                     <Box>
-                      <IconButton
-                        size="small"
-                        onClick={() => handleOpenDialog(review)}
-                        sx={{ color: '#149DDD' }}
-                      >
+                      <IconButton onClick={() => handleEdit(review)}>
                         <EditIcon />
                       </IconButton>
-                      <IconButton
-                        size="small"
-                        onClick={() => handleDelete(review.id)}
-                        sx={{ color: '#ff4444' }}
-                      >
+                      <IconButton onClick={() => handleDelete(review._id)}>
                         <DeleteIcon />
                       </IconButton>
-                </Box>
-              </Box>
-              
-                  <Rating
-                    value={review.rating}
-                    readOnly
-                    sx={{
-                      color: '#149DDD'
-                    }}
-                  />
-
-                  <Typography sx={{ mt: 2, color: '#555' }}>
-                {review.comment}
+                    </Box>
+                  </Box>
+                </Paper>
+              </Grid>
+            ))
+          ) : (
+            <Grid item xs={12}>
+              <Typography variant="body1" color="text.secondary" align="center">
+                You haven't written any reviews yet.
               </Typography>
-            </Paper>
-          </Grid>
-        ))}
-      </Grid>
-        )}
+            </Grid>
+          )}
+        </Grid>
+      </Box>
 
-        {/* Review Dialog */}
-        <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
-          <DialogTitle>
-            {selectedReview ? 'Edit Review' : 'Add Review'}
-          </DialogTitle>
-          <DialogContent>
-            <Box component="form" onSubmit={handleSubmit} sx={{ pt: 2 }}>
-              <TextField
-                fullWidth
-                label="Product Name"
-                name="productName"
-                value={reviewForm.productName}
-                onChange={handleInputChange}
+      <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
+        <DialogTitle>
+          {selectedReview ? 'Edit Review' : 'Add New Review'}
+        </DialogTitle>
+        <DialogContent>
+          <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
+            <FormControl fullWidth sx={{ mb: 2 }}>
+              <InputLabel>Service</InputLabel>
+              <Select
+                value={reviewForm.serviceId}
+                onChange={(e) => {
+                  console.log('Selected service:', e.target.value);
+                  setReviewForm({ ...reviewForm, serviceId: e.target.value });
+                }}
+                label="Service"
                 required
-                sx={{ mb: 2 }}
-              />
-              <Box sx={{ mb: 2 }}>
-                <Typography component="legend">Rating</Typography>
-                <Rating
-                  name="rating"
-                  value={reviewForm.rating}
-                  onChange={(_, value) => handleRatingChange(value)}
-                  sx={{ color: '#149DDD' }}
-                />
-              </Box>
-              <TextField
-                fullWidth
-                label="Comment"
-                name="comment"
-                value={reviewForm.comment}
-                onChange={handleInputChange}
-                required
-                multiline
-                rows={4}
-              />
-    </Box>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleCloseDialog}>Cancel</Button>
-            <Button
-              onClick={handleSubmit}
-              variant="contained"
-              sx={{
-                bgcolor: '#149DDD',
-                '&:hover': {
-                  bgcolor: '#1180B7'
-                }
-              }}
-            >
-              {selectedReview ? 'Update' : 'Add'}
-            </Button>
-          </DialogActions>
-        </Dialog>
+              >
+                {services.length === 0 && (
+                  <MenuItem disabled value="">
+                    No services available
+                  </MenuItem>
+                )}
+                {services.map((service) => (
+                  <MenuItem key={service._id} value={service._id}>
+                    {service.name} ({service.category || 'No category'}) - {service.price ? formatPrice(service.price) : 'Price not available'}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
 
-        {/* Snackbar for notifications */}
-        <Snackbar
-          open={snackbar.open}
-          autoHideDuration={6000}
-          onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}
+            <Box sx={{ mb: 2 }}>
+              <Typography component="legend">Rating</Typography>
+              <Rating
+                value={reviewForm.rating}
+                onChange={(event, newValue) => {
+                  setReviewForm({ ...reviewForm, rating: newValue });
+                }}
+              />
+            </Box>
+
+            <TextField
+              fullWidth
+              multiline
+              rows={4}
+              label="Comment"
+              value={reviewForm.comment}
+              onChange={(e) => setReviewForm({ ...reviewForm, comment: e.target.value })}
+              required
+            />
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDialog}>Cancel</Button>
+          <Button onClick={handleSubmit} variant="contained" color="primary">
+            {selectedReview ? 'Update' : 'Submit'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+      >
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity={snackbar.severity}
+          sx={{ width: '100%' }}
         >
-          <Alert
-            onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}
-            severity={snackbar.severity}
-          >
-            {snackbar.message}
-          </Alert>
-        </Snackbar>
-    </>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
+    </Container>
   );
 };
 

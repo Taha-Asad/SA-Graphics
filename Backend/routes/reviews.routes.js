@@ -2,22 +2,26 @@ const express = require("express");
 const router = express.Router();
 const {
   createReview,
+  createBookReview,
   getBookReviews,
   updateReview,
   deleteReview,
+  getUserReviews
 } = require("../Controllers/reviews.controller.js");
-const { verifyToken } = require("../middleware/jwt.js");
+const { verifyToken } = require("../middleware/auth");
 
-// Create a new review
-router.post("/:bookId", verifyToken, createReview);
+// Get user's reviews
+router.get("/me", verifyToken, getUserReviews);
 
-// Get all reviews for a book
-router.get("/:bookId", getBookReviews);
+// Book review routes
+router.post("/books/:bookId", verifyToken, createBookReview);
+router.get("/books/:bookId", getBookReviews);
+router.put("/books/:bookId/reviews/:reviewId", verifyToken, updateReview);
+router.delete("/books/:bookId/reviews/:reviewId", verifyToken, deleteReview);
 
-// Update a review
-router.put("/:reviewId", verifyToken, updateReview);
-
-// Delete a review
-router.delete("/:reviewId", verifyToken, deleteReview);
+// Service review routes
+router.post("/services", verifyToken, createReview);
+router.put("/services/:reviewId", verifyToken, updateReview);
+router.delete("/services/:reviewId", verifyToken, deleteReview);
 
 module.exports = router; 

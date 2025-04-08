@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Box, CssBaseline, Drawer, AppBar, Toolbar, List, Typography, Divider, IconButton, ListItem, ListItemButton, ListItemIcon, ListItemText, useTheme } from '@mui/material';
-import { Menu as MenuIcon, ChevronLeft as ChevronLeftIcon, ChevronRight as ChevronRightIcon, Dashboard as DashboardIcon, People as PeopleIcon, ShoppingCart as OrdersIcon, RateReview as ReviewsIcon, Settings as SettingsIcon, Logout as LogoutIcon, Email as EmailIcon } from '@mui/icons-material';
+import { Menu as MenuIcon, ChevronLeft as ChevronLeftIcon, ChevronRight as ChevronRightIcon, Dashboard as DashboardIcon, People as PeopleIcon, ShoppingCart as OrdersIcon, RateReview as ReviewsIcon, Settings as SettingsIcon, Logout as LogoutIcon, Email as EmailIcon, Comment as TestimonialsIcon } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -58,6 +58,7 @@ const menuItems = [
   { text: 'Users', icon: <PeopleIcon />, path: '/admin/users' },
   { text: 'Orders', icon: <OrdersIcon />, path: '/admin/orders' },
   { text: 'Reviews', icon: <ReviewsIcon />, path: '/admin/reviews' },
+  { text: 'Testimonials', icon: <TestimonialsIcon />, path: '/admin/testimonials' },
   { text: 'Contact Forms', icon: <EmailIcon />, path: '/admin/contacts' },
   { text: 'Settings', icon: <SettingsIcon />, path: '/admin/settings' }
 ];
@@ -108,7 +109,7 @@ const Admin = () => {
           </Typography>
         </Toolbar>
       </AppBarStyled>
-      <Drawer
+        <Drawer
         sx={{
           width: drawerWidth,
           flexShrink: 0,
@@ -163,4 +164,4 @@ const Admin = () => {
   );
 };
 
-export default Admin; 
+export default Admin;

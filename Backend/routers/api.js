@@ -27,6 +27,7 @@ const wishlistController = require('../Controllers/wishlist.controller');
 const supportController = require('../Controllers/support.controller');
 const dashboardController = require('../Controllers/dashboard.controller');
 const settingsController = require('../Controllers/settings.controller');
+const serviceController = require('../Controllers/service.controller');
 
 // Auth Routes
 router.post(
@@ -174,10 +175,15 @@ router.delete(
 );
 
 // Review Routes
-router.post("/books/:bookId/reviews", authMiddleware, reviewsController.createReview);
+router.post("/books/:bookId/reviews", authMiddleware, reviewsController.createBookReview);
 router.get("/books/:bookId/reviews", reviewsController.getBookReviews);
 router.put("/books/:bookId/reviews/:reviewId", authMiddleware, reviewsController.updateReview);
 router.delete("/books/:bookId/reviews/:reviewId", authMiddleware, reviewsController.deleteReview);
+
+// Service Review Routes
+router.post("/reviews/services", authMiddleware, reviewsController.createReview);
+router.put("/reviews/services/:reviewId", authMiddleware, reviewsController.updateReview);
+router.delete("/reviews/services/:reviewId", authMiddleware, reviewsController.deleteReview);
 
 // contact routes
 router.post('/contact' , createContact);
@@ -273,6 +279,12 @@ router.put(
   adminMiddleware,
   settingsController.updateSettings
 );
+
+// Service Routes
+router.get("/services", serviceController.getServices);
+router.post("/services", authMiddleware, adminMiddleware, serviceController.createService);
+router.put("/services/:id", authMiddleware, adminMiddleware, serviceController.updateService);
+router.delete("/services/:id", authMiddleware, adminMiddleware, serviceController.deleteService);
 
 // Error handling middleware
 router.use(errorHandler);

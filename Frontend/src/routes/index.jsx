@@ -34,6 +34,18 @@ const Checkout = lazy(() => import('../Components/Pages/Checkout/Checkout'));
 const UserProfile = lazy(() => import('../Components/Pages/Profile/Profile'));
 const MyReviews = lazy(() => import('../Components/Account/Reviews/Reviews'));
 
+// Service components
+const Printing = lazy(() => import('../Components/Pages/Services/Printing'));
+const Design = lazy(() => import('../Components/Pages/Services/Design'));
+const Branding = lazy(() => import('../Components/Pages/Services/Branding'));
+const Signage = lazy(() => import('../Components/Pages/Services/Signage'));
+const Packaging = lazy(() => import('../Components/Pages/Services/Packaging'));
+
+// Legal components
+const PrivacyPolicy = lazy(() => import('../Components/Pages/Legal/PrivacyPolicy'));
+const TermsOfService = lazy(() => import('../Components/Pages/Legal/TermsOfService'));
+const Disclaimer = lazy(() => import('../Components/Pages/Legal/Disclaimer'));
+
 // Admin components
 const Dashboard = lazy(() => import('../admin/components/Dashboard'));
 const Users = lazy(() => import('../admin/components/Users'));
@@ -72,6 +84,23 @@ const AppRoutes = () => {
             <ResetPassword />
           </AuthLayout>
         } />
+
+        {/* Service routes */}
+        <Route element={<MainLayout />}>
+          <Route path="/services" element={<Services />} />
+          <Route path="/services/printing" element={<Printing />} />
+          <Route path="/services/design" element={<Design />} />
+          <Route path="/services/branding" element={<Branding />} />
+          <Route path="/services/signage" element={<Signage />} />
+          <Route path="/services/packaging" element={<Packaging />} />
+        </Route>
+
+        {/* Legal routes */}
+        <Route element={<MainLayout />}>
+          <Route path="/privacy" element={<PrivacyPolicy />} />
+          <Route path="/terms" element={<TermsOfService />} />
+          <Route path="/disclaimer" element={<Disclaimer />} />
+        </Route>
 
         {/* Admin routes */}
         <Route path="/admin/*" element={

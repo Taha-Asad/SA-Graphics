@@ -94,8 +94,8 @@ const Navbar = () => {
                       AMJAD
                     </Box>
                   </Stack>
-                </RouterLink>
-              </Box>
+              </RouterLink>
+            </Box>
             </Stack>
 
             {/* Desktop Navigation Links */}
@@ -155,7 +155,7 @@ const Navbar = () => {
 
             {/* Actions Section */}
             <Stack direction="row" spacing={2} alignItems="center">
-              {isHomePage && isMobile && (
+              {isMobile && (
                 <IconButton
                   onClick={() => setMenuOpen(true)}
                   sx={{ 
@@ -177,7 +177,7 @@ const Navbar = () => {
               </IconButton>
               <IconButton
                 onClick={() => setCartSidebar(true)}
-                sx={{ 
+              sx={{
                   color: '#fff',
                   '&:hover': { color: '#149ddd' }
                 }}
@@ -223,8 +223,8 @@ const Navbar = () => {
               duration={500}
               onClick={() => setMenuOpen(false)}
             >
-              <Box
-                sx={{
+        <Box
+        sx={{
                   color: "#fff",
                   display: 'flex',
                   alignItems: 'center',
@@ -241,7 +241,7 @@ const Navbar = () => {
               >
                 {link.icon}
                 {link.title}
-              </Box>
+        </Box>
             </ScrollLink>
           ))}
         </Stack>

@@ -7,8 +7,91 @@ const ejs = require("ejs");
 const path = require("path");
 const NotificationService = require('../services/notification.service');
 
+// Get all reviews for current user
+const getUserReviews = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const reviews = await Reviews.find({ user: userId })
+      .populate("service", "name category price")
+      .populate("book", "title coverImage")
+      .populate("user", "name profilePicture")
+      .sort({ createdAt: -1 });
+
+    res.status(200).json(reviews);
+  } catch (error) {
+    console.error("Error fetching user reviews:", error);
+    next(error);
+  }
+};
+
 // Create a new review
 const createReview = async (req, res, next) => {
+  try {
+    const { serviceId } = req.body;
+    const { rating, comment } = req.body;
+    const userId = req.user.id;
+
+    // Validate required fields
+    if (!rating || !comment || !serviceId) {
+      return next(createError(400, "Rating, comment and service ID are required"));
+    }
+
+    // Check if user has already reviewed this service
+    const existingReview = await Reviews.findOne({
+      user: userId,
+      service: serviceId,
+    });
+
+    if (existingReview) {
+      return next(createError(400, "You have already reviewed this service"));
+    }
+
+    // Create new review
+    const newReview = new Reviews({
+      user: userId,
+      service: serviceId,
+      rating,
+      comment,
+      status: 'pending'
+    });
+
+    const savedReview = await newReview.save();
+
+    // Populate user details before sending response
+    const populatedReview = await Reviews.findById(savedReview._id)
+      .populate("user", "name profilePicture")
+      .populate("service", "name");
+
+    // Send email notification to admin
+    try {
+      const templatePath = path.join(__dirname, '../views/emails/newReviewNotification.ejs');
+      const html = await ejs.renderFile(templatePath, { review: populatedReview });
+
+      const mailOptions = {
+        from: process.env.EMAIL_USER,
+        to: process.env.ADMIN_EMAIL,
+        subject: 'New Service Review Received',
+        html
+      };
+
+      await sendEmail(mailOptions);
+      console.log('Review notification email sent to admin');
+    } catch (emailError) {
+      console.error('Error sending review notification email:', emailError);
+    }
+
+    // Send notification if enabled
+    await NotificationService.notifyNewReview(savedReview);
+
+    res.status(201).json(populatedReview);
+  } catch (error) {
+    console.error("Error creating review:", error);
+    next(error);
+  }
+};
+
+// Create a new book review
+const createBookReview = async (req, res, next) => {
   try {
     const { bookId } = req.params;
     const { rating, comment } = req.body;
@@ -36,6 +119,7 @@ const createReview = async (req, res, next) => {
       book: bookId,
       rating,
       comment,
+      status: 'approved'
     });
 
     const savedReview = await newReview.save();
@@ -65,7 +149,6 @@ const createReview = async (req, res, next) => {
       console.log('Review notification email sent to admin');
     } catch (emailError) {
       console.error('Error sending review notification email:', emailError);
-      // Don't throw error, just log it - we don't want to fail the review submission if email fails
     }
 
     // Send notification if enabled
@@ -82,7 +165,7 @@ const createReview = async (req, res, next) => {
 const getBookReviews = async (req, res, next) => {
   try {
     const { bookId } = req.params;
-    const reviews = await Reviews.find({ book: bookId })
+    const reviews = await Reviews.find({ book: bookId, status: 'approved' })
       .populate("user", "name profilePicture")
       .sort({ createdAt: -1 });
 
@@ -157,4 +240,6 @@ module.exports = {
   getBookReviews,
   updateReview,
   deleteReview,
+  getUserReviews,
+  createBookReview
 }; 

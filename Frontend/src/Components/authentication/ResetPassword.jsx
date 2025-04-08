@@ -34,11 +34,11 @@ const ResetPassword = () => {
 
     const handleSubmit = async (event) => {
         event.preventDefault();
-        
+
         // Validate both fields
         const passwordError = validateField('password', user.password);
         const confirmError = validateField('confirmPassword', user.confirmPassword);
-        
+
         if (passwordError || confirmError) {
             setErrors({
                 password: passwordError,
@@ -76,7 +76,8 @@ const ResetPassword = () => {
                 padding: { xs: "80px 20px", md: "100px 40px" },
                 position: 'relative',
                 marginTop: { xs: 16, sm: 18 },
-                marginBottom:{xs:30 , sm: 30 , md: 38}          }}
+                // marginBottom:{xs:30 , sm: 30 , md: 38}      
+            }}
         >
             <Grid
                 item
@@ -106,19 +107,19 @@ const ResetPassword = () => {
                         alignItems: 'center'
                     }}
                 >
-                    <Typography 
-                        variant="h5" 
-                        component="h1" 
-                        color={"#656565"} 
+                    <Typography
+                        variant="h5"
+                        component="h1"
+                        color={"#656565"}
                         gutterBottom
                         sx={{ mb: 4 }}
                     >
                         Reset Password
                     </Typography>
 
-                    <Typography 
-                        variant="body1" 
-                        color="textSecondary" 
+                    <Typography
+                        variant="body1"
+                        color="textSecondary"
                         align="center"
                         sx={{ mb: 3 }}
                     >
@@ -179,13 +180,13 @@ const ResetPassword = () => {
                                 ),
                             }}
                         />
-                        
+
                         <Button
                             type="submit"
                             fullWidth
                             variant="contained"
-                            sx={{ 
-                                mt: 3, 
+                            sx={{
+                                mt: 3,
                                 mb: 2,
                                 backgroundColor: '#149ddd',
                                 '&:hover': {
@@ -200,12 +201,12 @@ const ResetPassword = () => {
                         <Grid container justifyContent="center" spacing={2}>
                             <Grid item xs={12}>
                                 <Typography variant='h6' textAlign={'center'}>
-                                    Remember your password? <Link to={"/login"} style={{color:'#149ddd'}} >Sign In</Link>
+                                    Remember your password? <Link to={"/login"} style={{ color: '#149ddd' }} >Sign In</Link>
                                 </Typography>
                             </Grid>
                             <Grid item xs={12}>
                                 <Typography variant='h6' textAlign={'center'}>
-                                    <Link to={"/"} style={{color:'#149ddd', textDecoration: 'none'}} >
+                                    <Link to={"/"} style={{ color: '#149ddd', textDecoration: 'none' }} >
                                         ← Back to Home
                                     </Link>
                                 </Typography>

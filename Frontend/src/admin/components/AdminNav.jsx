@@ -12,7 +12,8 @@ import {
 import {
   Dashboard as DashboardIcon,
   Settings as SettingsIcon,
-  Email as EmailIcon
+  Email as EmailIcon,
+  Comment as TestimonialsIcon
 } from '@mui/icons-material';
 
 const AdminNav = () => {
@@ -35,6 +36,13 @@ const AdminNav = () => {
             <DashboardIcon />
           </ListItemIcon>
           <ListItemText primary="Dashboard" />
+        </ListItem>
+
+        <ListItem button component={Link} to="/admin/testimonials">
+          <ListItemIcon>
+            <TestimonialsIcon />
+          </ListItemIcon>
+          <ListItemText primary="Testimonials" />
         </ListItem>
 
         <ListItem button component={Link} to="/admin/contacts">

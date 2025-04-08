@@ -6,6 +6,7 @@ import Orders from './components/Orders';
 import Reviews from './components/Reviews';
 import Settings from './components/Settings';
 import ContactList from './components/ContactList';
+import Testimonials from './components/Testimonials';
 
 const AdminRoutes = () => {
   return (
@@ -14,6 +15,7 @@ const AdminRoutes = () => {
       <Route path="users" element={<Users />} />
       <Route path="orders" element={<Orders />} />
       <Route path="reviews" element={<Reviews />} />
+      <Route path="testimonials" element={<Testimonials />} />
       <Route path="contacts" element={<ContactList />} />
       <Route path="settings" element={<Settings />} />
     </Routes>

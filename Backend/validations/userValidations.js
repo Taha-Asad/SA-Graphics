@@ -21,6 +21,9 @@ const registerSchema = Joi.object({
     'string.pattern.base': 'Phone number must contain only digits',
     'string.empty': 'Phone number is required',
     'any.required': 'Phone number is required'
+  }),
+  address: Joi.string().max(200).messages({
+    'string.max': 'Address cannot exceed 200 characters'
   })
 });
 

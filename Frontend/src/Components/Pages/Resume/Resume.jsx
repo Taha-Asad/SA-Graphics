@@ -13,7 +13,7 @@ const Resume = () => {
       <Box id="resume" sx={{
         bgcolor: "#F4FAFD",
         position: "relative",
-        marginTop: "-50px",
+        marginTop: "10px",
         padding: "20px 0",
         overflow: "hidden",
       }}

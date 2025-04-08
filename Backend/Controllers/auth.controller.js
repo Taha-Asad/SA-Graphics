@@ -18,7 +18,7 @@ const getProfilePicUrl = (profilePic) => {
 
 const registerUser = async (req, res, next) => {
   try {
-    const { name, email, password, phoneNo } = req.body;
+    const { name, email, password, phoneNo, address } = req.body;
 
     if (!name || !email || !password || !phoneNo) {
       throw createError(400, 'All fields are required');
@@ -44,6 +44,7 @@ const registerUser = async (req, res, next) => {
       email,
       password, // Password will be hashed by the pre-save middleware
       phoneNo,
+      address, // Add address field
       profilePic,
       role: email === "admin@gmail.com" ? "admin" : "user"
     });
@@ -52,6 +53,7 @@ const registerUser = async (req, res, next) => {
       name: user.name,
       email: user.email,
       phoneNo: user.phoneNo,
+      address: user.address,
       role: user.role
     });
 
@@ -62,6 +64,7 @@ const registerUser = async (req, res, next) => {
       name: savedUser.name,
       email: savedUser.email,
       phoneNo: savedUser.phoneNo,
+      address: savedUser.address,
       role: savedUser.role
     });
 

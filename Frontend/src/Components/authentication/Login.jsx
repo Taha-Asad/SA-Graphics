@@ -137,7 +137,7 @@ const Login = () => {
                 padding: { xs: "60px 20px", md: "80px 40px" },
                 position: 'relative',
                 marginTop: { xs: "25%", md: "10%" , sm: "20%"},
-                marginBottom: { xs: "25%", md: "23%" }
+                // marginBottom: { xs: "25%", md: "23%" }
             }}
         >
             <Grid

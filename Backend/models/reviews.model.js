@@ -7,10 +7,13 @@ const reviewsSchema = mongoose.Schema(
       ref: "User",
       required: true,
     },
+    book: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Book"
+    },
     service: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Service",
-      required: true,
+      ref: "Service"
     },
     rating: {
       type: Number,
@@ -25,7 +28,7 @@ const reviewsSchema = mongoose.Schema(
     status: {
       type: String,
       enum: ['pending', 'approved', 'rejected'],
-      default: 'pending'
+      default: 'approved'
     },
     productName: {
       type: String

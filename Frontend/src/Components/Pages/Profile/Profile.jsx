@@ -124,7 +124,7 @@ const Profile = () => {
             <Button
               variant="contained"
               color="primary"
-              onClick={() => navigate('/profile/edit')}
+              onClick={() => navigate('/account/profile/edit')}
               sx={{ mt: 2 }}
             >
               Edit Profile

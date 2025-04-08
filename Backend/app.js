@@ -10,6 +10,7 @@ const mongoose = require('mongoose');
 const settingsRoutes = require('./routes/settings');
 const orderRoutes = require('./routes/orders');
 const adminRoutes = require('./routes/admin.routes');
+const testimonialRoutes = require('./routes/testimonials.routes');
 const { UPLOAD_PATH } = require('./config/multer');
 const fs = require('fs');
 
@@ -53,8 +54,10 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/api/v1/', require('./routers/api.js'));
 app.use('/api/v1/settings', settingsRoutes);
 app.use('/api/v1/reviews', require('./routes/reviews'));
+app.use('/api/v1/services', require('./routes/services'));
 app.use('/api/v1/orders', orderRoutes);
 app.use('/api/v1/admin', adminRoutes);
+app.use('/api/v1/testimonials', testimonialRoutes);
 
 // Serve frontend for all other routes
 app.use(express.static(path.join(__dirname, '../Frontend/dist')));
