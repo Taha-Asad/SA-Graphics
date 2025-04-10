@@ -79,8 +79,8 @@ const Navbar = () => {
                   <Stack>
                     <Box component="span" sx={{ 
                       color: '#fff',
-                      fontSize: '1.2rem',
-                      fontWeight: 600,
+                      fontSize: '1.3rem',
+                      fontWeight: 800,
                       lineHeight: 1
                     }}>
                       SHERAZ
@@ -88,7 +88,7 @@ const Navbar = () => {
                     <Box component="span" sx={{ 
                       color: '#149ddd',
                       fontSize: '1.2rem',
-                      fontWeight: 600,
+                      fontWeight: 800,
                       lineHeight: 1
                     }}>
                       AMJAD

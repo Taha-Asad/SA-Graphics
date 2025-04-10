@@ -12,7 +12,7 @@ import About from '../Components/Pages/About/About';
 import Contact from '../Components/Pages/Contact/Contact';
 import Portfolio from '../Components/Pages/Portfolio/Portfolio';
 import Services from '../Components/Pages/Services/Services';
-import Resume from '../Components/Pages/Resume/Resume';
+// import Resume from '../Components/Pages/Resume/Resume';
 import Testimonials from '../Components/Pages/Testimonials/Testimonials';
 import AddTestimonial from '../Components/Pages/Testimonials/AddTestimonial';
 import Login from '../Components/authentication/Login';
@@ -35,7 +35,7 @@ const AppRoutes = () => {
       <Route path="/contact" element={<Contact />} />
       <Route path="/portfolio" element={<Portfolio />} />
       <Route path="/services" element={<Services />} />
-      <Route path="/resume" element={<Resume />} />
+      {/* <Route path="/resume" element={<Resume />} /> */}
       <Route path="/testimonials" element={<Testimonials />} />
       <Route path="/add-testimonial" element={<AddTestimonial />} />
       <Route path="/login" element={<Login />} />

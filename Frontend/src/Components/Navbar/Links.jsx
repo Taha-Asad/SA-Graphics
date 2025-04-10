@@ -21,13 +21,13 @@ export const Links = [
         cName: "nav-links",
         icon: <IoPersonOutline className="page-links"/>
     },
-    {
-        title: 'Resume',
-        id: "resume",
-        to: "resume",
-        cName: "nav-links",
-        icon: <GrDocumentText className="page-links"/>
-    },
+    // {
+    //     title: 'Resume',
+    //     id: "resume",
+    //     to: "resume",
+    //     cName: "nav-links",
+    //     icon: <GrDocumentText className="page-links"/>
+    // },
     {
         title: 'Portfolio',
         id: "portfolio",
@@ -43,7 +43,7 @@ export const Links = [
         icon: <CiServer className="page-links"/>
     },
     {
-        title: 'Testimonials',
+        title: 'Reviews',
         id: "testimonials",
         to: "testimonials",
         cName: "nav-links",

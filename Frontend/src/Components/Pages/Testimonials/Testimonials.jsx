@@ -162,7 +162,7 @@ const Testimonials = () => {
           }}
           data-aos="fade-down"
         >
-          Testimonials
+          Reviews
         </Typography>
         <Typography variant="body1" component="div" sx={{
           fontFamily: "Raleway",
@@ -454,7 +454,7 @@ const Testimonials = () => {
                 },
               }}
             >
-              Add Your Testimonial
+              Add Your Review
             </Button>
           </Box>
         ) : (
@@ -510,7 +510,7 @@ const Testimonials = () => {
                 },
               }}
             >
-              Log In to Add Testimonial
+              Log In to Add Review
             </Button>
           </Box>
         )}

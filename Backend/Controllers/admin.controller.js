@@ -44,29 +44,35 @@ exports.getAllOrders = async (req, res, next) => {
 // Update order status
 exports.updateOrderStatus = async (req, res, next) => {
   try {
+    console.log('Updating order status:', { orderId: req.params.orderId, status: req.body.status });
+    
     const { orderId } = req.params;
     const { status } = req.body;
 
     if (!['pending', 'processing', 'shipped', 'delivered', 'cancelled'].includes(status)) {
+      console.log('Invalid status provided:', status);
       return next(createError(400, 'Invalid status'));
     }
 
     const order = await Order.findById(orderId);
     if (!order) {
+      console.log('Order not found:', orderId);
       return next(createError(404, 'Order not found'));
     }
 
+    const oldStatus = order.status;
     order.status = status;
     if (!order.trackingUpdates) {
       order.trackingUpdates = [];
     }
     order.trackingUpdates.push({
       status,
-      message: `Order status updated to ${status} by admin`,
+      message: `Order status updated from ${oldStatus} to ${status} by admin`,
       timestamp: new Date()
     });
 
     await order.save();
+    console.log('Order status updated successfully:', { orderId, oldStatus, newStatus: status });
 
     res.json({
       status: 'success',
@@ -75,7 +81,8 @@ exports.updateOrderStatus = async (req, res, next) => {
       }
     });
   } catch (error) {
-    next(createError(500, 'Error updating order status'));
+    console.error('Error in updateOrderStatus:', error);
+    next(createError(500, `Error updating order status: ${error.message}`));
   }
 };
 

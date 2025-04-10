@@ -1,21 +1,15 @@
 import React, { lazy, Suspense } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import LoadingFallback from '../Components/LoadingFallback';
 import MainLayout from '../Components/Layout/MainLayout';
 import AuthLayout from '../Components/Layout/AuthLayout';
 import AccountLayout from '../Components/Layout/AccountLayout';
 import Security from '../Components/Pages/Security/Security';
-import Profile from '../Components/Pages/Profile/Profile';
 import Wishlist from '../Components/Pages/Wishlist/Wishlist';
 import Support from '../Components/Pages/Support/Support';
 import User from '../Components/User';
-import About from '../Components/Pages/About/About';
-import Contact from '../Components/Pages/Contact/Contact';
-import Portfolio from '../Components/Pages/Portfolio/Portfolio';
+
 import Services from '../Components/Pages/Services/Services';
-import Resume from '../Components/Pages/Resume/Resume';
-import Testimonials from '../Components/Pages/Testimonials/Testimonials';
-import AddTestimonial from '../Components/Pages/Testimonials/AddTestimonial';
+
 import ProtectedRoute from '../Components/ProtectedRoute';
 import Admin from '../admin/Admin';
 import AdminRoute from '../admin/routes/AdminRoute';
@@ -33,6 +27,7 @@ const TrackOrder = lazy(() => import('../Components/Pages/Orders/TrackOrder'));
 const Checkout = lazy(() => import('../Components/Pages/Checkout/Checkout'));
 const UserProfile = lazy(() => import('../Components/Pages/Profile/Profile'));
 const MyReviews = lazy(() => import('../Components/Account/Reviews/Reviews'));
+const EditProfile = lazy(() => import('../Components/Pages/Profile/EditProfile'));
 
 // Service components
 const Printing = lazy(() => import('../Components/Pages/Services/Printing'));
@@ -113,6 +108,7 @@ const AppRoutes = () => {
         <Route element={<MainLayout />}>
           <Route path="/account" element={<ProtectedRoute><AccountLayout /></ProtectedRoute>}>
             <Route path="profile" element={<UserProfile />} />
+            <Route path="profile/edit" element={<EditProfile />} />
             <Route path="security" element={<Security />} />
             <Route path="orders" element={<Orders />} />
             <Route path="track-order/:orderId" element={<TrackOrder />} />

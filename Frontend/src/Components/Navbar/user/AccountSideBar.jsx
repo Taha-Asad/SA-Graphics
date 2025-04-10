@@ -557,10 +557,10 @@ const AccountSideBar = ({ onClose, open }) => {
                     sx={{
                       borderRadius: 1,
                       color: 'rgba(255, 255, 255, 0.85)',
-                '&:hover': {
-                        backgroundColor: 'rgba(20, 157, 221, 0.08)',
-                        color: '#149ddd',
-                      }
+                    '&:hover': {
+                      backgroundColor: 'rgba(20, 157, 221, 0.08)',
+                      color: '#149ddd',
+                    }
                     }}
                   >
                     <ListItemIcon sx={{ 

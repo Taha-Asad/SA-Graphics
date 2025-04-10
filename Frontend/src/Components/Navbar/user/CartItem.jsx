@@ -3,6 +3,11 @@ import { Box, Typography, IconButton, Paper } from '@mui/material';
 import { FiTrash2, FiMinus, FiPlus } from 'react-icons/fi';
 
 const CartItem = ({ item, updateQuantity, removeFromCart }) => {
+  const handleImageError = (e) => {
+    e.target.onerror = null; // Prevent infinite loop
+    e.target.src = '/book-placeholder.jpg';
+  };
+
   return (
     <Paper
       elevation={0}
@@ -22,13 +27,16 @@ const CartItem = ({ item, updateQuantity, removeFromCart }) => {
     >
       <Box
         component="img"
-        src={item.image}
+        src={item.coverImage || '/book-placeholder.jpg'}
         alt={item.title}
+        onError={handleImageError}
+        loading="lazy"
         sx={{
           width: 60,
           height: 80,
           objectFit: 'cover',
-          borderRadius: '4px'
+          borderRadius: '4px',
+          backgroundColor: 'rgba(0, 0, 0, 0.1)'
         }}
       />
       
@@ -51,7 +59,7 @@ const CartItem = ({ item, updateQuantity, removeFromCart }) => {
             mb: 1
           }}
         >
-          Rs. {item.price}
+          Rs. {item.discount > 0 ? item.discountedPrice : item.price}
         </Typography>
         
         <Box sx={{ 
@@ -65,7 +73,7 @@ const CartItem = ({ item, updateQuantity, removeFromCart }) => {
         }}>
           <IconButton 
             size="small" 
-            onClick={() => updateQuantity(item.id, item.quantity - 1)}
+            onClick={() => updateQuantity(item._id, item.quantity - 1)}
             disabled={item.quantity <= 1}
             sx={{ 
               color: 'rgba(255, 255, 255, 0.7)',
@@ -95,8 +103,8 @@ const CartItem = ({ item, updateQuantity, removeFromCart }) => {
           
           <IconButton 
             size="small" 
-            onClick={() => updateQuantity(item.id, item.quantity + 1)}
-            disabled={item.quantity >= (item.maxQuantity || 10)}
+            onClick={() => updateQuantity(item._id, item.quantity + 1)}
+            disabled={item.quantity >= item.maxQuantity}
             sx={{ 
               color: 'rgba(255, 255, 255, 0.7)',
               p: 0.5,
@@ -115,7 +123,7 @@ const CartItem = ({ item, updateQuantity, removeFromCart }) => {
       </Box>
       
       <IconButton 
-        onClick={() => removeFromCart(item.id)}
+        onClick={() => removeFromCart(item._id)}
         sx={{ 
           color: 'rgba(255, 255, 255, 0.5)',
           '&:hover': {
@@ -130,4 +138,4 @@ const CartItem = ({ item, updateQuantity, removeFromCart }) => {
   );
 };
 
-export default CartItem; 
+export default React.memo(CartItem); 

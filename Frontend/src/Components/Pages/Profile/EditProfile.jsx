@@ -24,7 +24,7 @@ const EditProfile = () => {
   });
 
   const handleBack = () => {
-    navigate('/profile');
+    navigate('/account/profile');
   };
 
   const handleFileChange = (event) => {
@@ -177,10 +177,8 @@ const EditProfile = () => {
         
         toast.success('Profile updated successfully');
         
-        // Navigate back to profile page after a short delay
-        setTimeout(() => {
-          window.location.href = '/profile'; // Force a full page reload
-        }, 500);
+        // Navigate back to profile page
+        navigate('/account/profile');
       }
     } catch (error) {
       console.error('Error updating profile:', error.response || error);

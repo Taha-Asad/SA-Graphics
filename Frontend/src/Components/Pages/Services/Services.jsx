@@ -19,7 +19,7 @@ const Services = () => {
                 <Container>
                     <Typography variant='h3' component="h2" sx={{
                         position: "relative",
-                        fontFamily: "Raleway",
+                        fontFamily: "'Plus Jakarta Sans', sans-serif",
                         fontWeight: "500",
                         mb: "50px",
                         "&::after": {
@@ -35,7 +35,7 @@ const Services = () => {
                     }}
                     >Services</Typography>
                     <Typography variant="body1" component="div" sx={{
-                        fontFamily: "Raleway",
+                        fontFamily: "'Plus Jakarta Sans', sans-serif",
                         fontWeight: "500",
                         mb: "50px",
                     }}>
@@ -51,7 +51,7 @@ const Services = () => {
                                                 onMouseLeave={() => setHoveredIndex(null)}
                                                 sx={{
                                                     transition: "all 0.6s ease",
-                                                    boxShadow: hoveredIndex === index ? "0px 4px 20px rgba(0, 0, 0, 0.2)" : "none",
+                                                    boxShadow: hoveredIndex === index ? "0px 8px 30px rgba(20, 157, 221, 0.4)" : "0px 4px 15px rgba(20, 157, 221, 0.2)",
                                                     bgcolor: "#fff",
                                                     "&:hover": {
                                                         bgcolor: "#149ddd",
@@ -84,7 +84,7 @@ const Services = () => {
                                                                 ml={1}
                                                                 fontWeight="500"
                                                                 mt={1}
-                                                                fontFamily="Raleway"
+                                                                fontFamily="'Plus Jakarta Sans', sans-serif"
                                                                 sx={{
                                                                     transition: "all 0.6s ease",
                                                                     color: hoveredIndex === index ? "#ffff" : "#149DDD"
@@ -93,7 +93,13 @@ const Services = () => {
                                                                 {service.title}
                                                             </Typography>
                                                         </Box>
-                                                        <Typography variant="body1" component="div" mt={2} ml={2} textAlign={"center"}
+                                                        <Typography 
+                                                            variant="body1" 
+                                                            component="div" 
+                                                            mt={2} 
+                                                            ml={2} 
+                                                            textAlign={"center"}
+                                                            fontFamily="'Plus Jakarta Sans', sans-serif"
                                                             color={hoveredIndex === index ? "#ffff" : "#333"}
                                                         >
                                                             {service.description}
@@ -101,7 +107,6 @@ const Services = () => {
                                                     </CardContent>
                                                 </CardActionArea>
                                             </Card>
-
                                         </Grid>
                                     </>
                                 )

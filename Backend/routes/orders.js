@@ -1,101 +1,33 @@
 const express = require('express');
 const router = express.Router();
-const Order = require('../models/Order.model');
-const { auth } = require('../middleware/auth');
-const { sendOrderConfirmationEmail } = require('../utils/sendEmail');
+const { verifyToken } = require('../middleware/auth');
+const protect = require('../middleware/admin');
+const { upload, handleMulterError } = require('../config/multer');
+const {
+  createOrder,
+  verifyPayment,
+  getUserOrders,
+  getOrder,
+  updateOrderStatus,
+  cancelOrder
+} = require('../controllers/order.controller');
 
-// Create a new order (checkout)
-router.post('/', auth, async (req, res) => {
-  try {
-    const { userId, item, totalAmount, shippingAddress, paymentMethod } = req.body;
+// Create a new order
+router.post('/', verifyToken, upload.single('transferProof'), handleMulterError, createOrder);
 
-    if (!item || !item.length || !totalAmount || !shippingAddress || !paymentMethod) {
-      return res.status(400).json({
-        status: 'error',
-        message: 'Please provide all required order details'
-      });
-    }
+// Verify payment (Admin only)
+router.patch('/:orderId/verify-payment', protect, verifyPayment);
 
-    // Create the order with the user ID from the authenticated user
-    const order = new Order({
-      userId: req.user._id, // Use the authenticated user's ID
-      item,
-      totalAmount,
-      shippingAddress,
-      paymentMethod
-    });
+// Get all orders for the logged-in user
+router.get('/my-orders', verifyToken, getUserOrders);
 
-    await order.save();
+// Get a single order
+router.get('/:orderId', verifyToken, getOrder);
 
-    // Send confirmation emails
-    const emailSent = await sendOrderConfirmationEmail(req.user.email, order);
+// Update order status (Admin only)
+router.patch('/:orderId/status', protect, updateOrderStatus);
 
-    res.status(201).json({
-      status: 'success',
-      message: 'Order placed successfully',
-      data: {
-        order,
-        emailSent
-      }
-    });
-  } catch (error) {
-    console.error('Error creating order:', error);
-    res.status(500).json({
-      status: 'error',
-      message: 'Failed to create order'
-    });
-  }
-});
-
-// Get user's orders
-router.get('/', auth, async (req, res) => {
-  try {
-    const orders = await Order.find({ userId: req.user._id })
-      .sort({ createdAt: -1 });
-
-    res.json({
-      status: 'success',
-      data: {
-        orders
-      }
-    });
-  } catch (error) {
-    console.error('Error fetching orders:', error);
-    res.status(500).json({
-      status: 'error',
-      message: 'Failed to fetch orders'
-    });
-  }
-});
-
-// Get single order
-router.get('/:orderId', auth, async (req, res) => {
-  try {
-    const order = await Order.findOne({
-      _id: req.params.orderId,
-      userId: req.user._id
-    });
-
-    if (!order) {
-      return res.status(404).json({
-        status: 'error',
-        message: 'Order not found'
-      });
-    }
-
-    res.json({
-      status: 'success',
-      data: {
-        order
-      }
-    });
-  } catch (error) {
-    console.error('Error fetching order:', error);
-    res.status(500).json({
-      status: 'error',
-      message: 'Failed to fetch order'
-    });
-  }
-});
+// Cancel order
+router.patch('/:orderId/cancel', verifyToken, cancelOrder);
 
 module.exports = router; 

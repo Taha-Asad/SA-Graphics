@@ -264,8 +264,8 @@ const Reviews = () => {
     <Container maxWidth="lg">
       <Box sx={{ mb: 4 }}>
         <Typography variant="h4" gutterBottom>
-          My Reviews
-        </Typography>
+        My Reviews
+      </Typography>
         <Button
           variant="contained"
           color="primary"
@@ -276,15 +276,15 @@ const Reviews = () => {
         </Button>
 
         {renderError()}
-
-        <Grid container spacing={3}>
+      
+      <Grid container spacing={3}>
           {reviews.length > 0 ? (
             reviews.map((review) => (
               <Grid item xs={12} key={review._id}>
-                <Paper sx={{ p: 3 }}>
+            <Paper sx={{ p: 3 }}>
                   <Box display="flex" justifyContent="space-between" alignItems="flex-start">
-                    <Box>
-                      <Typography variant="h6">
+                <Box>
+                  <Typography variant="h6">
                         {review.service?.name || review.book?.title || 'Service'}
                       </Typography>
                       {review.service && (
@@ -295,11 +295,11 @@ const Reviews = () => {
                       <Rating value={review.rating} readOnly />
                       <Typography variant="body1" sx={{ mt: 1 }}>
                         {review.comment}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
                         {new Date(review.createdAt).toLocaleDateString()}
-                      </Typography>
-                    </Box>
+                  </Typography>
+                </Box>
                     <Box>
                       <IconButton onClick={() => handleEdit(review)}>
                         <EditIcon />
@@ -307,8 +307,8 @@ const Reviews = () => {
                       <IconButton onClick={() => handleDelete(review._id)}>
                         <DeleteIcon />
                       </IconButton>
-                    </Box>
-                  </Box>
+                </Box>
+              </Box>
                 </Paper>
               </Grid>
             ))
@@ -317,10 +317,10 @@ const Reviews = () => {
               <Typography variant="body1" color="text.secondary" align="center">
                 You haven't written any reviews yet.
               </Typography>
-            </Grid>
+          </Grid>
           )}
-        </Grid>
-      </Box>
+      </Grid>
+    </Box>
 
       <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
         <DialogTitle>

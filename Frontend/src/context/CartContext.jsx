@@ -5,17 +5,43 @@ export const CartContext = createContext();
 
 export const CartProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState(() => {
-    const savedCart = localStorage.getItem('cart');
-    return savedCart ? JSON.parse(savedCart) : [];
+    try {
+      // Get user ID from localStorage
+      const userId = localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user'))._id : null;
+      if (!userId) return [];
+
+      // Get cart data specific to this user
+      const savedCart = localStorage.getItem(`cart_${userId}`);
+      return savedCart ? JSON.parse(savedCart) : [];
+    } catch (error) {
+      console.error('Error loading cart from localStorage:', error);
+      return [];
+    }
   });
 
+  // Save cart to localStorage whenever it changes
   useEffect(() => {
-    localStorage.setItem('cart', JSON.stringify(cartItems));
+    try {
+      // Get user ID from localStorage
+      const userData = localStorage.getItem('user');
+      if (!userData) return;
+
+      const userId = JSON.parse(userData)._id;
+      localStorage.setItem(`cart_${userId}`, JSON.stringify(cartItems));
+    } catch (error) {
+      console.error('Error saving cart to localStorage:', error);
+    }
   }, [cartItems]);
+
+  const formatImageUrl = (imageUrl) => {
+    if (!imageUrl) return null;
+    if (imageUrl.startsWith('http')) return imageUrl;
+    return `http://localhost:5000/${imageUrl.replace(/^\//, '')}`;
+  };
 
   const addToCart = (book, quantity = 1) => {
     setCartItems(prevItems => {
-      const existingItem = prevItems.find(item => item.id === book._id);
+      const existingItem = prevItems.find(item => item._id === book._id);
       
       if (existingItem) {
         const newQuantity = existingItem.quantity + quantity;
@@ -26,7 +52,7 @@ export const CartProvider = ({ children }) => {
         
         toast.success('Cart updated successfully!');
         return prevItems.map(item =>
-          item.id === book._id
+          item._id === book._id
             ? { ...item, quantity: newQuantity }
             : item
         );
@@ -36,12 +62,12 @@ export const CartProvider = ({ children }) => {
       const cartItem = {
         _id: book._id,
         title: book.title,
-        author: book.author,
         price: book.price,
         discount: book.discount || 0,
         discountedPrice: book.discount > 0 ? book.price - (book.price * book.discount / 100) : book.price,
-        coverImage: book.coverImage,
-        quantity: 1
+        coverImage: formatImageUrl(book.coverImage),
+        quantity: 1,
+        maxQuantity: book.countInStock
       };
       return [...prevItems, cartItem];
     });
@@ -50,7 +76,7 @@ export const CartProvider = ({ children }) => {
   const updateQuantity = (itemId, newQuantity) => {
     setCartItems(prevItems =>
       prevItems.map(item =>
-        item.id === itemId
+        item._id === itemId
           ? { ...item, quantity: Math.min(newQuantity, item.maxQuantity) }
           : item
       )
@@ -58,12 +84,27 @@ export const CartProvider = ({ children }) => {
   };
 
   const removeFromCart = (itemId) => {
-    setCartItems(prevItems => prevItems.filter(item => item.id !== itemId));
+    setCartItems(prevItems => prevItems.filter(item => item._id !== itemId));
     toast.success('Item removed from cart!');
+
+    // Also remove from localStorage if cart becomes empty
+    const userData = localStorage.getItem('user');
+    if (userData) {
+      const userId = JSON.parse(userData)._id;
+      if (cartItems.length <= 1) { // If this was the last item
+        localStorage.removeItem(`cart_${userId}`);
+      }
+    }
   };
 
   const clearCart = () => {
     setCartItems([]);
+    // Remove cart data from localStorage
+    const userData = localStorage.getItem('user');
+    if (userData) {
+      const userId = JSON.parse(userData)._id;
+      localStorage.removeItem(`cart_${userId}`);
+    }
     toast.success('Cart cleared!');
   };
 

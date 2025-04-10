@@ -106,14 +106,26 @@ const Orders = () => {
   };
 
   const handleUpdateOrder = async () => {
+    if (!selectedOrder || !selectedOrder.status) {
+      toast.error('Please select a status');
+      return;
+    }
+
     try {
-      await updateOrderStatus(selectedOrder._id, selectedOrder.status);
-      toast.success('Order updated successfully');
-      fetchOrders();
-      handleCloseDialog();
+      setLoading(true);
+      const result = await updateOrderStatus(selectedOrder._id, selectedOrder.status);
+      if (result.status === 'success') {
+        toast.success('Order status updated successfully');
+        await fetchOrders();
+        handleCloseDialog();
+      } else {
+        throw new Error(result.message || 'Failed to update order status');
+      }
     } catch (err) {
       console.error('Error updating order:', err);
-      toast.error('Failed to update order');
+      toast.error(err.message || 'Failed to update order status');
+    } finally {
+      setLoading(false);
     }
   };
 

@@ -146,7 +146,7 @@ const CartSideBar = ({ onClose, open }) => {
           ) : (
             cartItems.map(item => (
               <CartItem
-                key={item.id}
+                key={item._id}
                 item={item}
                 updateQuantity={updateQuantity}
                 removeFromCart={removeFromCart}

@@ -15,8 +15,7 @@ const Register = () => {
         name: '',
         email: '',
         phoneNo: '',
-        password: '',
-        address: ''
+        password: ''
     });
 
     const [user, setUser] = useState({
@@ -67,12 +66,6 @@ const Register = () => {
                 }
                 break;
 
-            case 'address':
-                if (value && value.length > 200) {
-                    error = 'Address cannot exceed 200 characters';
-                }
-                break;
-
             default:
                 break;
         }
@@ -85,13 +78,12 @@ const Register = () => {
             name: validateField('name', user.name),
             email: validateField('email', user.email),
             phoneNo: validateField('phoneNo', user.phoneNo),
-            password: validateField('password', user.password),
-            address: validateField('address', user.address)
+            password: validateField('password', user.password)
         };
 
         setErrors(newErrors);
 
-        // Return true if there are no errors (all error messages are empty strings)
+        // Return true if there are no errors
         return !Object.values(newErrors).some(error => error);
     };
 
@@ -326,7 +318,6 @@ const Register = () => {
 
                         <TextField
                             margin="normal"
-                            required
                             fullWidth
                             name="address"
                             label="Address"
@@ -334,8 +325,7 @@ const Register = () => {
                             rows={3}
                             value={user.address}
                             onChange={handleChange}
-                            error={!!errors.address}
-                            helperText={errors.address}
+                            placeholder="House #, Street, Block/Area, City, Province, Postal Code"
                         />
 
                         <TextField

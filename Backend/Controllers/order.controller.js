@@ -6,148 +6,180 @@ const ejs = require("ejs");
 const path = require("path");
 const createError = require('http-errors');
 const NotificationService = require('../services/notification.service');
+const fs = require('fs');
 
 // Create Order
-const createOrder = async (req, res, next) => {
+const createOrder = async (req, res) => {
   try {
-    const { item, totalAmount, shippingAddress, paymentMethod } = req.body;
+    // Log everything we receive
+    console.log('=== REQUEST DEBUG ===');
+    console.log('Headers:', req.headers);
+    console.log('Body:', JSON.stringify(req.body, null, 2));
+    console.log('User:', req.user);
+    console.log('File:', req.file);
+    console.log('=== END DEBUG ===');
 
-    if (!item || !item.length || !totalAmount || !shippingAddress || !paymentMethod) {
-      throw createError(400, 'Please provide all required order details');
+    // For FormData requests
+    let orderData = req.body;
+    if (req.headers['content-type']?.includes('multipart/form-data') && req.body.order) {
+      try {
+        orderData = JSON.parse(req.body.order);
+      } catch (error) {
+        return res.status(400).json({
+          status: 'error',
+          message: 'Could not parse order data from form'
+        });
+      }
     }
 
-    // Validate and process each item
-    const orderItems = [];
-    let calculatedTotalAmount = 0;
+    // Get userId from authenticated user
+    const userId = req.user._id;
     
-    for (const orderItem of item) {
-      const book = await Book.findById(orderItem.bookId);
-      if (!book) {
-        throw createError(404, `Book with ID ${orderItem.bookId} not found`);
-      }
-      if (book.countInStock < orderItem.quantity) {
-        throw createError(400, `Insufficient stock for ${book.title}`);
-      }
+    // Extract data
+    const { item, totalAmount, shippingAddress, paymentMethod } = orderData;
 
-      // Calculate discounted price
-      const discountedPrice = book.discount > 0 
-        ? book.price - (book.price * book.discount / 100) 
-        : book.price;
-      
-      // Calculate item total with discount
-      const itemTotal = discountedPrice * orderItem.quantity;
-      calculatedTotalAmount += itemTotal;
-
-      // Update book stock
-      book.countInStock -= orderItem.quantity;
-      await book.save();
-
-      orderItems.push({
-        bookId: book._id,
-        title: book.title,
-        author: book.author,
-        price: book.price,
-        discount: book.discount,
-        discountedPrice: discountedPrice,
-        coverImage: book.coverImage,
-        quantity: orderItem.quantity,
-        itemTotal: itemTotal
-      });
-    }
-
-    // Verify that the calculated total matches the provided total
-    if (Math.abs(calculatedTotalAmount - totalAmount) > 0.01) {
-      throw createError(400, 'Total amount mismatch. Please recalculate your cart.');
-    }
-
-    // Create the order
-    const order = new Order({
-      userId: req.user._id,
-      item: orderItems,
-      totalAmount: calculatedTotalAmount,
+    // Create order
+    const order = await Order.create({
+      userId,
+      item: Array.isArray(item) ? item : JSON.parse(item),
+      totalAmount,
       shippingAddress,
       paymentMethod,
-      paymentStatus: 'pending',
-      status: 'pending'
+      transferProof: req.file ? req.file.filename : null,
+      status: 'pending',
+      paymentStatus: 'pending'
     });
 
-    const savedOrder = await order.save();
-
-    // Send confirmation email
-    try {
-      const user = await User.findById(req.user._id);
-      if (user && user.email) {
-        const emailTemplate = path.join(__dirname, '../views/emails/orderConfirmation.ejs');
-        const html = await ejs.renderFile(emailTemplate, {
-          order: savedOrder,
-          user: user
-        });
-
-        await sendEmail({
-          to: user.email,
-          subject: `Order Confirmation - Order #${savedOrder._id}`,
-          html
-        });
-      }
-    } catch (emailError) {
-      console.error('Error sending confirmation email:', emailError);
-      // Don't throw error here, just log it
-    }
-    
-    // Populate the book details for the response
-    const populatedOrder = await Order.findById(savedOrder._id)
-      .populate({
-        path: 'item.bookId',
-        model: 'Book',
-        select: 'title author price coverImage discount'
-      });
-    
-    // Send notification
-    await NotificationService.notifyNewOrder(savedOrder);
-    
     res.status(201).json({
       status: 'success',
-      message: 'Order placed successfully',
-      data: {
-        order: populatedOrder
-      }
+      data: { order }
     });
+
   } catch (error) {
-    // If there's an error, we should restore the book stock
-    if (error.statusCode !== 404) { // Don't attempt restore for non-existent books
-      try {
-        for (const orderItem of req.body.item || []) {
-          const book = await Book.findById(orderItem.bookId);
-          if (book) {
-            book.countInStock += orderItem.quantity;
-            await book.save();
-          }
-        }
-      } catch (restoreError) {
-        console.error('Error restoring book stock:', restoreError);
-      }
-    }
-    next(error);
+    console.error('Order creation error:', error);
+    res.status(500).json({
+      status: 'error',
+      message: error.message
+    });
   }
 };
 
-// Process Payment
-const processPayment = async (req, res, next) => {
+// Verify payment
+const verifyPayment = async (req, res, next) => {
   try {
-    const order = await Order.findById(req.params.id);
-    if (!order) throw createError(404, "Order not found");
+    const { id } = req.params;
+    const { status } = req.body;
 
-    order.paymentStatus = "completed";
+    const order = await Order.findById(id);
+    if (!order) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'Order not found'
+      });
+    }
+
+    // Update payment status
+    order.paymentStatus = status;
+    if (status === 'verified') {
+      order.status = 'processing';
+    }
     await order.save();
 
-    res.json({ 
+    // Get user details for email
+    const user = await User.findById(order.userId);
+    if (!user) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'User not found'
+      });
+    }
+
+    // Send status update email
+    const emailSubject = 'Payment Verification Update - SA Graphics';
+    const emailText = `
+      Dear ${user.name},
+      
+      Your payment for Order #${order._id} has been ${status}.
+      
+      Order Details:
+      - Order ID: ${order._id}
+      - Total Amount: Rs. ${order.totalAmount}
+      - Payment Method: ${order.paymentMethod === 'cash' ? 'Cash on Delivery' : 'Online Transfer'}
+      - Status: ${order.status}
+      
+      ${status === 'verified' ? 'Your order is now being processed and will be shipped soon.' : 'Please contact our support team for assistance.'}
+      
+      Best regards,
+      SA Graphics Team
+    `;
+
+    await sendEmail(user.email, emailSubject, emailText);
+
+    res.status(200).json({
       status: 'success',
       data: {
         order
       }
     });
   } catch (error) {
+    console.error('Error verifying payment:', error);
     next(error);
+  }
+};
+
+// Get all orders for a user
+const getUserOrders = async (req, res) => {
+  try {
+    const orders = await Order.find({ userId: req.user._id })
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({
+      status: 'success',
+      data: {
+        orders
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching orders:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Failed to fetch orders'
+    });
+  }
+};
+
+// Get a single order
+const getOrder = async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.orderId);
+    
+    if (!order) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'Order not found'
+      });
+    }
+
+    // Check if the order belongs to the user
+    if (order.userId.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        status: 'error',
+        message: 'You are not authorized to view this order'
+      });
+    }
+
+    res.status(200).json({
+      status: 'success',
+      data: {
+        order
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching order:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Failed to fetch order'
+    });
   }
 };
 
@@ -162,42 +194,24 @@ const updateOrderStatus = async (req, res, next) => {
     }
 
     order.status = status;
+    if (!order.trackingUpdates) {
+      order.trackingUpdates = [];
+    }
     order.trackingUpdates.push({
       status,
       message: message || `Order ${status}`
     });
 
-    const updatedOrder = await order.save();
+    await order.save();
 
-    res.json({
+    res.status(200).json({
       status: 'success',
       data: {
-        order: updatedOrder
+        order
       }
     });
   } catch (error) {
-    next(error);
-  }
-};
-
-// Get User Orders
-const getUserOrders = async (req, res, next) => {
-  try {
-    const orders = await Order.find({ userId: req.user._id })
-      .populate({
-        path: 'item.bookId',
-        model: 'Book',
-        select: 'title author price coverImage'
-      })
-      .sort({ createdAt: -1 });
-
-    res.json({
-      status: 'success',
-      data: {
-        orders
-      }
-    });
-  } catch (error) {
+    console.error('Error updating order status:', error);
     next(error);
   }
 };
@@ -286,9 +300,10 @@ const cancelOrder = async (req, res, next) => {
 
 module.exports = {
   createOrder,
-  processPayment,
+  verifyPayment,
   updateOrderStatus,
   getUserOrders,
+  getOrder,
   getOrderById,
   cancelOrder
 };

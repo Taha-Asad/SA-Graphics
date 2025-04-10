@@ -43,10 +43,8 @@ const Orders = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // If auth is still loading, wait
     if (authLoading) return;
 
-    // If no user after auth load completes, redirect to login
     if (!user) {
       navigate('/login');
       return;
@@ -55,6 +53,12 @@ const Orders = () => {
     const fetchOrders = async () => {
       try {
         const token = localStorage.getItem('token');
+        if (!token) {
+          toast.error('Please login to view your orders');
+          navigate('/login');
+          return;
+        }
+
         const response = await axios.get(`${API_URL}/orders`, {
           headers: {
             'Authorization': `Bearer ${token}`
@@ -82,10 +86,9 @@ const Orders = () => {
 
   const handleTrackOrder = (orderId) => {
     localStorage.setItem('lastOrderId', orderId);
-    navigate(`/track-order/${orderId}`);
+    navigate(`/account/track-order/${orderId}`);
   };
 
-  // Show loading while either auth or orders are loading
   if (authLoading || loading) {
     return (
       <Box sx={{ 
@@ -94,7 +97,7 @@ const Orders = () => {
         alignItems: 'center', 
         minHeight: '60vh' 
       }}>
-        <CircularProgress />
+        <CircularProgress sx={{ color: '#149ddd' }} />
       </Box>
     );
   }
@@ -117,7 +120,7 @@ const Orders = () => {
         >
           Back to Home
         </Button>
-        <Typography variant="h4" component="h1">
+        <Typography variant="h4" component="h1" sx={{ color: '#149ddd' }}>
           My Orders
         </Typography>
       </Box>
@@ -132,7 +135,7 @@ const Orders = () => {
             bgcolor: 'background.paper'
           }}
         >
-          <BiPackage size={64} style={{ color: '#9e9e9e', marginBottom: '16px' }} />
+          <BiPackage size={64} style={{ color: '#149ddd', marginBottom: '16px' }} />
           <Typography variant="h6" color="textSecondary">
             No orders found
           </Typography>
@@ -141,20 +144,14 @@ const Orders = () => {
           </Typography>
           <Button 
             variant="contained" 
-            onClick={() => {
-              navigate('/');
-              setTimeout(() => {
-                const portfolioSection = document.getElementById('portfolio');
-                if (portfolioSection) {
-                  portfolioSection.scrollIntoView({ behavior: 'smooth' });
-                  const booksTab = document.querySelector('[value="2"]');
-                  if (booksTab) {
-                    booksTab.click();
-                  }
-                }
-              }, 500);
+            onClick={() => navigate('/')}
+            sx={{ 
+              mt: 3,
+              bgcolor: '#149ddd',
+              '&:hover': {
+                bgcolor: '#1187c1'
+              }
             }}
-            sx={{ mt: 3 }}
           >
             Start Shopping
           </Button>
@@ -172,7 +169,7 @@ const Orders = () => {
                 }}
               >
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                  <Typography variant="h6">
+                  <Typography variant="h6" sx={{ color: '#149ddd' }}>
                     Order #{order._id.slice(-8)}
                   </Typography>
                   <Chip 
@@ -191,7 +188,7 @@ const Orders = () => {
                   <Grid item xs={12} md={8}>
                     {order.item.map((item, index) => (
                       <Box 
-                        key={item._id || index} 
+                        key={index}
                         sx={{ 
                           display: 'flex', 
                           alignItems: 'center',
@@ -200,19 +197,19 @@ const Orders = () => {
                       >
                         <Box
                           component="img"
-                          src={item.bookId?.image ? `http://localhost:5000/uploads/${item.bookId.image}` : '/placeholder-book.jpg'}
-                          alt={item.bookId?.title || 'Book'}
+                          src={item.image || '/placeholder-service.jpg'}
+                          alt={item.title}
                           sx={{
                             width: 60,
-                            height: 80,
+                            height: 60,
                             objectFit: 'cover',
                             borderRadius: 1,
                             mr: 2
                           }}
                         />
                         <Box>
-                          <Typography variant="subtitle1">
-                            {item.bookId?.title || 'Book Title'}
+                          <Typography variant="subtitle1" sx={{ color: '#149ddd' }}>
+                            {item.title}
                           </Typography>
                           <Typography variant="body2" color="textSecondary">
                             Quantity: {item.quantity} × Rs. {item.price}
@@ -223,21 +220,27 @@ const Orders = () => {
                   </Grid>
 
                   <Grid item xs={12} md={4}>
-                    <Box sx={{ bgcolor: 'grey.50', p: 2, borderRadius: 1 }}>
+                    <Box sx={{ bgcolor: '#f8f9fa', p: 2, borderRadius: 1 }}>
                       <Typography variant="body2" sx={{ mb: 1 }}>
                         Order Date: {new Date(order.createdAt).toLocaleDateString()}
                       </Typography>
                       <Typography variant="body2" sx={{ mb: 1 }}>
                         Total Items: {order.item.reduce((acc, item) => acc + item.quantity, 0)}
                       </Typography>
-                      <Typography variant="h6" sx={{ mt: 2 }}>
+                      <Typography variant="h6" sx={{ mt: 2, color: '#149ddd' }}>
                         Total: Rs. {order.totalAmount}
                       </Typography>
                       <Button
                         variant="contained"
                         fullWidth
-                        sx={{ mt: 2 }}
                         onClick={() => handleTrackOrder(order._id)}
+                        sx={{ 
+                          mt: 2,
+                          bgcolor: '#149ddd',
+                          '&:hover': {
+                            bgcolor: '#1187c1'
+                          }
+                        }}
                       >
                         Track Order
                       </Button>

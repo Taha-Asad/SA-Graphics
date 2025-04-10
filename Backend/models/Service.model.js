@@ -5,10 +5,11 @@ const serviceSchema = mongoose.Schema(
     name: {
       type: String,
       required: true,
+      trim: true
     },
     description: {
       type: String,
-      required: true,
+      required: true
     },
     price: {
       type: Number,
@@ -23,7 +24,7 @@ const serviceSchema = mongoose.Schema(
     },
     isActive: {
       type: Boolean,
-      default: true,
+      default: true
     }
   },
   {

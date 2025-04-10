@@ -88,9 +88,13 @@ export const getOrders = async (page = 1, limit = 10, status = '') => {
 export const updateOrderStatus = async (orderId, status) => {
   try {
     const response = await api.patch(`/admin/orders/${orderId}/status`, { status });
-    return response.data;
+    if (response.data.status === 'success') {
+      return response.data;
+    }
+    throw new Error(response.data.message || 'Failed to update order status');
   } catch (error) {
-    throw error.response?.data || error.message;
+    console.error('Error updating order status:', error);
+    throw error.response?.data?.message || error.message || 'Failed to update order status';
   }
 };
 

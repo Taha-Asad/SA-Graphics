@@ -9,7 +9,7 @@ import Footer from "./Footer/Footer";
 // Direct imports instead of lazy loading
 import Home from "./Pages/Home/Home";
 import About from "./Pages/About/About";
-import Resume from "./Pages/Resume/Resume";
+// import Resume from "./Pages/Resume/Resume";
 import Portfolio from "./Pages/Portfolio/Portfolio";
 import Services from "./Pages/Services/Services";
 import Testimonials from "./Pages/Testimonials/Testimonials";
@@ -100,9 +100,9 @@ const User = () => {
           <About />
         </Element>
         
-        <Element name="resume">
+        {/* <Element name="resume">
           <Resume />
-        </Element>
+        </Element> */}
         
         <Element name="portfolio">
           <Portfolio />

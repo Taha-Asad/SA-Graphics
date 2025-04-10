@@ -258,30 +258,48 @@ const TrackOrder = () => {
   const navigate = useNavigate();
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [lastStatus, setLastStatus] = useState(null);
 
-  useEffect(() => {
-    const fetchOrder = async () => {
-      try {
-        const response = await axios.get(`${API_URL}/orders/${orderId}`, {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          }
-        });
-
-        if (response.data.status === 'success') {
-          setOrder(response.data.data.order);
+  const fetchOrder = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/orders/${orderId}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
-      } catch (error) {
-        console.error('Error fetching order:', error);
-        toast.error('Failed to fetch order details');
-        navigate('/orders');
-      } finally {
-        setLoading(false);
-      }
-    };
+      });
 
+      if (response.data.status === 'success') {
+        const newOrder = response.data.data.order;
+        if (lastStatus && lastStatus !== newOrder.status) {
+          toast.info(`Order status updated to: ${newOrder.status.toUpperCase()}`);
+        }
+        setLastStatus(newOrder.status);
+        setOrder(newOrder);
+      }
+    } catch (error) {
+      console.error('Error fetching order:', error);
+      toast.error('Failed to fetch order details');
+      navigate('/orders');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Initial fetch
+  useEffect(() => {
     fetchOrder();
-  }, [orderId, navigate]);
+  }, [orderId]);
+
+  // Polling for updates
+  useEffect(() => {
+    const pollInterval = setInterval(() => {
+      if (order && order.status !== 'delivered' && order.status !== 'cancelled') {
+        fetchOrder();
+      }
+    }, 10000); // Poll every 10 seconds
+
+    return () => clearInterval(pollInterval);
+  }, [order, orderId]);
 
   const handleBack = () => {
     navigate('/orders');
