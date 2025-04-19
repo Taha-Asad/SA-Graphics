@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Box, CssBaseline, Drawer, AppBar, Toolbar, List, Typography, Divider, IconButton, ListItem, ListItemButton, ListItemIcon, ListItemText, useTheme } from '@mui/material';
-import { Menu as MenuIcon, ChevronLeft as ChevronLeftIcon, ChevronRight as ChevronRightIcon, Dashboard as DashboardIcon, People as PeopleIcon, ShoppingCart as OrdersIcon, RateReview as ReviewsIcon, Settings as SettingsIcon, Logout as LogoutIcon, Email as EmailIcon, Comment as TestimonialsIcon } from '@mui/icons-material';
+import { Menu as MenuIcon, ChevronLeft as ChevronLeftIcon, ChevronRight as ChevronRightIcon, Dashboard as DashboardIcon, People as PeopleIcon, ShoppingCart as OrdersIcon, RateReview as ReviewsIcon, Settings as SettingsIcon, Logout as LogoutIcon, Email as EmailIcon, Comment as TestimonialsIcon, School as SchoolIcon } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -57,6 +57,8 @@ const menuItems = [
   { text: 'Dashboard', icon: <DashboardIcon />, path: '/admin' },
   { text: 'Users', icon: <PeopleIcon />, path: '/admin/users' },
   { text: 'Orders', icon: <OrdersIcon />, path: '/admin/orders' },
+  { text: 'Course Purchases', icon: <SchoolIcon />, path: '/admin/course-purchases' },
+  { text: 'Courses', icon: <SchoolIcon />, path: '/admin/courses' },
   { text: 'Reviews', icon: <ReviewsIcon />, path: '/admin/reviews' },
   { text: 'Testimonials', icon: <TestimonialsIcon />, path: '/admin/testimonials' },
   { text: 'Contact Forms', icon: <EmailIcon />, path: '/admin/contacts' },

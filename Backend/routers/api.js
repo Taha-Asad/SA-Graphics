@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const authController = require("../Controllers/auth.controller.js");
 const bookController = require("../controllers/book.controller");
-const orderController = require("../controllers/order.controller");
+// const orderController = require("../controllers/order.controller");
 const portfolioController = require("../controllers/portfolio.controller");
 const testimonialController = require("../controllers/testimonials.controller");
 const reviewsController = require("../Controllers/reviews.controller.js");
@@ -114,7 +114,6 @@ router.delete(
 );
 
 // Order Routes
-router.use('/orders', orderRoutes);
 
 // Portfolio Routes
 router.post(

@@ -11,13 +11,11 @@ import {
   Divider
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import { toast } from 'react-toastify';
-import { BiPackage } from 'react-icons/bi';
-import { FiHome } from 'react-icons/fi';
+import { BiPackage, BiReceipt } from 'react-icons/bi';
+import { FiHome, FiDownload } from 'react-icons/fi';
 import { useAuth } from '../../../context/AuthContext';
-
-const API_URL = 'http://localhost:5000/api/v1';
+import axiosInstance from '../../../config/axios';
 
 const getStatusColor = (status) => {
   switch (status.toLowerCase()) {
@@ -52,29 +50,37 @@ const Orders = () => {
 
     const fetchOrders = async () => {
       try {
-        const token = localStorage.getItem('token');
-        if (!token) {
-          toast.error('Please login to view your orders');
-          navigate('/login');
-          return;
-        }
-
-        const response = await axios.get(`${API_URL}/orders`, {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
+        console.log('Fetching orders...');
+        
+        const response = await axiosInstance.get('/orders/my-orders');
+        console.log('Orders response:', response.data);
 
         if (response.data.status === 'success') {
-          setOrders(response.data.data.orders);
+          setOrders(response.data.data.orders || []);
+        } else {
+          console.error('Failed to fetch orders:', response.data);
+          toast.error(response.data.message || 'Failed to fetch orders');
         }
       } catch (error) {
-        console.error('Error fetching orders:', error);
+        console.error('Error fetching orders:', error.response || error);
+        
+        if (error.response) {
+          console.error('Error response:', {
+            status: error.response.status,
+            data: error.response.data,
+            headers: error.response.headers
+          });
+        } else if (error.request) {
+          console.error('No response received:', error.request);
+        } else {
+          console.error('Error details:', error.message);
+        }
+
         if (error.response?.status === 401) {
           toast.error('Session expired. Please login again.');
           navigate('/login');
         } else {
-          toast.error('Failed to fetch orders. Please try again.');
+          toast.error(error.response?.data?.message || 'Failed to fetch orders. Please try again.');
         }
       } finally {
         setLoading(false);
@@ -186,13 +192,13 @@ const Orders = () => {
 
                 <Grid container spacing={2}>
                   <Grid item xs={12} md={8}>
-                    {order.item.map((item, index) => (
+                    {order.items.map((item, index) => (
                       <Box 
                         key={index}
                         sx={{ 
                           display: 'flex', 
                           alignItems: 'center',
-                          mb: index !== order.item.length - 1 ? 2 : 0
+                          mb: index !== order.items.length - 1 ? 2 : 0
                         }}
                       >
                         <Box
@@ -225,8 +231,54 @@ const Orders = () => {
                         Order Date: {new Date(order.createdAt).toLocaleDateString()}
                       </Typography>
                       <Typography variant="body2" sx={{ mb: 1 }}>
-                        Total Items: {order.item.reduce((acc, item) => acc + item.quantity, 0)}
+                        Total Items: {order.items.reduce((acc, item) => acc + item.quantity, 0)}
                       </Typography>
+                      <Typography variant="body2" sx={{ mb: 1 }}>
+                        Payment Method: {order.paymentMethod}
+                      </Typography>
+                      <Typography variant="body2" sx={{ mb: 1 }}>
+                        Payment Status: {order.paymentStatus}
+                      </Typography>
+                      {order.paymentProof && (
+                        <Box sx={{ mt: 2, mb: 2 }}>
+                          <Typography variant="body2" sx={{ mb: 1, fontWeight: 'medium' }}>
+                            Payment Proof:
+                          </Typography>
+                          <Box
+                            component="img"
+                            src={`${axiosInstance.defaults.baseURL}/${order.paymentProof}`}
+                            alt="Payment Proof"
+                            sx={{
+                              width: '100%',
+                              height: 'auto',
+                              maxHeight: '200px',
+                              objectFit: 'contain',
+                              borderRadius: 1,
+                              border: '1px solid #e0e0e0',
+                              cursor: 'pointer'
+                            }}
+                            onClick={() => window.open(`${axiosInstance.defaults.baseURL}/${order.paymentProof}`, '_blank')}
+                          />
+                          <Button
+                            variant="outlined"
+                            size="small"
+                            startIcon={<FiDownload />}
+                            fullWidth
+                            sx={{ 
+                              mt: 1,
+                              borderColor: '#149ddd',
+                              color: '#149ddd',
+                              '&:hover': {
+                                borderColor: '#1187c1',
+                                backgroundColor: 'rgba(20, 157, 221, 0.04)'
+                              }
+                            }}
+                            onClick={() => window.open(`${axiosInstance.defaults.baseURL}/${order.paymentProof}`, '_blank')}
+                          >
+                            View Full Image
+                          </Button>
+                        </Box>
+                      )}
                       <Typography variant="h6" sx={{ mt: 2, color: '#149ddd' }}>
                         Total: Rs. {order.totalAmount}
                       </Typography>

@@ -232,11 +232,11 @@ const AccountSideBar = ({ onClose, open }) => {
   // Dynamic menu items based on user role
   const getMenuItems = () => {
     const items = [
-      {
-        icon: <BsPerson size={20} />,
-        text: 'Profile',
-        path: '/account/profile'
-      },
+      // {
+      //   icon: <BsPerson size={20} />,
+      //   text: 'Profile',
+      //   path: '/account/profile'
+      // },
       {
         icon: <FiPackage size={20} />,
         text: 'Orders',
@@ -557,7 +557,7 @@ const AccountSideBar = ({ onClose, open }) => {
                     sx={{
                       borderRadius: 1,
                       color: 'rgba(255, 255, 255, 0.85)',
-                    '&:hover': {
+                '&:hover': {
                       backgroundColor: 'rgba(20, 157, 221, 0.08)',
                       color: '#149ddd',
                     }

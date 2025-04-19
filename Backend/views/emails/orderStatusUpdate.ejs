@@ -1,39 +1,67 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Order Status Update</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      line-height: 1.6;
-      color: #333;
-    }
-    .container {
-      max-width: 600px;
-      margin: 0 auto;
-      padding: 20px;
-      border: 1px solid #ddd;
-      border-radius: 5px;
-    }
-    h1 {
-      color: #4CAF50;
-    }
-    .order-details {
-      margin-top: 20px;
-    }
-    .order-details p {
-      margin: 5px 0;
-    }
-  </style>
+    <meta charset="utf-8">
+    <title>Order Status Update</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background-color: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            border-radius: 5px;
+        }
+        .content {
+            padding: 20px;
+        }
+        .status {
+            font-weight: bold;
+            color: #007bff;
+        }
+        .footer {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Order Status Update</h1>
-    <div class="order-details">
-      <p><strong>Order ID:</strong> <%= order._id %></p>
-      <p><strong>New Status:</strong> <%= order.status %></p>
+    <div class="header">
+        <h2>Order Status Update</h2>
     </div>
-    <p>Thank you for shopping with us!</p>
-  </div>
+    <div class="content">
+        <p>Hello <%= userName %>,</p>
+        <p>Your order <strong>#<%= orderNumber %></strong> status has been updated to <span class="status"><%= status %></span>.</p>
+        
+        <% if (status === 'shipped') { %>
+            <p>Your order has been shipped and is on its way to you. You can track your order using the tracking number: <strong><%= trackingNumber %></strong></p>
+        <% } else if (status === 'delivered') { %>
+            <p>Your order has been delivered successfully. We hope you enjoy your purchase!</p>
+        <% } else if (status === 'cancelled') { %>
+            <p>Your order has been cancelled. If you have any questions, please contact our support team.</p>
+        <% } %>
+        
+        <p>Order Details:</p>
+        <ul>
+            <% items.forEach(function(item) { %>
+                <li><%= item.title %> - Rs. <%= item.price %> x <%= item.quantity %></li>
+            <% }); %>
+        </ul>
+        <p>Total Amount: Rs. <%= totalAmount %></p>
+    </div>
+    <div class="footer">
+        <p>If you have any questions, please contact our support team.</p>
+        <p>© <%= new Date().getFullYear() %> SA Graphics. All rights reserved.</p>
+    </div>
 </body>
 </html>

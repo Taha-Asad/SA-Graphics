@@ -10,7 +10,7 @@ const {
   getOrder,
   updateOrderStatus,
   cancelOrder
-} = require('../controllers/order.controller');
+} = require('../Controllers/order.controller.js');
 
 // Create a new order
 router.post('/', verifyToken, upload.single('transferProof'), handleMulterError, createOrder);

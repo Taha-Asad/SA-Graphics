@@ -21,6 +21,7 @@ import { FiHome } from 'react-icons/fi';
 
 const API_URL = 'http://localhost:5000/api/v1';
 const PLACEHOLDER_IMAGE = 'https://placehold.co/60x80/e0e0e0/949494.png?text=No+Image';
+const COURSE_PLACEHOLDER = 'https://placehold.co/60x80/e0e0e0/949494.png?text=Course';
 
 const steps = ['Order Placed', 'Processing', 'Shipped', 'Delivered'];
 
@@ -72,36 +73,53 @@ const formatAddress = (address) => {
 };
 
 const getImageUrl = (item) => {
-  console.log('Processing item:', item); // Debug log for item data
-
   if (!item) return PLACEHOLDER_IMAGE;
 
   // For service items (like Graphic Designing)
   if (item.service) {
-    console.log('Service item detected:', item.service);
-    return PLACEHOLDER_IMAGE;
+    return COURSE_PLACEHOLDER;
+  }
+
+  // For course items
+  if (item.courseId) {
+    if (!item.courseId.thumbnail) {
+      return COURSE_PLACEHOLDER;
+    }
+    // Handle absolute URLs
+    if (item.courseId.thumbnail.startsWith('http')) {
+      return item.courseId.thumbnail;
+    }
+    // Handle relative paths
+    const cleanPath = item.courseId.thumbnail.startsWith('/')
+      ? item.courseId.thumbnail.substring(1)
+      : item.courseId.thumbnail;
+    return `${API_URL}/${cleanPath}`;
   }
 
   // If we have a populated bookId with image
   if (item.bookId?.coverImage) {
-    const url = item.bookId.coverImage.startsWith('http')
-      ? item.bookId.coverImage
-      : `/uploads/${item.bookId.coverImage}`; // Remove API_URL for relative path
-    console.log('Book image URL:', url);
-    return url;
+    if (item.bookId.coverImage.startsWith('http')) {
+      return item.bookId.coverImage;
+    }
+    const cleanPath = item.bookId.coverImage.startsWith('/')
+      ? item.bookId.coverImage.substring(1)
+      : item.bookId.coverImage;
+    return `${API_URL}/${cleanPath}`;
   }
   
   // If we have a direct image
   if (item.image) {
-    const url = item.image.startsWith('http') 
-      ? item.image 
-      : `/uploads/${item.image}`; // Remove API_URL for relative path
-    console.log('Direct image URL:', url);
-    return url;
+    if (item.image.startsWith('http')) {
+      return item.image;
+    }
+    const cleanPath = item.image.startsWith('/')
+      ? item.image.substring(1)
+      : item.image;
+    return `${API_URL}/${cleanPath}`;
   }
   
-  console.log('No image found, using placeholder');
-  return PLACEHOLDER_IMAGE;
+  // Return appropriate placeholder based on item type
+  return item.courseId ? COURSE_PLACEHOLDER : PLACEHOLDER_IMAGE;
 };
 
 const getItemPrice = (item) => {
@@ -171,14 +189,15 @@ const OrderItem = React.memo(({ item }) => {
   
   const title = useMemo(() => {
     if (item.service) return item.service;
+    if (item.courseId) return item.courseId.title || 'Course';
     return item.title || (item.bookId?.title) || 'Book';
   }, [item]);
 
-  const handleImageError = (e) => {
-    console.error('Image failed to load:', e.target.src); // Debug log for failed images
+  const handleImageError = () => {
     if (!imgError) {
       setImgError(true);
-      setImgSrc(PLACEHOLDER_IMAGE);
+      // Use course placeholder for course items, general placeholder for others
+      setImgSrc(item.courseId ? COURSE_PLACEHOLDER : PLACEHOLDER_IMAGE);
     }
   };
 
@@ -186,7 +205,6 @@ const OrderItem = React.memo(({ item }) => {
     if (item) {
       setImgError(false);
       const url = getImageUrl(item);
-      console.log('Setting image URL:', url); // Debug log for URL updates
       setImgSrc(url);
     }
   }, [item]);
@@ -208,6 +226,7 @@ const OrderItem = React.memo(({ item }) => {
           src={imgSrc}
           alt={title}
           loading="lazy"
+          onError={handleImageError}
           sx={{
             width: 60,
             height: 80,
@@ -216,7 +235,6 @@ const OrderItem = React.memo(({ item }) => {
             mr: 2,
             bgcolor: 'grey.200'
           }}
-          onError={handleImageError}
         />
       ) : (
         <Box
@@ -393,7 +411,7 @@ const TrackOrder = () => {
             </Typography>
             
             <Box sx={{ mb: 3 }}>
-              {order.item.map((item) => (
+              {order.items.map((item) => (
                 <OrderItem key={item._id || item.bookId} item={item} />
               ))}
             </Box>
@@ -429,7 +447,7 @@ const TrackOrder = () => {
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                   <Typography variant="body2">Total Items:</Typography>
                   <Typography variant="body2">
-                    {order.item.reduce((acc, item) => acc + item.quantity, 0)}
+                    {order.items.reduce((acc, item) => acc + item.quantity, 0)}
                   </Typography>
                 </Box>
 

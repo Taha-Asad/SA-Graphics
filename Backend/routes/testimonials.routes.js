@@ -19,14 +19,6 @@ router.patch('/:id/reject', verifyToken, isAdmin, async (req, res) => {
     req.body.status = 'rejected';
     await testimonialController.updateTestimonialStatus(req, res);
 });
-router.delete('/:id', verifyToken, isAdmin, async (req, res) => {
-    try {
-        const testimonialId = req.params.id;
-        await Testimonial.findByIdAndDelete(testimonialId);
-        res.status(200).json({ message: 'Testimonial deleted successfully' });
-    } catch (error) {
-        res.status(500).json({ message: 'Server error', error: error.message });
-    }
-});
+router.delete('/:id', verifyToken, isAdmin, testimonialController.deleteTestimonial);
 
 module.exports = router; 

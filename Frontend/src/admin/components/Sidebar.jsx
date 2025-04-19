@@ -31,7 +31,8 @@ import {
   Logout as LogoutIcon,
   AccountCircle as AccountCircleIcon,
   Book as BookIcon,
-  Code as CodeIcon
+  Code as CodeIcon,
+  School as SchoolIcon
 } from '@mui/icons-material';
 import { useAuth } from '../../context/AuthContext';
 
@@ -52,6 +53,11 @@ const menuItems = [
     title: 'Orders',
     path: '/admin/orders',
     icon: <ShoppingCartIcon />
+  },
+  {
+    title: 'Courses',
+    path: '/admin/courses',
+    icon: <SchoolIcon />
   },
   {
     title: 'Reviews',

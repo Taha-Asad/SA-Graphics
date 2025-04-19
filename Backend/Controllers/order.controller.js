@@ -1,4 +1,4 @@
-const Order = require("../models/Order.model");
+const Order = require("../models/order.model");
 const User = require("../models/user.model");
 const Book = require("../models/book.model");
 const { sendEmail } = require("../config/nodemailer");
@@ -7,59 +7,71 @@ const path = require("path");
 const createError = require('http-errors');
 const NotificationService = require('../services/notification.service');
 const fs = require('fs');
+const Joi = require('joi');
+const { orderSchema, validateOrder } = require('../validations/orderValidation');
+const mongoose = require('mongoose');
+const { sendOrderConfirmationEmail } = require('../services/emailService');
 
 // Create Order
 const createOrder = async (req, res) => {
   try {
-    // Log everything we receive
-    console.log('=== REQUEST DEBUG ===');
-    console.log('Headers:', req.headers);
-    console.log('Body:', JSON.stringify(req.body, null, 2));
-    console.log('User:', req.user);
-    console.log('File:', req.file);
-    console.log('=== END DEBUG ===');
-
-    // For FormData requests
-    let orderData = req.body;
-    if (req.headers['content-type']?.includes('multipart/form-data') && req.body.order) {
-      try {
-        orderData = JSON.parse(req.body.order);
-      } catch (error) {
-        return res.status(400).json({
-          status: 'error',
-          message: 'Could not parse order data from form'
-        });
-      }
+    console.log('Received order request:', req.body);
+    
+    let orderData;
+    if (req.file) {
+      // If there's a file upload, the order data is in the 'order' field as a string
+      orderData = JSON.parse(req.body.order);
+      // Add the file path to the order data
+      orderData.paymentProof = req.file.path;
+    } else {
+      // If no file, the order data is directly in the body
+      orderData = req.body;
     }
 
-    // Get userId from authenticated user
-    const userId = req.user._id;
-    
-    // Extract data
-    const { item, totalAmount, shippingAddress, paymentMethod } = orderData;
+    // Validate order data
+    const { error } = validateOrder(orderData);
+    if (error) {
+      return res.status(400).json({
+        status: 'error',
+        message: error.details[0].message
+      });
+    }
 
-    // Create order
-    const order = await Order.create({
-      userId,
-      item: Array.isArray(item) ? item : JSON.parse(item),
-      totalAmount,
-      shippingAddress,
-      paymentMethod,
-      transferProof: req.file ? req.file.filename : null,
-      status: 'pending',
-      paymentStatus: 'pending'
-    });
+    // Determine order type based on items
+    const orderType = orderData.items.some(item => item.type === 'course') ? 'course' : 'product';
+    orderData.orderType = orderType;
+
+    // Add order number
+    orderData.orderNumber = `ORD-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+
+    // Create new order
+    const order = new Order(orderData);
+    await order.save();
+
+    // Send confirmation email
+    try {
+      await sendOrderConfirmationEmail({
+        ...order.toObject(),
+        orderId: order._id
+      });
+    } catch (emailError) {
+      console.error('Error sending confirmation email:', emailError);
+      // Don't fail the order creation if email fails
+    }
 
     res.status(201).json({
       status: 'success',
-      data: { order }
+      message: 'Order created successfully',
+      data: {
+        order,
+        isCourseOrder: orderType === 'course'
+      }
     });
-
   } catch (error) {
     console.error('Order creation error:', error);
     res.status(500).json({
       status: 'error',
-      message: error.message
+      message: error.message || 'Failed to create order'
     });
   }
 };
@@ -267,7 +279,7 @@ const cancelOrder = async (req, res, next) => {
     }
 
     // Restore book stock
-    for (const item of order.item) {
+    for (const item of order.items) {
       const book = await Book.findById(item.bookId);
       if (book) {
         book.countInStock += item.quantity;

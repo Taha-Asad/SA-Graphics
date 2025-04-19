@@ -38,8 +38,8 @@ const CartSideBar = ({ onClose, open }) => {
       mountOnEnter 
       unmountOnExit
     >
-      <Box
-        sx={{
+        <Box
+          sx={{
           width: { xs: "85%", sm: "65%", md: "45%", lg: "25%" },
           height: "100vh",
           display: "flex",
@@ -91,28 +91,28 @@ const CartSideBar = ({ onClose, open }) => {
               Shopping Cart ({cartItems.length})
             </Typography>
           </Box>
-        </Box>
+      </Box>
 
         {/* Cart Items */}
-        <Box 
-          sx={{ 
-            flex: 1,
-            overflowY: 'auto',
+      <Box 
+        sx={{ 
+          flex: 1, 
+          overflowY: 'auto',
             p: 2,
             backgroundColor: '#0c1117',
-            '&::-webkit-scrollbar': {
+          '&::-webkit-scrollbar': {
               width: '4px',
-            },
-            '&::-webkit-scrollbar-track': {
+          },
+          '&::-webkit-scrollbar-track': {
               background: 'rgba(255, 255, 255, 0.02)',
-            },
-            '&::-webkit-scrollbar-thumb': {
+          },
+          '&::-webkit-scrollbar-thumb': {
               background: 'rgba(255, 255, 255, 0.1)',
-              borderRadius: '4px',
-            },
-          }}
-        >
-          {cartItems.length === 0 ? (
+            borderRadius: '4px',
+          },
+        }}
+      >
+        {cartItems.length === 0 ? (
             <Box sx={{ 
               display: 'flex', 
               flexDirection: 'column', 
@@ -130,7 +130,7 @@ const CartSideBar = ({ onClose, open }) => {
                 variant="outlined"
                 startIcon={<FiHome />}
                 onClick={handleContinueShopping}
-                sx={{
+            sx={{ 
                   mt: 2,
                   borderColor: '#149ddd',
                   color: '#149ddd',
@@ -143,23 +143,23 @@ const CartSideBar = ({ onClose, open }) => {
                 Continue Shopping
               </Button>
             </Box>
-          ) : (
-            cartItems.map(item => (
-              <CartItem
+        ) : (
+          cartItems.map(item => (
+            <CartItem
                 key={item._id}
-                item={item}
+              item={item}
                 updateQuantity={updateQuantity}
                 removeFromCart={removeFromCart}
-              />
-            ))
-          )}
-        </Box>
+            />
+          ))
+        )}
+      </Box>
 
         {/* Cart Summary */}
         {cartItems.length > 0 && (
           <Paper
             elevation={0}
-            sx={{
+            sx={{ 
               p: 2,
               backgroundColor: '#1e242c',
               borderTop: '1px solid rgba(255, 255, 255, 0.08)'
@@ -168,42 +168,42 @@ const CartSideBar = ({ onClose, open }) => {
             <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
               <Typography variant="subtitle1" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
                 Subtotal:
-              </Typography>
+          </Typography>
               <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
                 Rs. {getCartTotal().toFixed(2)}
-              </Typography>
-            </Box>
+          </Typography>
+        </Box>
 
             <Box sx={{ display: 'flex', gap: 2 }}>
-              <Button
-                fullWidth
+        <Button
+          fullWidth
                 variant="outlined"
                 onClick={handleContinueShopping}
-                sx={{
+          sx={{
                   borderColor: '#149ddd',
                   color: '#149ddd',
-                  '&:hover': {
+            '&:hover': {
                     borderColor: '#1187c1',
                     backgroundColor: 'rgba(20, 157, 221, 0.08)'
                   }
                 }}
               >
                 Continue Shopping
-              </Button>
-              <Button
-                fullWidth
+        </Button>
+        <Button
+          fullWidth
                 variant="contained"
                 onClick={handleCheckout}
-                sx={{
+          sx={{
                   backgroundColor: '#149ddd',
-                  color: 'white',
-                  '&:hover': {
+            color: 'white',
+            '&:hover': {
                     backgroundColor: '#1187c1'
-                  }
-                }}
-              >
+            }
+          }}
+        >
                 Checkout
-              </Button>
+        </Button>
             </Box>
           </Paper>
         )}

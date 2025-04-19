@@ -11,7 +11,7 @@ const TrackOrder = () => {
         Track Order
       </Typography>
       
-      <Paper sx={{ p: 3, mb: 4 }}>
+      <Paper sx={{ md:{p : "3" }, xs:{p : "2"}, mb: 4 }}>
         <Box sx={{ display: 'flex', gap: 2 }}>
           <TextField
             label="Order Number"

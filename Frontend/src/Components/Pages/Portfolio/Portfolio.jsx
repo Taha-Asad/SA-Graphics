@@ -14,7 +14,7 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useCart } from '../../../context/CartContext';
-import { getImageUrl } from '../../../utils/imageUtils';
+import { resolveImageUrl } from '../../../utils/imageUtils';
 import * as reviewService from '../../../services/reviewService';
 
 // Memoized Card Components
@@ -110,7 +110,7 @@ const BookCard = memo(({ book, onClick }) => {
     <CardMedia
       component="img"
         height="140"
-        image={getImageUrl(book.coverImage)}
+        image={resolveImageUrl(book.coverImage)}
       alt={book.title}
       sx={{
         objectFit: 'cover',
@@ -226,6 +226,8 @@ const Portfolio = React.memo(function Portfolio() {
   const { addToCart } = useCart();
   const [user, setUser] = useState(null);
   const [open, setOpen] = useState(false);
+  const [page, setPage] = useState(1);
+  const itemsPerPage = 6;
 
   const handleChange = useCallback((event, newValue) => {
     setValue(newValue);
@@ -364,9 +366,24 @@ const Portfolio = React.memo(function Portfolio() {
     }
   }, [selectedBook, reviews]);
 
-  // Memoize the filtered and sorted data
-  const memoizedProjects = useMemo(() => projects, [projects]);
-  const memoizedBooks = useMemo(() => books, [books]);
+  const items = useMemo(() => {
+    if (value === '1') {
+      return Array.isArray(projects) ? projects : [];
+    } else {
+      return Array.isArray(books) ? books : [];
+    }
+  }, [value, projects, books]);
+
+  const pageCount = Math.ceil(items.length / itemsPerPage);
+  
+  const handlePageChange = useCallback((event, value) => {
+    setPage(value);
+  }, []);
+  
+  const paginatedItems = useMemo(() => {
+    const startIndex = (page - 1) * itemsPerPage;
+    return items.slice(startIndex, startIndex + itemsPerPage);
+  }, [items, page, itemsPerPage]);
 
   useEffect(() => {
     fetchProjects();
@@ -451,12 +468,33 @@ const Portfolio = React.memo(function Portfolio() {
                 display: 'block'
               }}
             >
-              <PaginatedGrid 
-                items={memoizedProjects} 
-                renderItem={(project) => (
+              <Grid container spacing={2}>
+                {paginatedItems.map((project) => (
+                  <Grid 
+                    item 
+                    xs={12} 
+                    sm={6} 
+                    md={4} 
+                    key={project._id}
+                    data-aos="fade-up"
+                    data-aos-delay={Math.min(project.index * 50, 200)}
+                    data-aos-once="true"
+                  >
                     <ProjectCard project={project} onClick={handleProjectClick} />
-                )}
-              />
+                  </Grid>
+                ))}
+              </Grid>
+              {pageCount > 1 && (
+                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+                  <Pagination 
+                    count={pageCount} 
+                    page={page} 
+                    onChange={handlePageChange} 
+                    color="primary" 
+                    size="large"
+                  />
+                </Box>
+              )}
             </TabPanel>
             <TabPanel 
               value="2" 
@@ -466,12 +504,33 @@ const Portfolio = React.memo(function Portfolio() {
                 display: 'block'
               }}
             >
-              <PaginatedGrid 
-                items={memoizedBooks} 
-                renderItem={(book) => (
+              <Grid container spacing={2}>
+                {paginatedItems.map((book) => (
+                  <Grid 
+                    item 
+                    xs={12} 
+                    sm={6} 
+                    md={4} 
+                    key={book._id}
+                    data-aos="fade-up"
+                    data-aos-delay={Math.min(book.index * 50, 200)}
+                    data-aos-once="true"
+                  >
                     <BookCard book={book} onClick={handleBookClick} />
-                )}
-              />
+                  </Grid>
+                ))}
+              </Grid>
+              {pageCount > 1 && (
+                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+                  <Pagination 
+                    count={pageCount} 
+                    page={page} 
+                    onChange={handlePageChange} 
+                    color="primary" 
+                    size="large"
+                  />
+                </Box>
+              )}
             </TabPanel>
           </TabContext>
         )}
@@ -618,7 +677,7 @@ const Portfolio = React.memo(function Portfolio() {
             <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' } }}>
               <Box
                     component="img"
-                src={getImageUrl(selectedBook.coverImage)}
+                src={resolveImageUrl(selectedBook.coverImage)}
                     alt={selectedBook.title}
                     sx={{ 
                   width: { xs: '100%', md: '40%' },

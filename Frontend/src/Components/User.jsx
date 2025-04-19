@@ -5,6 +5,7 @@ import { Element } from "react-scroll";
 import { Box } from "@mui/material";
 import Navbar from "./Navbar/Navbar";
 import Footer from "./Footer/Footer";
+import FixedSocialMenu from "./FixedSocialMenu/FixedSocialMenu";
 
 // Direct imports instead of lazy loading
 import Home from "./Pages/Home/Home";
@@ -14,6 +15,7 @@ import Portfolio from "./Pages/Portfolio/Portfolio";
 import Services from "./Pages/Services/Services";
 import Testimonials from "./Pages/Testimonials/Testimonials";
 import Contact from "./Pages/Contact/Contact";
+import CoursesSection from "./Pages/Courses/CoursesSection";
 
 const User = () => {
   const [aosInitialized, setAosInitialized] = useState(false);
@@ -81,7 +83,8 @@ const User = () => {
         display: 'flex', 
         flexDirection: 'column', 
         minHeight: '100vh',
-        overflowX: 'hidden'
+        overflowX: 'hidden',
+        position: 'relative'
       }}
     >
       <Navbar />
@@ -111,6 +114,10 @@ const User = () => {
         <Element name="services">
           <Services />
         </Element>
+
+        <Element name="courses">
+          <CoursesSection />
+        </Element>
         
         <Element name="testimonials">
           <Testimonials />
@@ -121,6 +128,23 @@ const User = () => {
         </Element>
       </Box>
       <Footer />
+      
+      {/* Fixed Social Menu Container */}
+      <Box
+        sx={{
+          position: 'fixed',
+          left: 0,
+          top: 0,
+          bottom: 0,
+          zIndex: 99999,
+          pointerEvents: 'none',
+          display: 'flex',
+          alignItems: 'center',
+          padding: '20px'
+        }}
+      >
+        <FixedSocialMenu />
+      </Box>
     </Box>
   );
 };

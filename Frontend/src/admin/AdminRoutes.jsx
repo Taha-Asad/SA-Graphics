@@ -7,6 +7,8 @@ import Reviews from './components/Reviews';
 import Settings from './components/Settings';
 import ContactList from './components/ContactList';
 import Testimonials from './components/Testimonials';
+import Courses from './components/Courses';
+import CoursePurchases from './components/CoursePurchases';
 
 const AdminRoutes = () => {
   return (
@@ -14,6 +16,8 @@ const AdminRoutes = () => {
       <Route index element={<Dashboard />} />
       <Route path="users" element={<Users />} />
       <Route path="orders" element={<Orders />} />
+      <Route path="course-purchases" element={<CoursePurchases />} />
+      <Route path="courses" element={<Courses />} />
       <Route path="reviews" element={<Reviews />} />
       <Route path="testimonials" element={<Testimonials />} />
       <Route path="contacts" element={<ContactList />} />

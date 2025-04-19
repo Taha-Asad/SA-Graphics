@@ -38,7 +38,7 @@ const authMiddleware = async (req, res, next) => {
 
 // Admin middleware
 const adminMiddleware = (req, res, next) => {
-  if (!req.user || !req.user.isAdmin) {
+  if (!req.user || req.user.role !== 'admin') {
     return next(createError(403, 'Access denied. Admin only.'));
   }
   next();

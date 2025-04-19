@@ -1,10 +1,10 @@
 import { IoHomeOutline } from "react-icons/io5";
 import { IoPersonOutline } from "react-icons/io5";
-import { GrDocumentText } from "react-icons/gr";
 import { IoImagesOutline } from "react-icons/io5";
 import { CiServer } from "react-icons/ci";
 import { MdOutlineMessage } from "react-icons/md";
 import { MdOutlineEmail } from "react-icons/md";
+import { IoSchoolOutline } from "react-icons/io5";
 
 export const Links = [
     {
@@ -21,13 +21,6 @@ export const Links = [
         cName: "nav-links",
         icon: <IoPersonOutline className="page-links"/>
     },
-    // {
-    //     title: 'Resume',
-    //     id: "resume",
-    //     to: "resume",
-    //     cName: "nav-links",
-    //     icon: <GrDocumentText className="page-links"/>
-    // },
     {
         title: 'Portfolio',
         id: "portfolio",
@@ -41,6 +34,13 @@ export const Links = [
         to: "services",
         cName: "nav-links",
         icon: <CiServer className="page-links"/>
+    },
+    {
+        title: 'Courses',
+        id: "courses",
+        to: "courses",
+        cName: "nav-links",
+        icon: <IoSchoolOutline className="page-links"/>
     },
     {
         title: 'Reviews',

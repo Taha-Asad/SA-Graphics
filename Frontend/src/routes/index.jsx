@@ -51,6 +51,10 @@ const Books = lazy(() => import('../admin/components/Books'));
 const Projects = lazy(() => import('../admin/components/Projects'));
 const Settings = lazy(() => import('../admin/components/Settings'));
 
+// Course components
+const Courses = lazy(() => import('../Components/Pages/Courses/CoursesSection'));
+const CourseDetail = lazy(() => import('../Components/Pages/Courses/CourseDetail'));
+
 const AppRoutes = () => {
   return (
     <Suspense fallback={<LoadingSpinner />}>
@@ -88,6 +92,8 @@ const AppRoutes = () => {
           <Route path="/services/branding" element={<Branding />} />
           <Route path="/services/signage" element={<Signage />} />
           <Route path="/services/packaging" element={<Packaging />} />
+          <Route path="/courses" element={<Courses />} />
+          <Route path="/courses/:id" element={<CourseDetail />} />
         </Route>
 
         {/* Legal routes */}

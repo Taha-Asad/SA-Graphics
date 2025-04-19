@@ -22,13 +22,19 @@ try {
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, UPLOAD_PATH);
+    // Create a subdirectory for course images
+    const courseUploadPath = path.join(UPLOAD_PATH, 'courses');
+    if (!fs.existsSync(courseUploadPath)) {
+      fs.mkdirSync(courseUploadPath, { recursive: true });
+    }
+    cb(null, courseUploadPath);
   },
   filename: function (req, file, cb) {
     // Create a unique filename with timestamp and random number
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    const fileExtension = path.extname(file.originalname);
-    cb(null, uniqueSuffix + fileExtension);
+    const fileExtension = path.extname(file.originalname).toLowerCase();
+    const filename = `course-${uniqueSuffix}${fileExtension}`;
+    cb(null, filename);
   }
 });
 

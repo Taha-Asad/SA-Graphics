@@ -1,3 +1,4 @@
+// File: Orders.jsx
 import React, { useState, useEffect } from 'react';
 import {
   Box,
@@ -21,7 +22,10 @@ import {
   MenuItem,
   Stack,
   CircularProgress,
-  Alert
+  Alert,
+  FormControl,
+  InputLabel,
+  Select
 } from '@mui/material';
 import {
   Visibility as ViewIcon,
@@ -30,7 +34,7 @@ import {
   Delete as DeleteIcon
 } from '@mui/icons-material';
 import { toast } from 'react-toastify';
-import { getOrders, updateOrderStatus, deleteOrder } from '../../services/adminService';
+import axios from 'axios';
 
 const orderStatuses = [
   { value: 'pending', label: 'Pending', color: 'warning' },
@@ -42,34 +46,62 @@ const orderStatuses = [
 
 const Orders = () => {
   const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [limit, setLimit] = useState(10);
+  const [totalOrders, setTotalOrders] = useState(0);
+  const [orderToDelete, setOrderToDelete] = useState(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [openDialog, setOpenDialog] = useState(false);
   const [viewMode, setViewMode] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [totalOrders, setTotalOrders] = useState(0);
-  const [confirmDialog, setConfirmDialog] = useState({ open: false, orderId: null });
 
   useEffect(() => {
     fetchOrders();
-  }, [page, rowsPerPage]);
+  }, [page, limit]);
 
   const fetchOrders = async () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await getOrders(page + 1, rowsPerPage);
-      if (response && response.data) {
-        setOrders(response.data.orders);
-        setTotalOrders(response.data.total || 0);
+      const token = localStorage.getItem('token');
+      
+      console.log('Fetching orders with params:', {
+        page: page + 1,
+        limit: limit
+      });
+
+      const response = await axios.get(`http://localhost:5000/api/v1/admin/orders?page=${page + 1}&limit=${limit}`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      
+      console.log('Orders API response:', {
+        status: response.data.status,
+        hasData: !!response.data.data,
+        hasOrders: !!response.data.data?.orders,
+        ordersLength: response.data.data?.orders?.length,
+        total: response.data.data?.total
+      });
+
+      if (response?.data?.status === 'success' && response.data.data?.orders) {
+        setOrders(response.data.data.orders);
+        setTotalOrders(response.data.data.total);
       } else {
+        console.error('Invalid response structure:', response.data);
         setOrders([]);
-        setError('No orders data received');
+        setError('No order data received');
       }
     } catch (err) {
       console.error('Error fetching orders:', err);
+      console.error('Error details:', {
+        message: err.message,
+        response: err.response?.data,
+        status: err.response?.status,
+        stack: err.stack
+      });
       setOrders([]);
       setError(err.message || 'Failed to load orders');
       toast.error('Failed to load orders');
@@ -83,7 +115,7 @@ const Orders = () => {
   };
 
   const handleChangeRowsPerPage = (event) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
+    setLimit(parseInt(event.target.value, 10));
     setPage(0);
   };
 
@@ -105,40 +137,69 @@ const Orders = () => {
     setViewMode(false);
   };
 
+  const handleStatusChange = (event) => {
+    if (!selectedOrder) return;
+    setSelectedOrder({
+      ...selectedOrder,
+      status: event.target.value
+    });
+  };
+
   const handleUpdateOrder = async () => {
-    if (!selectedOrder || !selectedOrder.status) {
-      toast.error('Please select a status');
+    if (!selectedOrder) {
+      toast.error('No order selected');
       return;
     }
 
     try {
       setLoading(true);
-      const result = await updateOrderStatus(selectedOrder._id, selectedOrder.status);
-      if (result.status === 'success') {
+      const token = localStorage.getItem('token');
+      
+      console.log('Updating order status:', {
+        orderId: selectedOrder._id,
+        status: selectedOrder.status
+      });
+
+      const response = await axios.patch(
+        `http://localhost:5000/api/v1/admin/orders/${selectedOrder._id}/status`,
+        { status: selectedOrder.status },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      );
+
+      if (response.data.status === 'success') {
         toast.success('Order status updated successfully');
-        await fetchOrders();
+        await fetchOrders(); // Refresh the orders list
         handleCloseDialog();
       } else {
-        throw new Error(result.message || 'Failed to update order status');
+        throw new Error(response.data.message || 'Failed to update order status');
       }
     } catch (err) {
       console.error('Error updating order:', err);
-      toast.error(err.message || 'Failed to update order status');
+      toast.error(err.response?.data?.message || 'Failed to update order status');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDeleteConfirm = async () => {
+  const handleDeleteOrder = async () => {
     try {
-      await deleteOrder(confirmDialog.orderId);
+      const token = localStorage.getItem('token');
+      await axios.delete(`http://localhost:5000/api/v1/admin/orders/${orderToDelete}`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      setOrders(orders.filter(order => order._id !== orderToDelete));
+      setOrderToDelete(null);
+      setShowDeleteModal(false);
       toast.success('Order deleted successfully');
-      fetchOrders();
-    } catch (err) {
-      console.error('Error deleting order:', err);
+    } catch (error) {
+      console.error('Error deleting order:', error);
       toast.error('Failed to delete order');
-    } finally {
-      setConfirmDialog({ open: false, orderId: null });
     }
   };
 
@@ -184,47 +245,46 @@ const Orders = () => {
         Order Management
       </Typography>
 
-      <Paper elevation={3} sx={{ width: '100%', overflow: 'hidden' }}>
-        <TableContainer sx={{ maxHeight: 'calc(100vh - 250px)' }}>
-          <Table stickyHeader>
+      <Paper elevation={3} sx={{ maxWidth: '95%', margin: '0 auto' }}>
+        <TableContainer>
+          <Table size="small" sx={{ tableLayout: 'fixed' }}>
             <TableHead>
               <TableRow>
-                <TableCell>Order ID</TableCell>
-                <TableCell>Customer</TableCell>
-                <TableCell>Total</TableCell>
-                <TableCell>Status</TableCell>
-                <TableCell>Order Date</TableCell>
-                <TableCell align="right">Actions</TableCell>
+                <TableCell sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', p: 2 }}>Order ID</TableCell>
+                <TableCell sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', p: 2 }}>Customer</TableCell>
+                <TableCell sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', p: 2 }}>Email</TableCell>
+                <TableCell sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', p: 2 }}>Phone</TableCell>
+                <TableCell sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', p: 2 }}>Total</TableCell>
+                <TableCell sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', p: 2 }}>Status</TableCell>
+                <TableCell sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', p: 2 }}>Order Date</TableCell>
+                <TableCell sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', p: 2 }} align="right">Actions</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {orders && orders.length > 0 ? (
+              {orders.length > 0 ? (
                 orders.map((order) => (
                   <TableRow hover key={order._id}>
-                    <TableCell>{order.orderNumber || order._id}</TableCell>
-                    <TableCell>{order.userId?.name || 'Unknown'}</TableCell>
-                    <TableCell>${order.totalAmount?.toFixed(2) || '0.00'}</TableCell>
-                    <TableCell>{getStatusChip(order.status)}</TableCell>
-                    <TableCell>{new Date(order.createdAt).toLocaleDateString()}</TableCell>
-                    <TableCell align="right">
-                      <IconButton
-                        color="info"
-                        size="small"
-                        onClick={() => handleViewOrder(order)}
-                      >
+                    <TableCell sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', p: 2 }}>{order.orderNumber || order._id}</TableCell>
+                    <TableCell sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', p: 2 }}>{order.userId?.name || 'Unknown'}</TableCell>
+                    <TableCell sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', p: 2 }}>{order.userId?.email || 'N/A'}</TableCell>
+                    <TableCell sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', p: 2 }}>{order.shippingAddress?.phoneNo || 'N/A'}</TableCell>
+                    <TableCell sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', p: 2 }}>Rs. {order.totalAmount?.toFixed(2) || '0.00'}</TableCell>
+                    <TableCell sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', p: 2 }}>{getStatusChip(order.status)}</TableCell>
+                    <TableCell sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', p: 2 }}>{new Date(order.createdAt).toLocaleDateString()}</TableCell>
+                    <TableCell sx={{ whiteSpace: 'nowrap', p: 2 }} align="right">
+                      <IconButton color="info" size="small" onClick={() => handleViewOrder(order)}>
                         <ViewIcon />
                       </IconButton>
-                      <IconButton
-                        color="primary"
-                        size="small"
-                        onClick={() => handleEditOrder(order)}
-                      >
+                      <IconButton color="primary" size="small" onClick={() => handleEditOrder(order)}>
                         <EditIcon />
                       </IconButton>
-                      <IconButton
-                        color="error"
-                        size="small"
-                        onClick={() => setConfirmDialog({ open: true, orderId: order._id })}
+                      <IconButton 
+                        color="error" 
+                        size="small" 
+                        onClick={() => {
+                          setOrderToDelete(order._id);
+                          setShowDeleteModal(true);
+                        }}
                       >
                         <DeleteIcon />
                       </IconButton>
@@ -233,7 +293,7 @@ const Orders = () => {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={6} align="center">
+                  <TableCell colSpan={8} align="center">
                     <Typography variant="body1" sx={{ py: 2 }}>
                       No orders found
                     </Typography>
@@ -243,47 +303,33 @@ const Orders = () => {
             </TableBody>
           </Table>
         </TableContainer>
-        {orders && orders.length > 0 && (
-          <TablePagination
-            rowsPerPageOptions={[5, 10, 25]}
-            component="div"
-            count={totalOrders}
-            rowsPerPage={rowsPerPage}
-            page={page}
-            onPageChange={handleChangePage}
-            onRowsPerPageChange={handleChangeRowsPerPage}
-          />
-        )}
+        <TablePagination
+          rowsPerPageOptions={[5, 10, 25]}
+          component="div"
+          count={totalOrders}
+          rowsPerPage={limit}
+          page={page}
+          onPageChange={handleChangePage}
+          onRowsPerPageChange={handleChangeRowsPerPage}
+        />
       </Paper>
 
-      {/* View/Edit Order Dialog */}
+      {/* View/Edit Dialog */}
       <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="md" fullWidth>
-        <DialogTitle>
-          {viewMode ? 'Order Details' : 'Edit Order'}
-        </DialogTitle>
+        <DialogTitle>{viewMode ? 'Order Details' : 'Edit Order'}</DialogTitle>
         <DialogContent>
           {selectedOrder && (
             <Box sx={{ pt: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
               <Stack spacing={2}>
                 <Typography variant="subtitle2">Order Information</Typography>
                 <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
-                  <TextField
-                    label="Order ID"
-                    value={selectedOrder.orderNumber || selectedOrder._id}
-                    InputProps={{ readOnly: true }}
-                    fullWidth
-                  />
-                  <TextField
-                    label="Customer"
-                    value={selectedOrder.userId?.name || 'Unknown'}
-                    InputProps={{ readOnly: true }}
-                    fullWidth
-                  />
+                  <TextField label="Order ID" value={selectedOrder.orderNumber || selectedOrder._id} InputProps={{ readOnly: true }} fullWidth />
+                  <TextField label="Customer" value={selectedOrder.userId?.name || 'Unknown'} InputProps={{ readOnly: true }} fullWidth />
                   <TextField
                     select
                     label="Status"
                     value={selectedOrder.status}
-                    onChange={(e) => setSelectedOrder({ ...selectedOrder, status: e.target.value })}
+                    onChange={handleStatusChange}
                     fullWidth
                     disabled={viewMode}
                   >
@@ -293,12 +339,13 @@ const Orders = () => {
                       </MenuItem>
                     ))}
                   </TextField>
-                  <TextField
-                    label="Order Date"
-                    value={new Date(selectedOrder.createdAt).toLocaleDateString()}
-                    InputProps={{ readOnly: true }}
-                    fullWidth
-                  />
+                  <TextField label="Order Date" value={new Date(selectedOrder.createdAt).toLocaleDateString()} InputProps={{ readOnly: true }} fullWidth />
+                </Box>
+
+                <Typography variant="subtitle2" sx={{ mt: 2, mb: 1 }}>Contact Information</Typography>
+                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+                  <TextField label="Customer Email" value={selectedOrder.userId?.email || 'Not available'} InputProps={{ readOnly: true }} fullWidth />
+                  <TextField label="Phone Number" value={selectedOrder.shippingAddress?.phoneNo || 'Not provided'} InputProps={{ readOnly: true }} fullWidth />
                 </Box>
 
                 <Typography variant="subtitle2">Items</Typography>
@@ -313,23 +360,17 @@ const Orders = () => {
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {selectedOrder.item?.map((item, index) => (
-                        <TableRow key={index}>
+                      {selectedOrder.items?.map((item, idx) => (
+                        <TableRow key={idx}>
                           <TableCell>{item.title || item.name}</TableCell>
                           <TableCell align="right">{item.quantity}</TableCell>
-                          <TableCell align="right">${item.price?.toFixed(2) || '0.00'}</TableCell>
-                          <TableCell align="right">
-                            ${((item.quantity || 0) * (item.price || 0)).toFixed(2)}
-                          </TableCell>
+                          <TableCell align="right">Rs. {item.price?.toFixed(2) || '0.00'}</TableCell>
+                          <TableCell align="right">Rs. {(item.quantity * item.price).toFixed(2)}</TableCell>
                         </TableRow>
                       ))}
                       <TableRow>
-                        <TableCell colSpan={3} align="right">
-                          <strong>Total:</strong>
-                        </TableCell>
-                        <TableCell align="right">
-                          <strong>${selectedOrder.totalAmount?.toFixed(2) || '0.00'}</strong>
-                        </TableCell>
+                        <TableCell colSpan={3} align="right"><strong>Total:</strong></TableCell>
+                        <TableCell align="right"><strong>Rs. {selectedOrder.totalAmount?.toFixed(2)}</strong></TableCell>
                       </TableRow>
                     </TableBody>
                   </Table>
@@ -352,36 +393,24 @@ const Orders = () => {
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseDialog}>
-            {viewMode ? 'Close' : 'Cancel'}
-          </Button>
-          {!viewMode && (
-            <Button onClick={handleUpdateOrder} variant="contained">
-              Save Changes
-            </Button>
-          )}
+          <Button onClick={handleCloseDialog}>{viewMode ? 'Close' : 'Cancel'}</Button>
+          {!viewMode && <Button onClick={handleUpdateOrder} variant="contained">Save Changes</Button>}
         </DialogActions>
       </Dialog>
 
       {/* Confirm Delete Dialog */}
-      <Dialog open={confirmDialog.open} onClose={() => setConfirmDialog({ open: false, orderId: null })}>
+      <Dialog open={showDeleteModal} onClose={() => setShowDeleteModal(false)}>
         <DialogTitle>Delete Order</DialogTitle>
         <DialogContent>
-          <Typography>
-            Are you sure you want to delete this order? This action cannot be undone.
-          </Typography>
+          <Typography>Are you sure you want to delete this order? This action cannot be undone.</Typography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setConfirmDialog({ open: false, orderId: null })}>
-            Cancel
-          </Button>
-          <Button onClick={handleDeleteConfirm} color="error" variant="contained">
-            Delete
-          </Button>
+          <Button onClick={() => setShowDeleteModal(false)}>Cancel</Button>
+          <Button onClick={handleDeleteOrder} color="error" variant="contained">Delete</Button>
         </DialogActions>
       </Dialog>
     </Box>
   );
 };
 
-export default Orders; 
+export default Orders;

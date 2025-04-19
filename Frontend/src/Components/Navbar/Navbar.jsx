@@ -4,12 +4,20 @@ import { Box, Container, IconButton, Stack, SwipeableDrawer, useMediaQuery, useT
 import { MdOutlineAccountCircle, MdMenu, MdClose } from 'react-icons/md';
 import { CiShoppingCart } from 'react-icons/ci';
 import { useAuth } from '../../context/AuthContext';
-import pfp from "../../../public/assets/PFP/my-profile-img.jpg"
 import AccountSideBar from './user/AccountSideBar.jsx';
 import { Link as RouterLink, useLocation } from 'react-router-dom';
 import CartSideBar from './user/CartSideBar.jsx';
 import { Links } from './Links';
 import { Link as ScrollLink } from "react-scroll";
+
+const pages = [
+  { name: 'Home', path: '/' },
+  { name: 'About', path: '/about' },
+  { name: 'Services', path: '/services' },
+  { name: 'Courses', path: '/courses' },
+  { name: 'Portfolio', path: '/portfolio' },
+  { name: 'Contact', path: '/contact' }
+];
 
 const Navbar = () => {
   const [userSideBar, setUserSideBar] = useState(false);
@@ -61,42 +69,37 @@ const Navbar = () => {
             justifyContent="space-between"
           >
             {/* Logo Section */}
-            <Stack direction="row" alignItems="center" spacing={1}>
-              <Box
-                component="img"
-                src={pfp}
-                alt="Profile"
-                sx={{
-                  width: 80,
-                  height: 80,
-                  borderRadius: '50%',
-                  objectFit: 'cover',
-                  border: '5px solid #686868'
-                }}
-              />
-              <Box>
-                <RouterLink to="/" style={{ textDecoration: 'none' }}>
-                  <Stack>
-                    <Box component="span" sx={{ 
-                      color: '#fff',
-                      fontSize: '1.3rem',
-                      fontWeight: 800,
-                      lineHeight: 1
-                    }}>
-                      SHERAZ
-                    </Box>
-                    <Box component="span" sx={{ 
-                      color: '#149ddd',
-                      fontSize: '1.2rem',
-                      fontWeight: 800,
-                      lineHeight: 1
-                    }}>
-                      AMJAD
-                    </Box>
-                  </Stack>
+            <RouterLink to="/" style={{ textDecoration: 'none' }}>
+              <Stack spacing={1}>
+                <Stack direction="row" spacing={1} alignItems="baseline">
+                  <Box component="span" sx={{ 
+                    color: '#F4FAFA', // Yellow color for Sheraz
+                    fontSize: { xs: '2rem', md: '2.5rem' },
+                    fontWeight: 800,
+                    lineHeight: 1
+                  }}>
+                    Sheraz
+                  </Box>
+                  <Box component="span" sx={{ 
+                    color: '#149DDD', // White color for Amjad
+                    fontSize: { xs: '2rem', md: '2.5rem' },
+                    fontWeight: 800,
+                    lineHeight: 1
+                  }}>
+                    Amjad
+                  </Box>
+                </Stack>
+                <Box component="span" sx={{ 
+                  color: '#fff',
+                  fontSize: { xs: '0.9rem', md: '1.1rem' },
+                  fontWeight: 400,
+                  opacity: 0.8,
+                  letterSpacing: '1px'
+                }}>
+                  Speaker | Trainer | Author
+                </Box>
+              </Stack>
               </RouterLink>
-            </Box>
-            </Stack>
 
             {/* Desktop Navigation Links */}
             {isHomePage && (
@@ -195,7 +198,7 @@ const Navbar = () => {
         open={menuOpen}
         onClose={() => setMenuOpen(false)}
         onOpen={() => setMenuOpen(true)}
-        sx={{
+          sx={{
           '& .MuiDrawer-paper': {
             width: { xs: '85%', sm: '300px' },
             bgcolor: '#040B14',

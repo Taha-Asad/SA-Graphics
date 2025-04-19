@@ -1,88 +1,139 @@
-const Order = require('../models/Order.model');
+const Order = require('../models/order.model');
 const User = require('../models/user.model');
 const Review = require('../models/reviews.model');
+const Course = require('../models/course.model');
+const Book = require('../models/book.model');
 const createError = require('http-errors');
+const { sendEmail } = require('../config/nodemailer');
+const ejs = require('ejs');
+const path = require('path');
+const { sendOrderApprovalEmail } = require('../services/emailService');
 
 // Get all orders with pagination and filtering
-exports.getAllOrders = async (req, res, next) => {
+exports.getAllOrders = async (req, res) => {
   try {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
-    const status = req.query.status;
+    const { page = 1, limit = 10, orderType } = req.query;
     const skip = (page - 1) * limit;
 
-    // Build query
-    const query = {};
-    if (status) {
-      query.status = status;
+    console.log('Getting all orders with params:', {
+      page,
+      limit,
+      skip,
+      orderType
+    });
+
+    let query = {};
+    if (orderType) {
+      query.orderType = orderType;
     }
 
-    // Get orders with pagination
+    console.log('Query for orders:', query);
+
+    // First get the total count
+    const total = await Order.countDocuments(query);
+    console.log('Total orders found:', total);
+
+    // Then get the orders with careful population
     const orders = await Order.find(query)
-      .populate('userId', 'name email profilePic')
+      .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
-      .sort({ createdAt: -1 });
+      .populate({
+        path: 'userId',
+        select: 'name email'
+      })
+      .populate({
+        path: 'items.productId',
+        select: 'title price thumbnail',
+        model: 'Book'
+      })
+      .populate({
+        path: 'items.courseId',
+        select: 'title price thumbnail',
+        model: 'Course'
+      });
 
-    // Get total count for pagination
-    const total = await Order.countDocuments(query);
+    // Log the first order's structure for debugging
+    if (orders.length > 0) {
+      console.log('First order structure:', {
+        _id: orders[0]._id,
+        orderType: orders[0].orderType,
+        items: orders[0].items.map(item => ({
+          type: item.type,
+          product: item.productId ? item.productId._id : null,
+          course: item.courseId ? item.courseId._id : null
+        }))
+      });
+    }
 
-    res.json({
+    res.status(200).json({
       status: 'success',
       data: {
         orders,
         total,
-        page,
-        pages: Math.ceil(total / limit)
+        page: parseInt(page),
+        limit: parseInt(limit)
       }
     });
   } catch (error) {
-    next(createError(500, 'Error fetching orders'));
+    console.error('Error in getAllOrders:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name
+    });
+    res.status(500).json({
+      status: 'error',
+      message: 'Failed to fetch orders',
+      error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
+    });
   }
 };
 
 // Update order status
-exports.updateOrderStatus = async (req, res, next) => {
+exports.updateOrderStatus = async (req, res) => {
   try {
-    console.log('Updating order status:', { orderId: req.params.orderId, status: req.body.status });
-    
     const { orderId } = req.params;
-    const { status } = req.body;
-
-    if (!['pending', 'processing', 'shipped', 'delivered', 'cancelled'].includes(status)) {
-      console.log('Invalid status provided:', status);
-      return next(createError(400, 'Invalid status'));
-    }
+    const { status, paymentStatus } = req.body;
 
     const order = await Order.findById(orderId);
     if (!order) {
-      console.log('Order not found:', orderId);
-      return next(createError(404, 'Order not found'));
+      return res.status(404).json({
+        status: 'error',
+        message: 'Order not found'
+      });
     }
 
-    const oldStatus = order.status;
-    order.status = status;
-    if (!order.trackingUpdates) {
-      order.trackingUpdates = [];
-    }
-    order.trackingUpdates.push({
-      status,
-      message: `Order status updated from ${oldStatus} to ${status} by admin`,
-      timestamp: new Date()
-    });
-
+    // Update order status
+    order.status = status || order.status;
+    order.paymentStatus = paymentStatus || order.paymentStatus;
     await order.save();
-    console.log('Order status updated successfully:', { orderId, oldStatus, newStatus: status });
 
-    res.json({
+    // If order is approved and payment is confirmed, send approval email
+    if (status === 'approved' && paymentStatus === 'confirmed') {
+      try {
+        await sendOrderApprovalEmail({
+          ...order.toObject(),
+          orderId: order._id
+        });
+      } catch (emailError) {
+        console.error('Error sending approval email:', emailError);
+        // Don't fail the status update if email fails
+      }
+    }
+
+    res.status(200).json({
       status: 'success',
+      message: 'Order status updated successfully',
       data: {
         order
       }
     });
   } catch (error) {
-    console.error('Error in updateOrderStatus:', error);
-    next(createError(500, `Error updating order status: ${error.message}`));
+    console.error('Error updating order status:', error);
+    res.status(500).json({
+      status: 'error',
+      message: error.message
+    });
   }
 };
 
@@ -90,51 +141,52 @@ exports.updateOrderStatus = async (req, res, next) => {
 exports.deleteOrder = async (req, res, next) => {
   try {
     const { orderId } = req.params;
+    console.log('Attempting to delete order:', orderId);
 
     const order = await Order.findById(orderId);
     if (!order) {
-      return next(createError(404, 'Order not found'));
+      console.log('Order not found:', orderId);
+      return res.status(404).json({
+        status: 'error',
+        message: 'Order not found'
+      });
     }
 
     await order.deleteOne();
+    console.log('Order deleted successfully:', orderId);
 
     res.json({
       status: 'success',
       message: 'Order deleted successfully'
     });
   } catch (error) {
-    next(createError(500, 'Error deleting order'));
+    console.error('Error in deleteOrder:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Error deleting order',
+      error: error.message
+    });
   }
 };
 
 // Get order statistics
 exports.getOrderStats = async (req, res, next) => {
   try {
-    const [
-      totalOrders,
-      pendingOrders,
-      processingOrders,
-      shippedOrders,
-      deliveredOrders,
-      cancelledOrders
-    ] = await Promise.all([
-      Order.countDocuments(),
-      Order.countDocuments({ status: 'pending' }),
-      Order.countDocuments({ status: 'processing' }),
-      Order.countDocuments({ status: 'shipped' }),
-      Order.countDocuments({ status: 'delivered' }),
-      Order.countDocuments({ status: 'cancelled' })
+    const totalOrders = await Order.countDocuments();
+    const totalCourseOrders = await Order.countDocuments({ orderType: 'course' });
+    const totalProductOrders = await Order.countDocuments({ orderType: 'product' });
+    const totalRevenue = await Order.aggregate([
+      { $match: { status: 'completed' } },
+      { $group: { _id: null, total: { $sum: '$totalAmount' } } }
     ]);
 
     res.json({
       status: 'success',
       data: {
-        total: totalOrders,
-        pending: pendingOrders,
-        processing: processingOrders,
-        shipped: shippedOrders,
-        delivered: deliveredOrders,
-        cancelled: cancelledOrders
+        totalOrders,
+        totalCourseOrders,
+        totalProductOrders,
+        totalRevenue: totalRevenue[0]?.total || 0
       }
     });
   } catch (error) {

@@ -39,35 +39,37 @@ export const CartProvider = ({ children }) => {
     return `http://localhost:5000/${imageUrl.replace(/^\//, '')}`;
   };
 
-  const addToCart = (book, quantity = 1) => {
+  const addToCart = (item, quantity = 1) => {
     setCartItems(prevItems => {
-      const existingItem = prevItems.find(item => item._id === book._id);
+      const existingItem = prevItems.find(cartItem => cartItem._id === item._id);
       
       if (existingItem) {
         const newQuantity = existingItem.quantity + quantity;
-        if (newQuantity > book.countInStock) {
-          toast.warning(`Sorry, only ${book.countInStock} copies available`);
+        if (item.countInStock && newQuantity > item.countInStock) {
+          toast.warning(`Sorry, only ${item.countInStock} copies available`);
           return prevItems;
         }
         
         toast.success('Cart updated successfully!');
-        return prevItems.map(item =>
-          item._id === book._id
-            ? { ...item, quantity: newQuantity }
-            : item
+        return prevItems.map(cartItem =>
+          cartItem._id === item._id
+            ? { ...cartItem, quantity: newQuantity }
+            : cartItem
         );
       }
 
       toast.success('Item added to cart!');
       const cartItem = {
-        _id: book._id,
-        title: book.title,
-        price: book.price,
-        discount: book.discount || 0,
-        discountedPrice: book.discount > 0 ? book.price - (book.price * book.discount / 100) : book.price,
-        coverImage: formatImageUrl(book.coverImage),
+        _id: item._id,
+        title: item.title,
+        price: item.price,
+        discount: item.discount || 0,
+        discountedPrice: item.discount > 0 ? item.price - (item.price * item.discount / 100) : item.price,
+        coverImage: item.coverImage ? formatImageUrl(item.coverImage) : null,
+        thumbnail: item.thumbnail ? formatImageUrl(item.thumbnail) : null,
         quantity: 1,
-        maxQuantity: book.countInStock
+        maxQuantity: item.countInStock,
+        type: item.type || 'product'  // Preserve the type field, default to 'product'
       };
       return [...prevItems, cartItem];
     });
