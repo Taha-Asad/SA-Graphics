@@ -28,7 +28,7 @@ const orderSchema = new mongoose.Schema({
     postalCode: { type: String, required: true }
   },
   paymentMethod: { type: String, required: true },
-  paymentStatus: { type: String, enum: ['pending', 'completed', 'failed', 'refunded'], default: 'pending' },
+  paymentStatus: { type: String, enum: ['pending', 'unverified', 'verified', 'rejected'], default: 'unverified' },
   status: { type: String, enum: ['pending', 'processing', 'shipped', 'delivered', 'cancelled'], default: 'pending' },
   transferProof: { type: String },
   trackingNumber: {

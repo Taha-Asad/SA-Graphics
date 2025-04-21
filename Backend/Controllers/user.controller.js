@@ -2,6 +2,8 @@ const Order = require('../models/order.model');
 const Review = require('../models/reviews.model');
 const Wishlist = require('../models/wishlist.model');
 const User = require('../models/user.model');
+const { sendUserRegistrationNotification } = require('../services/adminNotificationService');
+const bcrypt = require('bcrypt');
 
 // Get user statistics
 const getUserStats = async (req, res, next) => {
@@ -151,11 +153,71 @@ const unblockUser = async (req, res) => {
   }
 };
 
+const registerUser = async (req, res) => {
+  try {
+    const { error } = validateUser(req.body);
+    if (error) {
+      return res.status(400).json({
+        status: 'error',
+        message: error.details[0].message
+      });
+    }
+
+    const { name, email, password, phoneNo } = req.body;
+
+    // Check if user already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'User already exists'
+      });
+    }
+
+    // Hash password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    // Create new user
+    const user = new User({
+      name,
+      email,
+      password: hashedPassword,
+      phoneNo
+    });
+
+    await user.save();
+
+    // Send admin notification
+    await sendUserRegistrationNotification(user);
+
+    res.status(201).json({
+      status: 'success',
+      message: 'User registered successfully',
+      data: {
+        user: {
+          _id: user._id,
+          name: user.name,
+          email: user.email,
+          phoneNo: user.phoneNo
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Error registering user:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Failed to register user'
+    });
+  }
+};
+
 module.exports = {
   getUserStats,
   getAllUsers,
   updateUser,
   deleteUser,
   blockUser,
-  unblockUser
+  unblockUser,
+  registerUser
 }; 

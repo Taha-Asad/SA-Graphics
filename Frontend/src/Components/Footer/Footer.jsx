@@ -138,9 +138,9 @@ const Footer = () => {
                   <Link component={RouterLink} to="/terms" sx={{ color: '#fff', textDecoration: 'none', '&:hover': { color: '#149ddd' } }}>
                     Terms of Service
                   </Link> */}
-                  <Link component={RouterLink} to="/refund-policy" sx={{ color: '#fff', textDecoration: 'none', '&:hover': { color: '#149ddd' } }}>
+                  {/* <Link component={RouterLink} to="/refund-policy" sx={{ color: '#fff', textDecoration: 'none', '&:hover': { color: '#149ddd' } }}>
                     Return & Refund Policy
-                  </Link>
+                  </Link> */}
                   <Link component={RouterLink} to="/contact" sx={{ color: '#fff', textDecoration: 'none', '&:hover': { color: '#149ddd' } }}>
                     Contact
                   </Link>
@@ -169,9 +169,9 @@ const Footer = () => {
                 <Link component={RouterLink} to="/terms" sx={{ color: '#fff', textDecoration: 'none', '&:hover': { color: '#149ddd' } }}>
                   Terms of Service
                 </Link> */}
-                <Link component={RouterLink} to="/refund-policy" sx={{ color: '#fff', textDecoration: 'none', '&:hover': { color: '#149ddd' } }}>
+                {/* <Link component={RouterLink} to="/refund-policy" sx={{ color: '#fff', textDecoration: 'none', '&:hover': { color: '#149ddd' } }}>
                   Return & Refund Policy
-                </Link>
+                </Link> */}
                 <Link component={RouterLink} to="/contact" sx={{ color: '#fff', textDecoration: 'none', '&:hover': { color: '#149ddd' } }}>
                   Contact
                     </Link>
@@ -325,6 +325,7 @@ const Footer = () => {
               }
             }
           }}>
+            <Link component={RouterLink} to="/refund-policy">Return & Refund Policy</Link>
             <Link component={RouterLink} to="/privacy">Privacy Policy</Link>
             <Link component={RouterLink} to="/terms">Terms of Service</Link>
             <Link component={RouterLink} to="/disclaimer">Disclaimer</Link>

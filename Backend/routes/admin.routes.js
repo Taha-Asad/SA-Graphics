@@ -48,6 +48,98 @@ const upload = multer({
 // Order management routes
 router.get('/orders', adminController.getAllOrders);
 router.patch('/orders/:orderId/status', adminController.updateOrderStatus);
+router.patch('/orders/:orderId/payment-status', async (req, res) => {
+  try {
+    const { orderId } = req.params;
+    const { paymentStatus } = req.body;
+
+    console.log('Updating payment status:', {
+      orderId,
+      paymentStatus,
+      body: req.body,
+      params: req.params
+    });
+
+    if (!orderId) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Order ID is required'
+      });
+    }
+
+    if (!paymentStatus) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Payment status is required'
+      });
+    }
+
+    console.log('Looking up order:', orderId);
+    const order = await Order.findById(orderId);
+    console.log('Order lookup result:', order ? 'Found' : 'Not Found');
+
+    if (!order) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'Order not found'
+      });
+    }
+
+    // Update payment status
+    console.log('Current order state:', {
+      currentPaymentStatus: order.paymentStatus,
+      currentOrderStatus: order.status
+    });
+
+    order.paymentStatus = paymentStatus;
+    
+    // Update order status if payment is verified
+    if (paymentStatus === 'verified') {
+      order.status = 'processing';
+    }
+
+    console.log('Saving order with updates:', {
+      newPaymentStatus: order.paymentStatus,
+      newOrderStatus: order.status
+    });
+
+    try {
+      await order.save();
+      console.log('Order saved successfully');
+    } catch (saveError) {
+      console.error('Error saving order:', {
+        error: saveError.message,
+        stack: saveError.stack,
+        validationErrors: saveError.errors
+      });
+      throw saveError;
+    }
+
+    res.status(200).json({
+      status: 'success',
+      message: `Payment status updated to ${paymentStatus}`,
+      data: {
+        order
+      }
+    });
+  } catch (error) {
+    console.error('Error updating payment status:', {
+      error: error.message,
+      stack: error.stack,
+      orderId: req.params.orderId,
+      body: req.body,
+      name: error.name,
+      code: error.code
+    });
+    
+    res.status(500).json({
+      status: 'error',
+      message: 'Failed to update payment status',
+      error: error.message,
+      details: error.name
+    });
+  }
+});
 router.delete('/orders/:orderId', adminController.deleteOrder);
 router.get('/orders/stats', adminController.getOrderStats);
 

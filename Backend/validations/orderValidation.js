@@ -30,9 +30,9 @@ const orderSchema = Joi.object({
   
   userId: Joi.string().required(),
   paymentMethod: Joi.string().valid('cash', 'transfer', 'jazzcash').required(),
-  paymentStatus: Joi.string().valid('pending', 'confirmed', 'failed').default('pending'),
+  paymentStatus: Joi.string().valid('pending', 'unverified', 'verified', 'rejected').default('unverified'),
   status: Joi.string().valid('pending', 'processing', 'shipped', 'delivered', 'cancelled').default('pending'),
-  paymentProof: Joi.string().allow('', null),
+  transferProof: Joi.string().allow('', null),
   orderType: Joi.string().valid('course', 'product'),
   orderNumber: Joi.string()
 });

@@ -4,7 +4,7 @@ const authController = require("../Controllers/auth.controller.js");
 const bookController = require("../controllers/book.controller");
 // const orderController = require("../controllers/order.controller");
 const portfolioController = require("../controllers/portfolio.controller");
-const testimonialController = require("../controllers/testimonials.controller");
+const testimonialController = require("../Controllers/testimonials.controller.js");
 const reviewsController = require("../Controllers/reviews.controller.js");
 const userController = require("../Controllers/user.controller.js");
 const projectController = require("../controllers/project.controller");
@@ -22,12 +22,12 @@ const {
 } = require("../validations/userValidations");
 const { createContact } = require("../Controllers/contact.controller.js");
 const { updateProfile } = require('../Controllers/auth.controller');
-const orderRoutes = require('./order.routes');
 const wishlistController = require('../Controllers/wishlist.controller');
 const supportController = require('../Controllers/support.controller');
 const dashboardController = require('../Controllers/dashboard.controller');
 const settingsController = require('../Controllers/settings.controller');
 const serviceController = require('../Controllers/service.controller');
+const { verifyToken } = require('../middleware/auth');
 
 // Auth Routes
 router.post(
@@ -284,6 +284,16 @@ router.get("/services", serviceController.getServices);
 router.post("/services", authMiddleware, adminMiddleware, serviceController.createService);
 router.put("/services/:id", authMiddleware, adminMiddleware, serviceController.updateService);
 router.delete("/services/:id", authMiddleware, adminMiddleware, serviceController.deleteService);
+
+// Update profile with photo upload
+router.patch('/profile',
+  verifyToken,
+  upload.single('profilePhoto'),
+  handleMulterError,
+  async (req, res) => {
+    // ... rest of the profile update logic
+  }
+);
 
 // Error handling middleware
 router.use(errorHandler);

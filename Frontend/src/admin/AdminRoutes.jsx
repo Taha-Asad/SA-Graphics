@@ -9,6 +9,8 @@ import ContactList from './components/ContactList';
 import Testimonials from './components/Testimonials';
 import Courses from './components/Courses';
 import CoursePurchases from './components/CoursePurchases';
+import Books from './components/Books';
+import Projects from './components/Projects';
 
 const AdminRoutes = () => {
   return (
@@ -18,6 +20,8 @@ const AdminRoutes = () => {
       <Route path="orders" element={<Orders />} />
       <Route path="course-purchases" element={<CoursePurchases />} />
       <Route path="courses" element={<Courses />} />
+      <Route path="books" element={<Books />} />
+      <Route path="projects" element={<Projects/>} />
       <Route path="reviews" element={<Reviews />} />
       <Route path="testimonials" element={<Testimonials />} />
       <Route path="contacts" element={<ContactList />} />

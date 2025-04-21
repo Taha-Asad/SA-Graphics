@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background-color: #f8f9fa; padding: 20px; text-align: center; }
+        .content { padding: 20px; }
+        .footer { text-align: center; padding: 20px; font-size: 12px; color: #666; }
+        .testimonial-image { max-width: 100px; border-radius: 50%; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>New Testimonial Posted</h2>
+        </div>
+        <div class="content">
+            <p>A new testimonial has been posted on SA Graphics:</p>
+            
+            <h3>Testimonial Details</h3>
+            <ul>
+                <li><strong>Name:</strong> <%= testimonial.name %></li>
+                <li><strong>Position:</strong> <%= testimonial.position || 'Not specified' %></li>
+                <li><strong>Company:</strong> <%= testimonial.company || 'Not specified' %></li>
+                <li><strong>Date:</strong> <%= new Date(testimonial.createdAt).toLocaleString() %></li>
+            </ul>
+
+            <% if (testimonial.image) { %>
+                <img src="<%= testimonial.image %>" alt="<%= testimonial.name %>" class="testimonial-image">
+            <% } %>
+
+            <h3>Testimonial Content</h3>
+            <blockquote style="background-color: #f8f9fa; padding: 15px; border-left: 4px solid #149ddd; margin: 20px 0;">
+                <%= testimonial.content %>
+            </blockquote>
+
+            <% if (testimonial.rating) { %>
+                <h3>Rating</h3>
+                <p>
+                    <% for(let i = 1; i <= 5; i++) { %>
+                        <%= i <= testimonial.rating ? '★' : '☆' %>
+                    <% } %>
+                </p>
+            <% } %>
+        </div>
+        <div class="footer">
+            <p>This is an automated notification from SA Graphics.</p>
+        </div>
+    </div>
+</body>
+</html> 

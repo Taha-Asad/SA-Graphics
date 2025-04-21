@@ -20,23 +20,25 @@ try {
   throw new Error(`Failed to create uploads directory: ${error.message}`);
 }
 
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    // Create a subdirectory for course images
-    const courseUploadPath = path.join(UPLOAD_PATH, 'courses');
-    if (!fs.existsSync(courseUploadPath)) {
-      fs.mkdirSync(courseUploadPath, { recursive: true });
+// Create storage engine for different types of uploads
+const createStorage = (subFolder) => {
+  return multer.diskStorage({
+    destination: function (req, file, cb) {
+      const uploadPath = path.join(UPLOAD_PATH, subFolder);
+      if (!fs.existsSync(uploadPath)) {
+        fs.mkdirSync(uploadPath, { recursive: true });
+        console.log(`Created ${subFolder} directory at: ${uploadPath}`);
+      }
+      cb(null, uploadPath);
+    },
+    filename: function (req, file, cb) {
+      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+      const fileExtension = path.extname(file.originalname).toLowerCase();
+      const filename = `${subFolder}-${uniqueSuffix}${fileExtension}`;
+      cb(null, filename);
     }
-    cb(null, courseUploadPath);
-  },
-  filename: function (req, file, cb) {
-    // Create a unique filename with timestamp and random number
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    const fileExtension = path.extname(file.originalname).toLowerCase();
-    const filename = `course-${uniqueSuffix}${fileExtension}`;
-    cb(null, filename);
-  }
-});
+  });
+};
 
 const fileFilter = (req, file, cb) => {
   const filetypes = /jpeg|jpg|png|gif/;
@@ -49,15 +51,36 @@ const fileFilter = (req, file, cb) => {
   cb(createError(400, 'Only image files (jpg, jpeg, png, gif) are allowed!'));
 };
 
-// Create multer upload instance
-const upload = multer({
-  storage: storage,
+// Create multer upload instances for different purposes
+const courseUpload = multer({
+  storage: createStorage('courses'),
   fileFilter: fileFilter,
   limits: {
     fileSize: 5 * 1024 * 1024, // 5MB limit
     files: 1 // Only allow 1 file per request
   }
 });
+
+const paymentProofUpload = multer({
+  storage: createStorage('payment-proofs'),
+  fileFilter: fileFilter,
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB limit
+    files: 1 // Only allow 1 file per request
+  }
+});
+
+const profileUpload = multer({
+  storage: createStorage('profiles'),
+  fileFilter: fileFilter,
+  limits: {
+    fileSize: 2 * 1024 * 1024, // 2MB limit for profile photos
+    files: 1
+  }
+});
+
+// For backward compatibility
+const upload = profileUpload; // This ensures existing code using 'upload' still works
 
 // Error handling middleware for multer
 const handleMulterError = (err, req, res, next) => {
@@ -73,8 +96,21 @@ const handleMulterError = (err, req, res, next) => {
   next(err);
 };
 
+// Create required directories
+const requiredDirs = ['courses', 'payment-proofs', 'profiles'];
+requiredDirs.forEach(dir => {
+  const dirPath = path.join(UPLOAD_PATH, dir);
+  if (!fs.existsSync(dirPath)) {
+    fs.mkdirSync(dirPath, { recursive: true });
+    console.log(`Created ${dir} directory at: ${dirPath}`);
+  }
+});
+
 module.exports = {
-  upload,
+  courseUpload,
+  paymentProofUpload,
+  profileUpload,
+  upload, // For backward compatibility
   handleMulterError,
   UPLOADS_FOLDER,
   UPLOAD_PATH

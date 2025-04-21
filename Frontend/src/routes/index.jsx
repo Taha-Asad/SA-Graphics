@@ -15,6 +15,7 @@ import Admin from '../admin/Admin';
 import AdminRoute from '../admin/routes/AdminRoute';
 import NotFound from '../Components/Pages/NotFound/NotFound';
 import LoadingSpinner from '../Components/LoadingFallback';
+import RefundPolicy from '../Components/Pages/Legal/RefundPolicy';
 
 // Lazy load components
 const Home = lazy(() => import('../Components/Pages/Home/Home'));
@@ -98,6 +99,7 @@ const AppRoutes = () => {
 
         {/* Legal routes */}
         <Route element={<MainLayout />}>
+        <Route path="/refund-policy" element={<RefundPolicy />} />
           <Route path="/privacy" element={<PrivacyPolicy />} />
           <Route path="/terms" element={<TermsOfService />} />
           <Route path="/disclaimer" element={<Disclaimer />} />

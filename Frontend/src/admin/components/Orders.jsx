@@ -25,16 +25,20 @@ import {
   Alert,
   FormControl,
   InputLabel,
-  Select
+  Select,
+  Grid
 } from '@mui/material';
 import {
   Visibility as ViewIcon,
   Edit as EditIcon,
   LocalShipping as ShippingIcon,
-  Delete as DeleteIcon
+  Delete as DeleteIcon,
+  CheckCircle as VerifyIcon,
+  Cancel as RejectIcon
 } from '@mui/icons-material';
 import { toast } from 'react-toastify';
 import axios from 'axios';
+import { FiDownload } from 'react-icons/fi';
 
 const orderStatuses = [
   { value: 'pending', label: 'Pending', color: 'warning' },
@@ -56,6 +60,65 @@ const Orders = () => {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [openDialog, setOpenDialog] = useState(false);
   const [viewMode, setViewMode] = useState(false);
+  const [paymentProofUrl, setPaymentProofUrl] = useState(null);
+
+  // Function to fetch payment proof image
+  const fetchPaymentProof = async (orderId) => {
+    try {
+      console.log('Fetching payment proof for order:', orderId);
+      const token = localStorage.getItem('token');
+      
+      // Add timestamp to prevent caching
+      const timestamp = new Date().getTime();
+      const url = `http://localhost:5000/api/v1/orders/${orderId}/payment-proof?t=${timestamp}`;
+      
+      console.log('Requesting payment proof from:', url);
+      
+      // First try a HEAD request to check if the image exists
+      try {
+        await axios.head(url, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+      } catch (error) {
+        console.error('Image does not exist:', error);
+        setPaymentProofUrl(null);
+        return null;
+      }
+
+      // If HEAD request succeeds, set the direct URL
+      console.log('Image exists, setting URL');
+      setPaymentProofUrl(url);
+      return url;
+    } catch (error) {
+      console.error('Error with payment proof:', {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status,
+        url: error.config?.url
+      });
+      setPaymentProofUrl(null);
+      return null;
+    }
+  };
+
+  // Clean up blob URLs when component unmounts or when URL changes
+  useEffect(() => {
+    return () => {
+      if (paymentProofUrl) {
+        URL.revokeObjectURL(paymentProofUrl);
+      }
+    };
+  }, [paymentProofUrl]);
+
+  useEffect(() => {
+    if (selectedOrder?._id && selectedOrder?.paymentMethod !== 'cash') {
+      fetchPaymentProof(selectedOrder._id);
+    } else {
+      setPaymentProofUrl(null);
+    }
+  }, [selectedOrder?._id]);
 
   useEffect(() => {
     fetchOrders();
@@ -67,26 +130,29 @@ const Orders = () => {
       setError(null);
       const token = localStorage.getItem('token');
       
-      console.log('Fetching orders with params:', {
-        page: page + 1,
-        limit: limit
-      });
-
       const response = await axios.get(`http://localhost:5000/api/v1/admin/orders?page=${page + 1}&limit=${limit}`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
       });
       
-      console.log('Orders API response:', {
-        status: response.data.status,
-        hasData: !!response.data.data,
-        hasOrders: !!response.data.data?.orders,
-        ordersLength: response.data.data?.orders?.length,
-        total: response.data.data?.total
-      });
-
       if (response?.data?.status === 'success' && response.data.data?.orders) {
+        // Log the first order's data structure
+        if (response.data.data.orders.length > 0) {
+          const sampleOrder = response.data.data.orders[0];
+          console.log('Sample Order Structure:', {
+            id: sampleOrder._id,
+            paymentMethod: sampleOrder.paymentMethod,
+            paymentStatus: sampleOrder.paymentStatus,
+            // Log all payment proof related fields
+            paymentProof: sampleOrder.paymentProof,
+            proofOfPayment: sampleOrder.proofOfPayment,
+            paymentProofImage: sampleOrder.paymentProofImage,
+            paymentReceipt: sampleOrder.paymentReceipt,
+            transferProof: sampleOrder.transferProof,
+            fullOrder: sampleOrder
+          });
+        }
         setOrders(response.data.data.orders);
         setTotalOrders(response.data.data.total);
       } else {
@@ -96,12 +162,6 @@ const Orders = () => {
       }
     } catch (err) {
       console.error('Error fetching orders:', err);
-      console.error('Error details:', {
-        message: err.message,
-        response: err.response?.data,
-        status: err.response?.status,
-        stack: err.stack
-      });
       setOrders([]);
       setError(err.message || 'Failed to load orders');
       toast.error('Failed to load orders');
@@ -120,6 +180,7 @@ const Orders = () => {
   };
 
   const handleViewOrder = (order) => {
+    console.log('Order data:', order);
     setSelectedOrder(order);
     setViewMode(true);
     setOpenDialog(true);
@@ -203,6 +264,45 @@ const Orders = () => {
     }
   };
 
+  const handleVerifyPayment = async (orderId, status) => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('token');
+      
+      console.log('Verifying payment:', { orderId, status });
+
+      const response = await axios.patch(
+        `http://localhost:5000/api/v1/admin/orders/${orderId}/payment-status`,
+        { paymentStatus: status },
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      console.log('Payment verification response:', response.data);
+
+      if (response.data.status === 'success') {
+        toast.success(response.data.message || `Payment ${status.toLowerCase()}`);
+        await fetchOrders();
+        handleCloseDialog();
+      } else {
+        throw new Error(response.data.message || 'Failed to update payment status');
+      }
+    } catch (err) {
+      console.error('Error updating payment status:', {
+        message: err.message,
+        response: err.response?.data,
+        status: err.response?.status
+      });
+      toast.error(err.response?.data?.message || 'Failed to update payment status');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const getStatusChip = (status) => {
     const statusConfig = orderStatuses.find(s => s.value === status) || orderStatuses[0];
     return (
@@ -212,6 +312,63 @@ const Orders = () => {
         size="small"
         icon={status === 'shipped' ? <ShippingIcon /> : undefined}
       />
+    );
+  };
+
+  const PaymentProofImage = ({ order }) => {
+    const [error, setError] = useState(false);
+
+    if (!order) {
+      return (
+        <Box sx={{ display: 'flex', justifyContent: 'center', p: 2 }}>
+          <CircularProgress size={24} />
+        </Box>
+      );
+    }
+
+    // Check all possible payment proof fields
+    const proofFile = order.transferProof || order.paymentProof || order.proofOfPayment;
+    
+    if (!proofFile) {
+      return (
+        <Typography color="error" variant="body2">No payment proof found</Typography>
+      );
+    }
+
+    // Construct the full URL for the image
+    const imageUrl = `http://localhost:5000/uploads/payment-proofs/${proofFile}`;
+
+    return (
+      <Box sx={{ mt: 2 }}>
+        {error ? (
+          <Typography color="error" variant="body2">Failed to load payment proof</Typography>
+        ) : (
+          <>
+            <Box sx={{ position: 'relative', width: '100%', mb: 1 }}>
+              <img
+                src={imageUrl}
+                alt="Payment Proof"
+                style={{ 
+                  maxWidth: '100%', 
+                  height: 'auto', 
+                  borderRadius: '4px',
+                  display: 'block',
+                  margin: '0 auto'
+                }}
+                onError={() => setError(true)}
+              />
+            </Box>
+            <Button
+              variant="text"
+              size="small"
+              fullWidth
+              onClick={() => window.open(imageUrl, '_blank')}
+            >
+              View Full Image
+            </Button>
+          </>
+        )}
+      </Box>
     );
   };
 
@@ -342,11 +499,97 @@ const Orders = () => {
                   <TextField label="Order Date" value={new Date(selectedOrder.createdAt).toLocaleDateString()} InputProps={{ readOnly: true }} fullWidth />
                 </Box>
 
-                <Typography variant="subtitle2" sx={{ mt: 2, mb: 1 }}>Contact Information</Typography>
+                <Typography variant="subtitle2">Contact Information</Typography>
                 <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
                   <TextField label="Customer Email" value={selectedOrder.userId?.email || 'Not available'} InputProps={{ readOnly: true }} fullWidth />
                   <TextField label="Phone Number" value={selectedOrder.shippingAddress?.phoneNo || 'Not provided'} InputProps={{ readOnly: true }} fullWidth />
                 </Box>
+
+                {selectedOrder?.paymentMethod !== 'cash' && (
+                  <Box sx={{ mt: 2 }}>
+                    <Typography variant="subtitle2" gutterBottom>
+                      Payment Information
+                    </Typography>
+                    
+                    {/* Payment Method and Status */}
+                    <Grid container spacing={2} sx={{ mb: 2 }}>
+                      <Grid item xs={12} sm={6}>
+                        <TextField
+                          label="Payment Method"
+                          value={selectedOrder.paymentMethod}
+                          fullWidth
+                          InputProps={{ readOnly: true }}
+                        />
+                      </Grid>
+                      <Grid item xs={12} sm={6}>
+                        <TextField
+                          label="Payment Status"
+                          value={selectedOrder.paymentStatus === 'pending' ? 'unverified' : selectedOrder.paymentStatus}
+                          fullWidth
+                          InputProps={{ 
+                            readOnly: true,
+                            sx: {
+                              color: selectedOrder.paymentStatus === 'verified' ? 'success.main' : 
+                                    selectedOrder.paymentStatus === 'rejected' ? 'error.main' : 'warning.main'
+                            }
+                          }}
+                        />
+                      </Grid>
+                    </Grid>
+
+                    {/* Verify/Reject Buttons */}
+                    {!viewMode && (selectedOrder.paymentStatus === 'pending' || selectedOrder.paymentStatus === 'unverified') && (
+                      <Box sx={{ mb: 2, display: 'flex', gap: 1 }}>
+                        <Button
+                          variant="contained"
+                          color="success"
+                          startIcon={<VerifyIcon />}
+                          onClick={() => handleVerifyPayment(selectedOrder._id, 'verified')}
+                        >
+                          Verify Payment
+                        </Button>
+                        <Button
+                          variant="contained"
+                          color="error"
+                          startIcon={<RejectIcon />}
+                          onClick={() => handleVerifyPayment(selectedOrder._id, 'rejected')}
+                        >
+                          Reject Payment
+                        </Button>
+                      </Box>
+                    )}
+
+                    {/* Show status message if already verified or rejected */}
+                    {!viewMode && selectedOrder.paymentStatus !== 'pending' && selectedOrder.paymentStatus !== 'unverified' && (
+                      <Alert 
+                        severity={selectedOrder.paymentStatus === 'verified' ? 'success' : 'error'}
+                        sx={{ mb: 2 }}
+                      >
+                        Payment has been {selectedOrder.paymentStatus}
+                      </Alert>
+                    )}
+
+                    {/* Payment Proof Image */}
+                    {selectedOrder?.paymentMethod !== 'cash' && (
+                      <Box>
+                        <Typography variant="subtitle2" gutterBottom>
+                          Payment Proof
+                        </Typography>
+                        <Paper 
+                          variant="outlined" 
+                          sx={{ 
+                            p: 2,
+                            bgcolor: '#f5f5f5',
+                            maxWidth: 400,
+                            margin: '0 auto'
+                          }}
+                        >
+                          <PaymentProofImage order={selectedOrder} />
+                        </Paper>
+                      </Box>
+                    )}
+                  </Box>
+                )}
 
                 <Typography variant="subtitle2">Items</Typography>
                 <TableContainer component={Paper} variant="outlined">

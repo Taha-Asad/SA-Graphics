@@ -10,7 +10,7 @@ const { transporter } = require('./config/nodemailer.js');
 const createError = require('http-errors');
 const mongoose = require('mongoose');
 const settingsRoutes = require('./routes/settings');
-const orderRoutes = require('./routes/orders.js');
+const orderRoutes = require('./routes/order.routes.js');
 const adminRoutes = require('./routes/admin.routes');
 const testimonialRoutes = require('./routes/testimonials.routes');
 const courseRoutes = require('./routes/course.routes');
@@ -23,11 +23,16 @@ connectDB();
 // Create Express app
 const app = express();
 
-// Middlewares
-app.use(cors({
-  origin: ['http://localhost:3000', 'http://localhost:5173'],
-  credentials: true
-}));
+// Configure CORS
+const corsOptions = {
+  origin: ['http://localhost:5173', 'http://localhost:5000'],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+};
+
+// Apply CORS configuration
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -47,32 +52,15 @@ try {
   console.error('Error creating uploads directory:', error);
 }
 
-// Serve static files from uploads directory
+// Serve static files from uploads directory with proper CORS headers
 app.use('/uploads', (req, res, next) => {
-  const filePath = path.join(UPLOAD_PATH, req.path);
-  console.log('Requested file path:', filePath);
-  
-  if (!fs.existsSync(filePath)) {
-    console.log('File not found:', filePath);
-    return res.status(404).send('File not found');
-  }
-
-  // Set content type based on file extension
-  const ext = path.extname(filePath).toLowerCase();
-  const contentTypes = {
-    '.jpg': 'image/jpeg',
-    '.jpeg': 'image/jpeg',
-    '.png': 'image/png',
-    '.gif': 'image/gif'
-  };
-
-  if (contentTypes[ext]) {
-    res.set('Content-Type', contentTypes[ext]);
-  }
-
-  // Send the file
-  res.sendFile(filePath);
-});
+  res.set({
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, HEAD',
+    'Cache-Control': 'public, max-age=31557600'
+  });
+  next();
+}, express.static(UPLOAD_PATH));
 
 // Serve static files from public directory
 app.use(express.static(path.join(__dirname, 'public'), {
@@ -83,13 +71,6 @@ app.use(express.static(path.join(__dirname, 'public'), {
     }
   }
 }));
-
-// Add CORS headers for images
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-  next();
-});
 
 // Routes
 app.use('/api/v1/', require('./routers/api.js'));

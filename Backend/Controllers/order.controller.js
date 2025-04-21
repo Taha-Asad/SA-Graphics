@@ -11,6 +11,7 @@ const Joi = require('joi');
 const { orderSchema, validateOrder } = require('../validations/orderValidation');
 const mongoose = require('mongoose');
 const { sendOrderConfirmationEmail } = require('../services/emailService');
+const { sendOrderNotification } = require('../services/adminNotificationService');
 
 // Create Order
 const createOrder = async (req, res) => {
@@ -21,8 +22,12 @@ const createOrder = async (req, res) => {
     if (req.file) {
       // If there's a file upload, the order data is in the 'order' field as a string
       orderData = JSON.parse(req.body.order);
-      // Add the file path to the order data
-      orderData.paymentProof = req.file.path;
+      // Store just the filename, not the full path
+      orderData.transferProof = req.file.filename;
+      console.log('Payment proof file:', {
+        filename: req.file.filename,
+        path: req.file.path
+      });
     } else {
       // If no file, the order data is directly in the body
       orderData = req.body;
@@ -31,12 +36,26 @@ const createOrder = async (req, res) => {
     // Validate order data
     const { error } = validateOrder(orderData);
     if (error) {
+      // If there was a file uploaded but validation failed, delete it
+      if (req.file) {
+        fs.unlink(req.file.path, (err) => {
+          if (err) console.error('Error deleting file:', err);
+        });
+      }
       return res.status(400).json({
         status: 'error',
         message: error.details[0].message
       });
     }
 
+    // Check if payment proof is required
+    if (orderData.paymentMethod !== 'cash' && !orderData.transferProof) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Payment proof is required for non-cash payments'
+      });
+    }
+    
     // Determine order type based on items
     const orderType = orderData.items.some(item => item.type === 'course') ? 'course' : 'product';
     orderData.orderType = orderType;
@@ -47,6 +66,9 @@ const createOrder = async (req, res) => {
     // Create new order
     const order = new Order(orderData);
     await order.save();
+
+    // Send admin notification
+    await sendOrderNotification(order);
 
     // Send confirmation email
     try {
@@ -68,6 +90,12 @@ const createOrder = async (req, res) => {
       }
     });
   } catch (error) {
+    // If there was an error and a file was uploaded, delete it
+    if (req.file) {
+      fs.unlink(req.file.path, (err) => {
+        if (err) console.error('Error deleting file:', err);
+      });
+    }
     console.error('Order creation error:', error);
     res.status(500).json({
       status: 'error',
@@ -232,22 +260,25 @@ const updateOrderStatus = async (req, res, next) => {
 const getOrderById = async (req, res, next) => {
   try {
     const order = await Order.findById(req.params.orderId)
-      .populate({
-        path: 'item.bookId',
-        model: 'Book',
-        select: 'title author price coverImage'
-      });
+      .populate('userId', 'name email'); // Only populate user info
     
     if (!order) {
-      throw createError(404, 'Order not found');
+      return res.status(404).json({
+        status: 'error',
+        message: 'Order not found'
+      });
     }
 
-    // Check if the order belongs to the requesting user
-    if (order.userId.toString() !== req.user._id.toString()) {
-      throw createError(403, 'Not authorized to view this order');
+    // Allow admin users to view any order
+    const isAdmin = req.user.role === 'admin';
+    if (!isAdmin && order.userId.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        status: 'error',
+        message: 'Not authorized to view this order'
+      });
     }
 
-    res.json({
+    res.status(200).json({
       status: 'success',
       data: {
         order
@@ -255,7 +286,11 @@ const getOrderById = async (req, res, next) => {
     });
   } catch (error) {
     console.error('Error in getOrderById:', error);
-    next(error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Failed to fetch order',
+      error: error.message
+    });
   }
 };
 

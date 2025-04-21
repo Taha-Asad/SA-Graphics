@@ -34,6 +34,36 @@ const getStatusColor = (status) => {
   }
 };
 
+const PaymentProofImage = ({ orderId }) => {
+  const [error, setError] = useState(false);
+  const baseUrl = 'http://localhost:5000/api/v1';
+
+  return (
+    <Box sx={{ mt: 2 }}>
+      {error ? (
+        <Typography color="error" variant="body2">Failed to load payment proof</Typography>
+      ) : (
+        <>
+          <img
+            src={`${baseUrl}/orders/${orderId}/payment-proof`}
+            alt="Payment Proof"
+            style={{ maxWidth: '100%', height: 'auto', borderRadius: '4px' }}
+            onError={() => setError(true)}
+          />
+          <Button
+            variant="text"
+            size="small"
+            sx={{ mt: 1 }}
+            onClick={() => window.open(`${baseUrl}/orders/${orderId}/payment-proof`, '_blank')}
+          >
+            View Full Image
+          </Button>
+        </>
+      )}
+    </Box>
+  );
+};
+
 const Orders = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
@@ -56,7 +86,8 @@ const Orders = () => {
         console.log('Orders response:', response.data);
 
         if (response.data.status === 'success') {
-          setOrders(response.data.data.orders || []);
+          const ordersData = response.data.data.orders || [];
+          setOrders(ordersData);
         } else {
           console.error('Failed to fetch orders:', response.data);
           toast.error(response.data.message || 'Failed to fetch orders');
@@ -64,18 +95,6 @@ const Orders = () => {
       } catch (error) {
         console.error('Error fetching orders:', error.response || error);
         
-        if (error.response) {
-          console.error('Error response:', {
-            status: error.response.status,
-            data: error.response.data,
-            headers: error.response.headers
-          });
-        } else if (error.request) {
-          console.error('No response received:', error.request);
-        } else {
-          console.error('Error details:', error.message);
-        }
-
         if (error.response?.status === 401) {
           toast.error('Session expired. Please login again.');
           navigate('/login');
@@ -239,44 +258,12 @@ const Orders = () => {
                       <Typography variant="body2" sx={{ mb: 1 }}>
                         Payment Status: {order.paymentStatus}
                       </Typography>
-                      {order.paymentProof && (
-                        <Box sx={{ mt: 2, mb: 2 }}>
-                          <Typography variant="body2" sx={{ mb: 1, fontWeight: 'medium' }}>
+                      {order.paymentMethod !== 'cash' && (
+                        <Box sx={{ mb: 2 }}>
+                          <Typography variant="body2" sx={{ mb: 1 }}>
                             Payment Proof:
                           </Typography>
-                          <Box
-                            component="img"
-                            src={`${axiosInstance.defaults.baseURL}/${order.paymentProof}`}
-                            alt="Payment Proof"
-                            sx={{
-                              width: '100%',
-                              height: 'auto',
-                              maxHeight: '200px',
-                              objectFit: 'contain',
-                              borderRadius: 1,
-                              border: '1px solid #e0e0e0',
-                              cursor: 'pointer'
-                            }}
-                            onClick={() => window.open(`${axiosInstance.defaults.baseURL}/${order.paymentProof}`, '_blank')}
-                          />
-                          <Button
-                            variant="outlined"
-                            size="small"
-                            startIcon={<FiDownload />}
-                            fullWidth
-                            sx={{ 
-                              mt: 1,
-                              borderColor: '#149ddd',
-                              color: '#149ddd',
-                              '&:hover': {
-                                borderColor: '#1187c1',
-                                backgroundColor: 'rgba(20, 157, 221, 0.04)'
-                              }
-                            }}
-                            onClick={() => window.open(`${axiosInstance.defaults.baseURL}/${order.paymentProof}`, '_blank')}
-                          >
-                            View Full Image
-                          </Button>
+                          <PaymentProofImage orderId={order._id} />
                         </Box>
                       )}
                       <Typography variant="h6" sx={{ mt: 2, color: '#149ddd' }}>

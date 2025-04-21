@@ -59,6 +59,8 @@ const menuItems = [
   { text: 'Orders', icon: <OrdersIcon />, path: '/admin/orders' },
   { text: 'Course Purchases', icon: <SchoolIcon />, path: '/admin/course-purchases' },
   { text: 'Courses', icon: <SchoolIcon />, path: '/admin/courses' },
+  { text: 'Books', icon: <SchoolIcon />, path: '/admin/books' },
+  { text: 'Projects', icon: <SchoolIcon />, path: '/admin/projects' },
   { text: 'Reviews', icon: <ReviewsIcon />, path: '/admin/reviews' },
   { text: 'Testimonials', icon: <TestimonialsIcon />, path: '/admin/testimonials' },
   { text: 'Contact Forms', icon: <EmailIcon />, path: '/admin/contacts' },

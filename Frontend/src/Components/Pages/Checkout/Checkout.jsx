@@ -92,10 +92,10 @@ const Checkout = () => {
     }
   };
 
-  const copyToClipboard = (text) => {
-    navigator.clipboard.writeText(text);
-    toast.success('Copied to clipboard!');
-  };
+  // const copyToClipboard = (text) => {
+  //   navigator.clipboard.writeText(text);
+  //   toast.success('Copied to clipboard!');
+  // };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -132,8 +132,8 @@ const Checkout = () => {
 
       const formattedItems = cartItems.map(item => ({
         _id: item._id,
-        title: item.title,
-        price: item.price,
+          title: item.title,
+          price: item.price,
         quantity: item.quantity || 1,
         type: item.type || 'product',
         thumbnail: item.thumbnail || null,
@@ -186,19 +186,19 @@ const Checkout = () => {
         requestData = formData;
       }
 
-      const response = await axios.post(
-        'http://localhost:5000/api/v1/orders',
-        requestData,
-        config
-      );
+        const response = await axios.post(
+          'http://localhost:5000/api/v1/orders',
+          requestData,
+          config
+        );
 
-      console.log('Order response:', response.data);
+        console.log('Order response:', response.data);
 
-      if (response.data.status === 'success') {
-        setOrderSuccess(true);
-        setOrderId(response.data.data.order._id);
+        if (response.data.status === 'success') {
+          setOrderSuccess(true);
+          setOrderId(response.data.data.order._id);
         toast.success(response.data.message || "Order placed successfully!");
-        clearCart();
+          clearCart();
         
         // Check if it's a course order from the response
         const isCourseOrder = response.data.data.isCourseOrder;
@@ -210,12 +210,12 @@ const Checkout = () => {
           // For regular orders, go to track order page
           navigate(`/account/track-order/${response.data.data.order._id}`);
         }
-      }
-    } catch (error) {
-      console.error('Order submission error:', error);
-      console.error('Error response:', error.response?.data);
-      const errorMessage = error.response?.data?.message || "Failed to place order";
-      toast.error(errorMessage);
+        }
+      } catch (error) {
+        console.error('Order submission error:', error);
+        console.error('Error response:', error.response?.data);
+        const errorMessage = error.response?.data?.message || "Failed to place order";
+        toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -325,9 +325,9 @@ const Checkout = () => {
           mb: 4,
           textAlign: 'center'
         }}>
-          Checkout
-        </Typography>
-
+        Checkout
+      </Typography>
+      
         <Grid container spacing={4}>
           {/* Shipping Information */}
           <Grid item xs={12} md={7}>
@@ -335,11 +335,11 @@ const Checkout = () => {
               p: 3, 
               borderRadius: 2,
               background: '#1e242c',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
               boxShadow: '0 4px 20px rgba(0,0,0,0.2)'
             }}>
               <Typography variant="h6" gutterBottom sx={{ 
-                color: 'white',
+                  color: 'white',
                 fontWeight: 600,
                 mb: 3
               }}>
@@ -349,151 +349,151 @@ const Checkout = () => {
               <form onSubmit={handleSubmit}>
                 <Grid container spacing={3}>
                   <Grid item xs={12} sm={6}>
-                    <TextField
-                      fullWidth
+                  <TextField
+                    fullWidth
                       label="Name"
                       name="name"
                       value={deliveryAddress.name}
-                      onChange={handleInputChange}
+                    onChange={handleInputChange}
                       required
-                      sx={{
-                        '& .MuiOutlinedInput-root': {
-                          '& fieldset': {
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        '& fieldset': {
                             borderColor: 'rgba(255, 255, 255, 0.23)',
-                          },
-                          '&:hover fieldset': {
-                            borderColor: '#149ddd',
-                          },
-                          '&.Mui-focused fieldset': {
-                            borderColor: '#149ddd',
-                          },
                         },
-                        '& .MuiInputLabel-root': {
-                          color: 'rgba(255, 255, 255, 0.7)',
+                        '&:hover fieldset': {
+                          borderColor: '#149ddd',
                         },
-                        '& .MuiOutlinedInput-input': {
-                          color: 'white',
+                        '&.Mui-focused fieldset': {
+                          borderColor: '#149ddd',
                         },
-                      }}
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      fullWidth
+                      },
+                      '& .MuiInputLabel-root': {
+                        color: 'rgba(255, 255, 255, 0.7)',
+                      },
+                      '& .MuiOutlinedInput-input': {
+                        color: 'white',
+                      },
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
                       label="Email"
                       name="email"
                       type="email"
                       value={deliveryAddress.email}
-                      onChange={handleInputChange}
+                    onChange={handleInputChange}
                       required
-                      sx={{
-                        '& .MuiOutlinedInput-root': {
-                          '& fieldset': {
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        '& fieldset': {
                             borderColor: 'rgba(255, 255, 255, 0.23)',
-                          },
-                          '&:hover fieldset': {
-                            borderColor: '#149ddd',
-                          },
-                          '&.Mui-focused fieldset': {
-                            borderColor: '#149ddd',
-                          },
                         },
-                        '& .MuiInputLabel-root': {
-                          color: 'rgba(255, 255, 255, 0.7)',
+                        '&:hover fieldset': {
+                          borderColor: '#149ddd',
                         },
-                        '& .MuiOutlinedInput-input': {
-                          color: 'white',
+                        '&.Mui-focused fieldset': {
+                          borderColor: '#149ddd',
                         },
-                      }}
-                    />
-                  </Grid>
+                      },
+                      '& .MuiInputLabel-root': {
+                        color: 'rgba(255, 255, 255, 0.7)',
+                      },
+                      '& .MuiOutlinedInput-input': {
+                        color: 'white',
+                      },
+                    }}
+                  />
+                </Grid>
                   <Grid item xs={12}>
-                    <TextField
-                      fullWidth
+                  <TextField
+                    fullWidth
                       label="Phone Number"
                       name="phoneNo"
                       value={deliveryAddress.phoneNo}
-                      onChange={handleInputChange}
+                    onChange={handleInputChange}
                       required
-                      sx={{
-                        '& .MuiOutlinedInput-root': {
-                          '& fieldset': {
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        '& fieldset': {
                             borderColor: 'rgba(255, 255, 255, 0.23)',
-                          },
-                          '&:hover fieldset': {
-                            borderColor: '#149ddd',
-                          },
-                          '&.Mui-focused fieldset': {
-                            borderColor: '#149ddd',
-                          },
                         },
-                        '& .MuiInputLabel-root': {
-                          color: 'rgba(255, 255, 255, 0.7)',
+                        '&:hover fieldset': {
+                          borderColor: '#149ddd',
                         },
-                        '& .MuiOutlinedInput-input': {
-                          color: 'white',
+                        '&.Mui-focused fieldset': {
+                          borderColor: '#149ddd',
                         },
-                      }}
-                    />
-                  </Grid>
+                      },
+                      '& .MuiInputLabel-root': {
+                        color: 'rgba(255, 255, 255, 0.7)',
+                      },
+                      '& .MuiOutlinedInput-input': {
+                        color: 'white',
+                      },
+                    }}
+                  />
+                </Grid>
                   <Grid item xs={12}>
-                    <TextField
-                      fullWidth
+                  <TextField
+                    fullWidth
                       label="Street Address"
                       name="street"
                       value={deliveryAddress.street}
-                      onChange={handleInputChange}
+                    onChange={handleInputChange}
                       required
-                      sx={{
-                        '& .MuiOutlinedInput-root': {
-                          '& fieldset': {
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        '& fieldset': {
                             borderColor: 'rgba(255, 255, 255, 0.23)',
-                          },
-                          '&:hover fieldset': {
-                            borderColor: '#149ddd',
-                          },
-                          '&.Mui-focused fieldset': {
-                            borderColor: '#149ddd',
-                          },
                         },
-                        '& .MuiInputLabel-root': {
-                          color: 'rgba(255, 255, 255, 0.7)',
+                        '&:hover fieldset': {
+                          borderColor: '#149ddd',
                         },
-                        '& .MuiOutlinedInput-input': {
-                          color: 'white',
+                        '&.Mui-focused fieldset': {
+                          borderColor: '#149ddd',
                         },
-                      }}
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      fullWidth
+                      },
+                      '& .MuiInputLabel-root': {
+                        color: 'rgba(255, 255, 255, 0.7)',
+                      },
+                      '& .MuiOutlinedInput-input': {
+                        color: 'white',
+                      },
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
                       label="City"
                       name="city"
                       value={deliveryAddress.city}
-                      onChange={handleInputChange}
+                    onChange={handleInputChange}
                       required
-                      sx={{
-                        '& .MuiOutlinedInput-root': {
-                          '& fieldset': {
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        '& fieldset': {
                             borderColor: 'rgba(255, 255, 255, 0.23)',
-                          },
-                          '&:hover fieldset': {
-                            borderColor: '#149ddd',
-                          },
-                          '&.Mui-focused fieldset': {
-                            borderColor: '#149ddd',
-                          },
                         },
-                        '& .MuiInputLabel-root': {
-                          color: 'rgba(255, 255, 255, 0.7)',
+                        '&:hover fieldset': {
+                          borderColor: '#149ddd',
                         },
-                        '& .MuiOutlinedInput-input': {
-                          color: 'white',
+                        '&.Mui-focused fieldset': {
+                          borderColor: '#149ddd',
                         },
-                      }}
-                    />
-                  </Grid>
+                      },
+                      '& .MuiInputLabel-root': {
+                        color: 'rgba(255, 255, 255, 0.7)',
+                      },
+                      '& .MuiOutlinedInput-input': {
+                        color: 'white',
+                      },
+                    }}
+                  />
+                </Grid>
                   <Grid item xs={12} sm={6}>
                     <TextField
                       fullWidth
@@ -555,7 +555,7 @@ const Checkout = () => {
                 </Grid>
               </form>
             </Paper>
-          </Grid>
+              </Grid>
 
           {/* Order Summary */}
           <Grid item xs={12} md={5}>
@@ -586,7 +586,7 @@ const Checkout = () => {
                       <Avatar 
                         src={item.thumbnail} 
                         alt={item.title}
-                        sx={{ 
+                sx={{ 
                           width: 60, 
                           height: 60,
                           borderRadius: 1
@@ -624,15 +624,15 @@ const Checkout = () => {
                   fontWeight: 600,
                   mb: 2
                 }}>
-                  Payment Method
+                Payment Method
                 </FormLabel>
-                <RadioGroup
-                  value={selectedPaymentMethod}
-                  onChange={handleInputChange}
+              <RadioGroup
+                value={selectedPaymentMethod}
+                onChange={handleInputChange}
                   name="paymentMethod"
-                >
-                  <FormControlLabel
-                    value="cash"
+              >
+                <FormControlLabel
+                  value="cash"
                     control={
                       <Radio sx={{ 
                         color: 'rgba(255, 255, 255, 0.7)',
@@ -646,9 +646,9 @@ const Checkout = () => {
                         Cash on Delivery
                       </Typography>
                     }
-                  />
-                  <FormControlLabel
-                    value="transfer"
+                />
+                <FormControlLabel
+                  value="transfer"
                     control={
                       <Radio sx={{ 
                         color: 'rgba(255, 255, 255, 0.7)',
@@ -678,8 +678,8 @@ const Checkout = () => {
                         Jazz Cash
                       </Typography>
                     }
-                  />
-                </RadioGroup>
+                />
+              </RadioGroup>
               </FormControl>
 
               {(selectedPaymentMethod === 'transfer' || selectedPaymentMethod === 'jazzcash') && (
@@ -691,10 +691,10 @@ const Checkout = () => {
                     <>
                       <Typography variant="body2" sx={{ color: 'white', fontWeight: 600 }}>
                         Bank: HBL
-                      </Typography>
+                        </Typography>
                       <Typography variant="body2" sx={{ color: 'white', fontWeight: 600 }}>
                         Account Number: 1234567890
-                      </Typography>
+                          </Typography>
                       <Typography variant="body2" sx={{ color: 'white', fontWeight: 600 }}>
                         Account Name: SA Graphics
                       </Typography>
@@ -712,32 +712,32 @@ const Checkout = () => {
 
                   <Box sx={{ mt: 3 }}>
                     <Typography variant="body2" sx={{ color: 'white', mb: 2 }}>
-                      Upload Payment Proof
-                    </Typography>
-                    <input
-                      accept="image/*"
-                      type="file"
+                          Upload Payment Proof
+                      </Typography>
+                      <input
+                          accept="image/*"
+                          type="file"
                       id="payment-proof"
-                      name="transferProof"
-                      onChange={handleInputChange}
-                      style={{ display: 'none' }}
-                    />
+                          name="transferProof"
+                          onChange={handleInputChange}
+                          style={{ display: 'none' }}
+                      />
                     <label htmlFor="payment-proof">
-                      <Button
-                        variant="outlined"
-                        component="span"
-                        sx={{
-                          color: 'white',
-                          borderColor: 'rgba(255, 255, 255, 0.23)',
-                          '&:hover': {
-                            borderColor: '#149ddd',
-                            backgroundColor: 'rgba(20, 157, 221, 0.08)'
-                          }
-                        }}
-                      >
-                        {transferProof ? 'Change File' : 'Choose File'}
-                      </Button>
-                    </label>
+                          <Button
+                              variant="outlined"
+                              component="span"
+                              sx={{
+                                  color: 'white',
+                                  borderColor: 'rgba(255, 255, 255, 0.23)',
+                                  '&:hover': {
+                                      borderColor: '#149ddd',
+                                      backgroundColor: 'rgba(20, 157, 221, 0.08)'
+                                  }
+                              }}
+                          >
+                              {transferProof ? 'Change File' : 'Choose File'}
+                          </Button>
+                      </label>
                     {transferProof && (
                       <Typography variant="body2" sx={{ color: 'white', mt: 1 }}>
                         File selected: {transferProof.name}
@@ -753,13 +753,13 @@ const Checkout = () => {
                   mb: 1
                 }}>
                   Subtotal: Rs. {getCartTotal()}
-                </Typography>
+                    </Typography>
                 <Typography variant="body1" sx={{ 
                   color: 'rgba(255, 255, 255, 0.7)',
                   mb: 1
                 }}>
                   Charity (1.5%): Rs. {calculateCharityAmount(getCartTotal())}
-                </Typography>
+                    </Typography>
                 <Typography variant="h6" sx={{ 
                   fontWeight: 600,
                   color: 'white'
@@ -786,7 +786,7 @@ const Checkout = () => {
             </Paper>
           </Grid>
         </Grid>
-      </Container>
+    </Container>
     </Box>
   );
 };

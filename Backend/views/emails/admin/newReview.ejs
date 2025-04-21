@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background-color: #f8f9fa; padding: 20px; text-align: center; }
+        .content { padding: 20px; }
+        .footer { text-align: center; padding: 20px; font-size: 12px; color: #666; }
+        .rating { color: #ffc107; font-size: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>New Review Posted</h2>
+        </div>
+        <div class="content">
+            <p>A new review has been posted on SA Graphics:</p>
+            
+            <h3>Review Details</h3>
+            <ul>
+                <li><strong>User:</strong> <%= review.userId.name %></li>
+                <li><strong>Email:</strong> <%= review.userId.email %></li>
+                <li><strong>Rating:</strong> 
+                    <span class="rating">
+                        <% for(let i = 1; i <= 5; i++) { %>
+                            <%= i <= review.rating ? '★' : '☆' %>
+                        <% } %>
+                    </span>
+                </li>
+                <li><strong>Date:</strong> <%= new Date(review.createdAt).toLocaleString() %></li>
+            </ul>
+
+            <h3>Review Content</h3>
+            <blockquote style="background-color: #f8f9fa; padding: 15px; border-left: 4px solid #149ddd; margin: 20px 0;">
+                <%= review.content %>
+            </blockquote>
+
+            <% if (review.productId) { %>
+                <h3>Product Details</h3>
+                <ul>
+                    <li><strong>Product:</strong> <%= review.productId.title %></li>
+                    <li><strong>Category:</strong> <%= review.productId.category %></li>
+                </ul>
+            <% } %>
+
+            <% if (review.courseId) { %>
+                <h3>Course Details</h3>
+                <ul>
+                    <li><strong>Course:</strong> <%= review.courseId.title %></li>
+                    <li><strong>Instructor:</strong> <%= review.courseId.instructor %></li>
+                </ul>
+            <% } %>
+        </div>
+        <div class="footer">
+            <p>This is an automated notification from SA Graphics.</p>
+        </div>
+    </div>
+</body>
+</html> 
