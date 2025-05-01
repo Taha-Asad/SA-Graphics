@@ -3,43 +3,86 @@ const path = require('path');
 const fs = require('fs');
 const createError = require('http-errors');
 
-// Define uploads folder relative to project root
-const UPLOADS_FOLDER = 'uploads';
+// Define uploads folder structure
+const UPLOADS_FOLDER = 'uploads';  // Changed from 'public/uploads' to match actual structure
 const UPLOAD_PATH = path.join(__dirname, '..', UPLOADS_FOLDER);
+const BOOKS_FOLDER = path.join(UPLOADS_FOLDER, 'books');
+const BOOKS_PATH = path.join(__dirname, '..', BOOKS_FOLDER);
+const PROFILES_FOLDER = path.join(UPLOADS_FOLDER, 'profiles');
+const PROFILES_PATH = path.join(__dirname, '..', PROFILES_FOLDER);
+const PROJECTS_FOLDER = path.join(UPLOADS_FOLDER, 'projects');
+const PROJECTS_PATH = path.join(__dirname, '..', PROJECTS_FOLDER);
+const PAYMENT_PROOFS_FOLDER = path.join(UPLOADS_FOLDER, 'payment-proofs');
+const PAYMENT_PROOFS_PATH = path.join(__dirname, '..', PAYMENT_PROOFS_FOLDER);
 
-// Ensure the uploads folder exists
+// Ensure all upload folders exist
 try {
-  if (!fs.existsSync(UPLOAD_PATH)) {
-    fs.mkdirSync(UPLOAD_PATH, { recursive: true });
-    console.log(`Created uploads directory at: ${UPLOAD_PATH}`);
-  } else {
-    console.log(`Uploads directory exists at: ${UPLOAD_PATH}`);
-  }
-} catch (error) {
-  console.error('Error creating uploads directory:', error);
-  throw new Error(`Failed to create uploads directory: ${error.message}`);
-}
-
-// Create storage engine for different types of uploads
-const createStorage = (subFolder) => {
-  return multer.diskStorage({
-    destination: function (req, file, cb) {
-      const uploadPath = path.join(UPLOAD_PATH, subFolder);
-      if (!fs.existsSync(uploadPath)) {
-        fs.mkdirSync(uploadPath, { recursive: true });
-        console.log(`Created ${subFolder} directory at: ${uploadPath}`);
-      }
-      cb(null, uploadPath);
-    },
-    filename: function (req, file, cb) {
-      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-      const fileExtension = path.extname(file.originalname).toLowerCase();
-      const filename = `${subFolder}-${uniqueSuffix}${fileExtension}`;
-      cb(null, filename);
+  [
+    UPLOAD_PATH,
+    BOOKS_PATH,
+    PROFILES_PATH,
+    PROJECTS_PATH,
+    PAYMENT_PROOFS_PATH
+  ].forEach(dir => {
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+      console.log(`Created directory at: ${dir}`);
     }
   });
-};
+} catch (error) {
+  console.error('Error creating directories:', error);
+  throw new Error(`Failed to create directories: ${error.message}`);
+}
 
+// Storage configuration for books
+const bookStorage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, BOOKS_PATH);
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    const ext = path.extname(file.originalname).toLowerCase();
+    cb(null, uniqueSuffix + ext);
+  }
+});
+
+// Storage configuration for profiles
+const profileStorage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, PROFILES_PATH);
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    const ext = path.extname(file.originalname).toLowerCase();
+    cb(null, 'profiles-' + uniqueSuffix + ext);
+  }
+});
+
+// Storage configuration for projects
+const projectStorage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, PROJECTS_PATH);
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    const ext = path.extname(file.originalname).toLowerCase();
+    cb(null, uniqueSuffix + ext);  // Removed 'project-' prefix to match existing files
+  }
+});
+
+// Storage configuration for payment proofs
+const paymentProofStorage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, PAYMENT_PROOFS_PATH);
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    const ext = path.extname(file.originalname).toLowerCase();
+    cb(null, uniqueSuffix + ext);
+  }
+});
+
+// File filter
 const fileFilter = (req, file, cb) => {
   const filetypes = /jpeg|jpg|png|gif/;
   const mimetype = filetypes.test(file.mimetype);
@@ -51,67 +94,56 @@ const fileFilter = (req, file, cb) => {
   cb(createError(400, 'Only image files (jpg, jpeg, png, gif) are allowed!'));
 };
 
-// Create multer upload instances for different purposes
-const courseUpload = multer({
-  storage: createStorage('courses'),
+// Upload middlewares for different types
+const bookUpload = multer({
+  storage: bookStorage,
   fileFilter: fileFilter,
-  limits: {
-    fileSize: 5 * 1024 * 1024, // 5MB limit
-    files: 1 // Only allow 1 file per request
-  }
-});
-
-const paymentProofUpload = multer({
-  storage: createStorage('payment-proofs'),
-  fileFilter: fileFilter,
-  limits: {
-    fileSize: 5 * 1024 * 1024, // 5MB limit
-    files: 1 // Only allow 1 file per request
-  }
+  limits: { fileSize: 5 * 1024 * 1024 }
 });
 
 const profileUpload = multer({
-  storage: createStorage('profiles'),
+  storage: profileStorage,
   fileFilter: fileFilter,
-  limits: {
-    fileSize: 2 * 1024 * 1024, // 2MB limit for profile photos
-    files: 1
-  }
+  limits: { fileSize: 5 * 1024 * 1024 }
 });
 
-// For backward compatibility
-const upload = profileUpload; // This ensures existing code using 'upload' still works
+const projectUpload = multer({
+  storage: projectStorage,
+  fileFilter: fileFilter,
+  limits: { fileSize: 5 * 1024 * 1024 }
+});
 
-// Error handling middleware for multer
+const paymentProofUpload = multer({
+  storage: paymentProofStorage,
+  fileFilter: fileFilter,
+  limits: { fileSize: 5 * 1024 * 1024 }
+});
+
+// Error handling middleware
 const handleMulterError = (err, req, res, next) => {
   if (err instanceof multer.MulterError) {
     if (err.code === 'LIMIT_FILE_SIZE') {
       return res.status(400).json({ message: 'File size too large. Maximum size is 5MB' });
-    }
-    if (err.code === 'LIMIT_FILE_COUNT') {
-      return res.status(400).json({ message: 'Too many files uploaded. Maximum is 1 file' });
     }
     return res.status(400).json({ message: err.message });
   }
   next(err);
 };
 
-// Create required directories
-const requiredDirs = ['courses', 'payment-proofs', 'profiles'];
-requiredDirs.forEach(dir => {
-  const dirPath = path.join(UPLOAD_PATH, dir);
-  if (!fs.existsSync(dirPath)) {
-    fs.mkdirSync(dirPath, { recursive: true });
-    console.log(`Created ${dir} directory at: ${dirPath}`);
-  }
-});
-
 module.exports = {
-  courseUpload,
-  paymentProofUpload,
+  bookUpload,
   profileUpload,
-  upload, // For backward compatibility
+  projectUpload,
+  paymentProofUpload,
   handleMulterError,
   UPLOADS_FOLDER,
-  UPLOAD_PATH
+  UPLOAD_PATH,
+  BOOKS_FOLDER,
+  BOOKS_PATH,
+  PROFILES_FOLDER,
+  PROFILES_PATH,
+  PROJECTS_FOLDER,
+  PROJECTS_PATH,
+  PAYMENT_PROOFS_FOLDER,
+  PAYMENT_PROOFS_PATH
 };

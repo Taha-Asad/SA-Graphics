@@ -1,7 +1,8 @@
 const Portfolio = require('../models/portfolio.model.js');
-const { UPLOADS_FOLDER } = require('../config/multer');
+const { PROJECTS_FOLDER } = require('../config/multer');
 const { projectSchema } = require('../validations/portfolioValidation.js');
 const createError = require('http-errors');
+const path = require('path');
 
 // Create Project
 exports.createProject = async (req, res) => {
@@ -24,13 +25,13 @@ exports.createProject = async (req, res) => {
       parsedSkills = skillsUsed.split(',').map(skill => skill.trim());
     }
 
-    // Create project with image filename
+    // Create project with image path (without leading slash)
     const project = new Portfolio({
       title,
       description,
       category,
       skillsUsed: parsedSkills,
-      image: req.file.filename,
+      image: path.join(PROJECTS_FOLDER, req.file.filename).replace(/\\/g, '/'),
       githubLink,
       liveLink
     });
@@ -40,7 +41,7 @@ exports.createProject = async (req, res) => {
 
     // Transform the response to include full image URL
     const projectResponse = savedProject.toObject();
-    projectResponse.image = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
+    projectResponse.image = `${req.protocol}://${req.get('host')}/${projectResponse.image}`;
 
     res.status(201).json({
       message: 'Project created successfully',
@@ -63,9 +64,15 @@ exports.getAllProjects = async (req, res) => {
     // Transform projects to include full image URLs
     const projectsWithUrls = projects.map(project => {
       const projectObj = project.toObject();
-      projectObj.image = projectObj.image 
-        ? `${req.protocol}://${req.get('host')}/uploads/${projectObj.image}`
-        : null;
+      if (projectObj.image) {
+        // Ensure consistent path format without leading slash
+        const imagePath = projectObj.image.startsWith('/') 
+          ? projectObj.image.substring(1) 
+          : projectObj.image;
+        projectObj.image = `${req.protocol}://${req.get('host')}/${imagePath}`;
+      } else {
+        projectObj.image = null;
+      }
       return projectObj;
     });
 
@@ -83,9 +90,15 @@ exports.getProjectById = async (req, res) => {
     
     // Transform response to include full image URL
     const projectResponse = project.toObject();
-    projectResponse.image = projectResponse.image 
-      ? `${req.protocol}://${req.get('host')}/uploads/${projectResponse.image}`
-      : null;
+    if (projectResponse.image) {
+      // Ensure consistent path format without leading slash
+      const imagePath = projectResponse.image.startsWith('/') 
+        ? projectResponse.image.substring(1) 
+        : projectResponse.image;
+      projectResponse.image = `${req.protocol}://${req.get('host')}/${imagePath}`;
+    } else {
+      projectResponse.image = null;
+    }
 
     res.json(projectResponse);
   } catch (err) {
@@ -118,9 +131,9 @@ exports.updateProject = async (req, res) => {
       liveLink
     };
 
-    // Only update image if new file is uploaded
+    // Only update image if new file is uploaded (without leading slash)
     if (req.file) {
-      updateData.image = req.file.filename;
+      updateData.image = path.join(PROJECTS_FOLDER, req.file.filename).replace(/\\/g, '/');
     }
 
     const project = await Portfolio.findByIdAndUpdate(
@@ -135,9 +148,15 @@ exports.updateProject = async (req, res) => {
 
     // Transform response to include full image URL
     const projectResponse = project.toObject();
-    projectResponse.image = projectResponse.image 
-      ? `${req.protocol}://${req.get('host')}/uploads/${projectResponse.image}`
-      : null;
+    if (projectResponse.image) {
+      // Ensure consistent path format without leading slash
+      const imagePath = projectResponse.image.startsWith('/') 
+        ? projectResponse.image.substring(1) 
+        : projectResponse.image;
+      projectResponse.image = `${req.protocol}://${req.get('host')}/${imagePath}`;
+    } else {
+      projectResponse.image = null;
+    }
 
     res.json({ 
       message: 'Project updated successfully', 

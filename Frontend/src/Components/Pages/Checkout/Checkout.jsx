@@ -51,7 +51,7 @@ const Checkout = () => {
   const [orderId, setOrderId] = useState(null);
 
   const calculateCharityAmount = (total) => {
-    return total * 0.015; // 1.5% charity
+    return total * 0.025; // 2.5% charity
   };
 
   const getFinalTotal = () => {
@@ -758,7 +758,7 @@ const Checkout = () => {
                   color: 'rgba(255, 255, 255, 0.7)',
                   mb: 1
                 }}>
-                  Charity (1.5%): Rs. {calculateCharityAmount(getCartTotal())}
+                  Charity (2.5%): Rs. {calculateCharityAmount(getCartTotal())}
                     </Typography>
                 <Typography variant="h6" sx={{ 
                   fontWeight: 600,

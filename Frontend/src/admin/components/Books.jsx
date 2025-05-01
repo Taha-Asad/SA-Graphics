@@ -23,25 +23,25 @@ import { Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import axiosInstance from '../../config/axios';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-hot-toast';
 
 const Books = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [books, setBooks] = useState([]);
-  const [open, setOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedBook, setSelectedBook] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     author: '',
     description: '',
-    price: '',
-    isbn: '',
     category: '',
+    price: '',
     stock: '',
-    publishDate: '',
     countInStock: '',
-    discount: 0,
-    coverImage: null,
+    publishDate: '',
+    discount: '0'
   });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -77,17 +77,15 @@ const Books = () => {
     if (book) {
       setSelectedBook(book);
       setFormData({
-        title: book.title,
-        author: book.author,
-        description: book.description,
-        price: book.price,
-        isbn: book.isbn || '',
+        title: book.title || '',
+        author: book.author || '',
+        description: book.description || '',
         category: book.category || '',
+        price: book.price || '',
         stock: book.stock || '',
-        publishDate: book.publishDate ? new Date(book.publishDate).toISOString().split('T')[0] : '',
         countInStock: book.countInStock || '',
-        discount: book.discount || 0,
-        coverImage: null,
+        publishDate: book.publishDate ? new Date(book.publishDate).toISOString().split('T')[0] : '',
+        discount: book.discount || '0'
       });
     } else {
       setSelectedBook(null);
@@ -95,34 +93,30 @@ const Books = () => {
         title: '',
         author: '',
         description: '',
-        price: '',
-        isbn: '',
         category: '',
+        price: '',
         stock: '',
-        publishDate: '',
         countInStock: '',
-        discount: 0,
-        coverImage: null,
+        publishDate: '',
+        discount: '0'
       });
     }
-    setOpen(true);
+    setIsModalOpen(true);
   };
 
   const handleClose = () => {
-    setOpen(false);
+    setIsModalOpen(false);
     setSelectedBook(null);
     setFormData({
       title: '',
       author: '',
       description: '',
-      price: '',
-      isbn: '',
       category: '',
+      price: '',
       stock: '',
-      publishDate: '',
       countInStock: '',
-      discount: 0,
-      coverImage: null,
+      publishDate: '',
+      discount: '0'
     });
   };
 
@@ -136,7 +130,17 @@ const Books = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+    setIsLoading(true);
+
+    const requiredFields = ['title', 'author', 'description', 'category', 'publishDate'];
+    const emptyFields = requiredFields.filter(field => !formData[field]);
+
+    if (emptyFields.length > 0) {
+      toast.error(`Please fill in all required fields: ${emptyFields.join(', ')}`);
+      setIsLoading(false);
+      return;
+    }
+
     // Check if user is logged in and is an admin
     if (!user || user.role !== 'admin') {
       setError('You must be logged in as an admin to perform this action');
@@ -145,15 +149,6 @@ const Books = () => {
     }
     
     try {
-      // Validate required fields
-      const requiredFields = ['title', 'author', 'description', 'isbn', 'category', 'publishDate'];
-      const missingFields = requiredFields.filter(field => !formData[field]);
-      
-      if (missingFields.length > 0) {
-        setError(`Missing required fields: ${missingFields.join(', ')}`);
-        return;
-      }
-
       // Validate image for new books
       if (!selectedBook && !formData.coverImage) {
         setError('Cover image is required for new books');
@@ -209,7 +204,6 @@ const Books = () => {
         author: formDataToSend.get('author'),
         description: formDataToSend.get('description'),
         price: formDataToSend.get('price'),
-        isbn: formDataToSend.get('isbn'),
         category: formDataToSend.get('category'),
         publishDate: formDataToSend.get('publishDate'),
         stock: formDataToSend.get('stock'),
@@ -334,7 +328,7 @@ const Books = () => {
         </Table>
       </TableContainer>
 
-      <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
+      <Dialog open={isModalOpen} onClose={handleClose} maxWidth="sm" fullWidth>
         <DialogTitle>{selectedBook ? 'Edit Book' : 'Add New Book'}</DialogTitle>
         <form onSubmit={handleSubmit}>
           <DialogContent>
@@ -363,14 +357,6 @@ const Books = () => {
                 fullWidth
                 multiline
                 rows={4}
-                required
-              />
-              <TextField
-                name="isbn"
-                label="ISBN"
-                value={formData.isbn}
-                onChange={handleChange}
-                fullWidth
                 required
               />
               <TextField
@@ -452,17 +438,17 @@ const Books = () => {
                   {selectedBook ? 'Change Cover Image' : 'Upload Cover Image'}
                 </Button>
               </label>
-              {formData.coverImage && (
-                <Typography variant="caption">
-                  Selected file: {formData.coverImage.name}
-                </Typography>
-              )}
             </Stack>
           </DialogContent>
           <DialogActions>
             <Button onClick={handleClose}>Cancel</Button>
-            <Button type="submit" variant="contained">
-              {selectedBook ? 'Update' : 'Create'}
+            <Button 
+              type="submit" 
+              variant="contained" 
+              color="primary"
+              disabled={isLoading}
+            >
+              {isLoading ? 'Saving...' : (selectedBook ? 'Update' : 'Create')}
             </Button>
           </DialogActions>
         </form>

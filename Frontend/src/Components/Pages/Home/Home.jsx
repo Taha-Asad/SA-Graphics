@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import "./home.css";
-import { Box, Typography } from "@mui/material";
+import { Box, Typography, useTheme, useMediaQuery } from "@mui/material";
 
 const words = ["Developer", "Freelancer", "Designer"];
 
@@ -11,6 +11,8 @@ const Home = () => {
   const speedRef = useRef(150);
   const timeoutRef = useRef(null);
   const displayTextRef = useRef(null);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   useEffect(() => {
     if (displayTextRef.current) {
@@ -70,20 +72,33 @@ const Home = () => {
         backgroundColor: "#FAF4FD",
         display: 'flex',
         alignItems: 'center',
-        mt: '140px',
-        mb: '140px',
-        '&::before': {
-          content: '""',
-          position: 'absolute',
-          top: 0,
-          right: 0,
-          bottom: 0,
-          left: 0,
-          background: 'url(/assets/Hero/hero-bg.jpg) center center/cover no-repeat',
-          opacity: 0.8,
-        }
+        justifyContent: 'center',
+        mt: '150px',
+        mb: '0px',
+        overflow: 'hidden'
       }}
     >
+      {/* Updated Background Image with proper path */}
+      <Box
+      className="hero-bg"
+        sx={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          zIndex: 0,
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            backgroundColor: 'rgba(0, 0, 0, 0.4)'
+          }
+        }}
+      />
+      
+      {/* Content - unchanged */}
       <Box 
         sx={{ 
           position: 'relative',
@@ -91,7 +106,8 @@ const Home = () => {
           px: { xs: 3, md: 10 },
           maxWidth: '1200px',
           mx: 'auto',
-          width: '100%'
+          width: '100%',
+          textAlign: isMobile ? 'center' : 'left'
         }}
       >
         <Typography 
@@ -102,7 +118,8 @@ const Home = () => {
             fontWeight: 500,
             lineHeight: 1,
             mb: { xs: 2, md: 1 },
-            letterSpacing: "-0.02em"
+            letterSpacing: "-0.02em",
+            textShadow: '0 2px 4px rgba(0,0,0,0.3)'
           }}
           data-aos="fade-up"
         >
@@ -119,7 +136,10 @@ const Home = () => {
             mt: 2,
             display: 'flex',
             alignItems: 'center',
-            gap: 1
+            gap: 1,
+            justifyContent: isMobile ? 'center' : 'flex-start',
+            flexWrap: 'wrap',
+            textShadow: '0 2px 4px rgba(0,0,0,0.3)'
           }}
           data-aos="fade-up"
           data-aos-delay="100"

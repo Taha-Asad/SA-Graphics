@@ -145,7 +145,6 @@ const Testimonials = () => {
           component="h2"
           sx={{
             position: "relative",
-            fontFamily: "Raleway",
             fontWeight: "600",
             mb: { xs: "80px", md: "50px" },
             fontSize: { xs: "2rem", md: "2.5rem" },
@@ -165,7 +164,6 @@ const Testimonials = () => {
           Reviews
         </Typography>
         <Typography variant="body1" component="div" sx={{
-          fontFamily: "Raleway",
           fontWeight: "500",
           mb: "80px",
         }}>
@@ -192,7 +190,7 @@ const Testimonials = () => {
               </Grid>
             ) : testimonials.length === 0 ? (
               <Grid item xs={12} textAlign="center">
-                <Typography color="text.secondary" variant="h6" fontFamily="Raleway" fontWeight="600">
+                <Typography color="text.secondary" variant="h6" fontWeight="600">
                   No testimonials available. Be the first to write one!
                 </Typography>
               </Grid>
@@ -254,10 +252,9 @@ const Testimonials = () => {
                         <Typography
                           variant="h6"
                           component="div"
-                          fontFamily="Raleway"
                           sx={{
                             mb: 1,
-                            color: "#333",
+                            color: "#149ddd",
                             fontWeight: "600",
                             fontSize: { xs: "1.1rem", md: "1.25rem" },
                           }}
@@ -268,7 +265,6 @@ const Testimonials = () => {
                           <Typography
                             variant="subtitle1"
                             color="text.secondary"
-                            fontFamily="Raleway"
                             sx={{
                               mb: 2,
                               fontSize: { xs: "0.9rem", md: "1rem" },

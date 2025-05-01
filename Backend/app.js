@@ -28,7 +28,8 @@ const corsOptions = {
   origin: ['http://localhost:5173', 'http://localhost:5000'],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  exposedHeaders: ['Content-Type', 'Content-Length']
 };
 
 // Apply CORS configuration
@@ -57,10 +58,17 @@ app.use('/uploads', (req, res, next) => {
   res.set({
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET, HEAD',
+    'Access-Control-Allow-Headers': 'Content-Type',
     'Cache-Control': 'public, max-age=31557600'
   });
   next();
-}, express.static(UPLOAD_PATH));
+}, express.static(UPLOAD_PATH, {
+  setHeaders: (res, path) => {
+    if (path.endsWith('.jpg') || path.endsWith('.jpeg') || path.endsWith('.png') || path.endsWith('.gif')) {
+      res.setHeader('Content-Type', `image/${path.split('.').pop()}`);
+    }
+  }
+}));
 
 // Serve static files from public directory
 app.use(express.static(path.join(__dirname, 'public'), {
@@ -68,6 +76,7 @@ app.use(express.static(path.join(__dirname, 'public'), {
   setHeaders: (res, path) => {
     if (path.endsWith('.jpg') || path.endsWith('.jpeg') || path.endsWith('.png') || path.endsWith('.gif')) {
       res.setHeader('Cache-Control', 'public, max-age=86400');
+      res.setHeader('Content-Type', `image/${path.split('.').pop()}`);
     }
   }
 }));

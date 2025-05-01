@@ -19,12 +19,15 @@ import {
   Stack,
   Alert,
   Link,
+  Chip,
+  CircularProgress
 } from '@mui/material';
 import { Edit as EditIcon, Delete as DeleteIcon, Launch as LaunchIcon } from '@mui/icons-material';
 import axios from 'axios';
 
 const Projects = () => {
   const [projects, setProjects] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [selectedProject, setSelectedProject] = useState(null);
   const [formData, setFormData] = useState({
@@ -34,55 +37,46 @@ const Projects = () => {
     category: '',
     githubUrl: '',
     liveUrl: '',
-    image: null,
+    image: null
   });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [imagePreview, setImagePreview] = useState('');
 
-  // Get the token from localStorage
-  const getAuthHeader = () => {
-    const token = localStorage.getItem('token');
-    return token ? { Authorization: `Bearer ${token}` } : {};
-  };
-
+  // Fetch projects on component mount
   useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get('http://localhost:5000/api/v1/portfolio');
+        setProjects(response.data || []);
+        setError('');
+      } catch (err) {
+        setError(err.response?.data?.message || 'Failed to fetch projects');
+      } finally {
+        setLoading(false);
+      }
+    };
     fetchProjects();
   }, []);
 
-  const fetchProjects = async () => {
-    try {
-      const response = await axios.get('http://localhost:5000/api/v1/portfolio', {
-        headers: getAuthHeader()
-      });
-      setProjects(response.data || []);
-      // Clear any previous error messages if the request is successful
-      setError('');
-    } catch (error) {
-      if (error.response?.status === 401) {
-        setError('You are not logged in! Please log in to get access.');
-      } else {
-        setError('Failed to fetch projects');
-      }
-      console.error('Error fetching projects:', error);
-    }
-  };
-
+  // Handle dialog open
   const handleOpen = (project = null) => {
+    setSelectedProject(project);
     if (project) {
-      setSelectedProject(project);
       setFormData({
         title: project.title,
         description: project.description,
         technologies: Array.isArray(project.skillsUsed) 
           ? project.skillsUsed.join(', ') 
-          : project.technologies || '',
+          : '',
         category: project.category || '',
-        githubUrl: project.githubLink || project.githubUrl || '',
-        liveUrl: project.liveLink || project.liveUrl || '',
-        image: null,
+        githubUrl: project.githubLink || '',
+        liveUrl: project.liveLink || '',
+        image: null
       });
+      setImagePreview(project.image || '');
     } else {
-      setSelectedProject(null);
       setFormData({
         title: '',
         description: '',
@@ -90,152 +84,136 @@ const Projects = () => {
         category: '',
         githubUrl: '',
         liveUrl: '',
-        image: null,
+        image: null
       });
+      setImagePreview('');
     }
     setOpen(true);
   };
 
+  // Handle dialog close
   const handleClose = () => {
     setOpen(false);
     setSelectedProject(null);
-    setFormData({
-      title: '',
-      description: '',
-      technologies: '',
-      category: '',
-      githubUrl: '',
-      liveUrl: '',
-      image: null,
-    });
+    setError('');
   };
 
+  // Handle form input changes
   const handleChange = (e) => {
-    if (e.target.name === 'image') {
-      setFormData({ ...formData, image: e.target.files[0] });
-    } else {
-      setFormData({ ...formData, [e.target.name]: e.target.value });
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  // Handle image file selection
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setFormData({ ...formData, image: file });
+      
+      // Create preview URL
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
+  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
+    setSuccess('');
+
     try {
       // Validate required fields
       if (!formData.title || !formData.description || !formData.technologies || !formData.category) {
-        setError('Please fill in all required fields');
-        return;
+        throw new Error('Please fill in all required fields');
       }
 
+      // Prepare form data
       const formDataToSend = new FormData();
-      
-      // Convert technologies string to array and ensure it's not empty
-      const technologiesArray = formData.technologies
-        .split(',')
-        .map(tech => tech.trim())
-        .filter(tech => tech !== '');
-
-      if (technologiesArray.length === 0) {
-        setError('Please enter at least one technology');
-        return;
-      }
-
-      // Append all form data
       formDataToSend.append('title', formData.title);
       formDataToSend.append('description', formData.description);
-      
-      // Send technologies as skillsUsed (this is what the server expects)
-      formDataToSend.append('skillsUsed', JSON.stringify(technologiesArray));
-      
       formDataToSend.append('category', formData.category);
       
-      // Add links with proper field names
+      // Process technologies
+      const technologies = formData.technologies.split(',').map(tech => tech.trim());
+      formDataToSend.append('skillsUsed', JSON.stringify(technologies));
+      
       if (formData.githubUrl) formDataToSend.append('githubLink', formData.githubUrl);
       if (formData.liveUrl) formDataToSend.append('liveLink', formData.liveUrl);
       
-      // Check if image is provided and is a valid file
-      if (formData.image instanceof File) {
+      // Add image if it exists
+      if (formData.image) {
         formDataToSend.append('image', formData.image);
       }
 
-      // Get the authentication token
+      // Get auth token
       const token = localStorage.getItem('token');
       if (!token) {
-        setError('You are not logged in! Please log in to get access.');
-        return;
+        throw new Error('Authentication required');
       }
 
-      const headers = {
-        Authorization: `Bearer ${token}`,
+      // Configure request
+      const config = {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data'
+        }
       };
 
-      // Log the data being sent (for debugging)
-      console.log('Form Data being sent:');
-      for (let pair of formDataToSend.entries()) {
-        console.log(pair[0] + ': ' + pair[1]);
-      }
-
-      // Create a regular object for debugging
-      const debugData = {
-        title: formData.title,
-        description: formData.description,
-        skillsUsed: technologiesArray,
-        category: formData.category,
-        githubLink: formData.githubUrl || '',
-        liveLink: formData.liveUrl || '',
-      };
-      console.log('Debug data:', debugData);
-
+      let response;
       if (selectedProject) {
-        const response = await axios.put(
+        // Update existing project
+        response = await axios.put(
           `http://localhost:5000/api/v1/portfolio/${selectedProject._id}`,
           formDataToSend,
-          { headers }
+          config
         );
-        console.log('Update response:', response.data);
         setSuccess('Project updated successfully');
       } else {
-        const response = await axios.post(
+        // Create new project (require image)
+        if (!formData.image) {
+          throw new Error('Project image is required');
+        }
+        response = await axios.post(
           'http://localhost:5000/api/v1/portfolio',
           formDataToSend,
-          { headers }
+          config
         );
-        console.log('Create response:', response.data);
         setSuccess('Project created successfully');
       }
-      
-      fetchProjects();
+
+      // Refresh projects list
+      const projectsResponse = await axios.get('http://localhost:5000/api/v1/portfolio');
+      setProjects(projectsResponse.data || []);
       handleClose();
-    } catch (error) {
-      console.error('Error saving project:', error);
-      console.error('Error details:', error.response?.data);
-      
-      if (error.response?.status === 401) {
-        setError('You are not logged in! Please log in to get access.');
-      } else if (error.response?.data?.message) {
-        setError(error.response.data.message);
-      } else if (error.response?.status === 500) {
-        setError('Server error. Please check if all required fields are filled correctly.');
-      } else {
-        setError('Failed to save project. Please try again.');
-      }
+
+    } catch (err) {
+      console.error('Error:', err);
+      setError(err.response?.data?.message || err.message || 'An error occurred');
     }
   };
 
+  // Handle project deletion
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this project?')) {
       try {
-        await axios.delete(`http://localhost:5000/api/v1/portfolio/${id}`, {
-          headers: getAuthHeader()
-        });
-        setSuccess('Project deleted successfully');
-        fetchProjects();
-      } catch (error) {
-        if (error.response?.status === 401) {
-          setError('You are not logged in! Please log in to get access.');
-        } else {
-          setError('Failed to delete project');
+        const token = localStorage.getItem('token');
+        if (!token) {
+          throw new Error('Authentication required');
         }
+
+        await axios.delete(`http://localhost:5000/api/v1/portfolio/${id}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        setSuccess('Project deleted successfully');
+        const projectsResponse = await axios.get('http://localhost:5000/api/v1/portfolio');
+        setProjects(projectsResponse.data || []);
+
+      } catch (err) {
+        setError(err.response?.data?.message || err.message || 'Failed to delete project');
       }
     }
   };
@@ -244,94 +222,108 @@ const Projects = () => {
     <Box p={3}>
       <Stack direction="row" justifyContent="space-between" alignItems="center" mb={3}>
         <Typography variant="h4">Projects Management</Typography>
-        <Button variant="contained" color="primary" onClick={() => handleOpen()}>
+        <Button 
+          variant="contained" 
+          color="primary" 
+          onClick={() => handleOpen()}
+          disabled={loading}
+        >
           Add New Project
         </Button>
       </Stack>
 
+      {/* Status messages */}
       {error && (
-        <Alert 
-          severity="error" 
-          sx={{ mb: 2 }}
-          action={
-            error.includes('not logged in') && (
-              <Button 
-                color="inherit" 
-                size="small" 
-                onClick={() => window.location.href = '/login'}
-              >
-                Login
-              </Button>
-            )
-          }
-        >
+        <Alert severity="error" sx={{ mb: 2 }}>
           {error}
+          {error.includes('Authentication') && (
+            <Button 
+              color="inherit" 
+              size="small" 
+              onClick={() => window.location.href = '/login'}
+              sx={{ ml: 1 }}
+            >
+              Login
+            </Button>
+          )}
         </Alert>
       )}
       {success && <Alert severity="success" sx={{ mb: 2 }}>{success}</Alert>}
 
-      <TableContainer component={Paper}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Title</TableCell>
-              <TableCell>Technologies</TableCell>
-              <TableCell>Category</TableCell>
-              <TableCell>URLs</TableCell>
-              <TableCell>Actions</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {projects.map((project) => (
-              <TableRow key={project._id}>
-                <TableCell>{project.title}</TableCell>
-                <TableCell>
-                  {Array.isArray(project.skillsUsed) 
-                    ? project.skillsUsed.join(', ') 
-                    : project.technologies}
-                </TableCell>
-                <TableCell>{project.category}</TableCell>
-                <TableCell>
-                  {(project.githubLink || project.githubUrl) && (
-                    <Link 
-                      href={project.githubLink || project.githubUrl} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      sx={{ display: 'flex', alignItems: 'center', mb: 1 }}
-                    >
-                      GitHub <LaunchIcon sx={{ ml: 0.5, fontSize: 16 }} />
-                    </Link>
-                  )}
-                  {(project.liveLink || project.liveUrl) && (
-                    <Link 
-                      href={project.liveLink || project.liveUrl} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      sx={{ display: 'flex', alignItems: 'center' }}
-                    >
-                      Live Demo <LaunchIcon sx={{ ml: 0.5, fontSize: 16 }} />
-                    </Link>
-                  )}
-                </TableCell>
-                <TableCell>
-                  <IconButton onClick={() => handleOpen(project)}>
-                    <EditIcon />
-                  </IconButton>
-                  <IconButton onClick={() => handleDelete(project._id)}>
-                    <DeleteIcon />
-                  </IconButton>
-                </TableCell>
+      {/* Projects table */}
+      {loading ? (
+        <Box display="flex" justifyContent="center" my={4}>
+          <CircularProgress />
+        </Box>
+      ) : (
+        <TableContainer component={Paper}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Title</TableCell>
+                <TableCell>Technologies</TableCell>
+                <TableCell>Category</TableCell>
+                <TableCell>Links</TableCell>
+                <TableCell>Actions</TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+            </TableHead>
+            <TableBody>
+              {projects.map((project) => (
+                <TableRow key={project._id}>
+                  <TableCell>{project.title}</TableCell>
+                  <TableCell>
+                    <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap' }}>
+                      {Array.isArray(project.skillsUsed) && project.skillsUsed.map((tech, index) => (
+                        <Chip key={index} label={tech} size="small" />
+                      ))}
+                    </Stack>
+                  </TableCell>
+                  <TableCell>{project.category}</TableCell>
+                  <TableCell>
+                    {project.githubLink && (
+                      <Link 
+                        href={project.githubLink} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        sx={{ display: 'flex', alignItems: 'center', mb: 1 }}
+                      >
+                        GitHub <LaunchIcon sx={{ ml: 0.5, fontSize: 16 }} />
+                      </Link>
+                    )}
+                    {project.liveLink && (
+                      <Link 
+                        href={project.liveLink} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        sx={{ display: 'flex', alignItems: 'center' }}
+                      >
+                        Live Demo <LaunchIcon sx={{ ml: 0.5, fontSize: 16 }} />
+                      </Link>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <IconButton onClick={() => handleOpen(project)}>
+                      <EditIcon />
+                    </IconButton>
+                    <IconButton onClick={() => handleDelete(project._id)}>
+                      <DeleteIcon />
+                    </IconButton>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      )}
 
-      <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
-        <DialogTitle>{selectedProject ? 'Edit Project' : 'Add New Project'}</DialogTitle>
+      {/* Project form dialog */}
+      <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
+        <DialogTitle>
+          {selectedProject ? 'Edit Project' : 'Add New Project'}
+        </DialogTitle>
         <form onSubmit={handleSubmit}>
           <DialogContent>
-            <Stack spacing={2}>
+            <Stack spacing={2} sx={{ mt: 1 }}>
               <TextField
                 name="title"
                 label="Title"
@@ -340,6 +332,7 @@ const Projects = () => {
                 fullWidth
                 required
               />
+              
               <TextField
                 name="description"
                 label="Description"
@@ -350,15 +343,17 @@ const Projects = () => {
                 rows={4}
                 required
               />
+              
               <TextField
                 name="technologies"
-                label="Technologies (comma-separated)"
+                label="Technologies (comma separated)"
                 value={formData.technologies}
                 onChange={handleChange}
                 fullWidth
                 required
-                helperText="Enter technologies separated by commas (e.g., React, Node.js, MongoDB)"
+                helperText="List technologies separated by commas (e.g., React, Node.js, MongoDB)"
               />
+              
               <TextField
                 name="category"
                 label="Category"
@@ -367,6 +362,7 @@ const Projects = () => {
                 fullWidth
                 required
               />
+              
               <TextField
                 name="githubUrl"
                 label="GitHub URL"
@@ -374,8 +370,8 @@ const Projects = () => {
                 onChange={handleChange}
                 fullWidth
                 type="url"
-                helperText="Enter the full URL (e.g., https://github.com/username/project)"
               />
+              
               <TextField
                 name="liveUrl"
                 label="Live Demo URL"
@@ -383,17 +379,17 @@ const Projects = () => {
                 onChange={handleChange}
                 fullWidth
                 type="url"
-                helperText="Enter the full URL (e.g., https://project-demo.com)"
               />
+              
+              {/* Image upload */}
               <input
                 accept="image/*"
-                id="project-image"
+                id="project-image-upload"
                 type="file"
-                name="image"
-                onChange={handleChange}
+                onChange={handleImageChange}
                 style={{ display: 'none' }}
               />
-              <label htmlFor="project-image">
+              <label htmlFor="project-image-upload">
                 <Button
                   variant="outlined"
                   component="span"
@@ -402,9 +398,28 @@ const Projects = () => {
                   {selectedProject ? 'Change Project Image' : 'Upload Project Image'}
                 </Button>
               </label>
-              {formData.image && (
-                <Typography variant="caption">
-                  Selected file: {formData.image.name}
+              
+              {/* Image preview */}
+              {(imagePreview || formData.image) && (
+                <Box sx={{ mt: 2 }}>
+                  <Typography variant="subtitle2">Image Preview:</Typography>
+                  <img
+                    src={imagePreview}
+                    alt="Preview"
+                    style={{ 
+                      maxWidth: '100%', 
+                      maxHeight: '200px',
+                      marginTop: '8px',
+                      display: 'block'
+                    }}
+                  />
+                </Box>
+              )}
+              
+              {/* Required field note for new projects */}
+              {!selectedProject && (
+                <Typography variant="caption" color="error">
+                  * Image is required for new projects
                 </Typography>
               )}
             </Stack>
@@ -421,4 +436,4 @@ const Projects = () => {
   );
 };
 
-export default Projects; 
+export default Projects;

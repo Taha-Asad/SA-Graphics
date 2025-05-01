@@ -25,10 +25,10 @@ exports.createBook = async (req, res) => {
       return res.status(500).json({ message: "File upload failed" });
     }
 
-    // Create book data with file path
+    // Create book data with file path - ensure consistent path format
     const bookData = {
       ...req.body,
-      coverImage: `/uploads/${req.file.filename}`, // Save the file path
+      coverImage: `uploads/books/${req.file.filename}`, // Use the correct subdirectory
       price: Number(req.body.price || 0),
       stock: Number(req.body.stock || 0),
       countInStock: Number(req.body.countInStock || 0),
@@ -83,7 +83,7 @@ exports.createBook = async (req, res) => {
     }
     
     if (error.code === 11000) {
-      return res.status(400).json({ message: "ISBN must be unique" });
+      return res.status(400).json({ message: "A book with these details already exists" });
     }
     
     // Handle mongoose validation errors
@@ -141,9 +141,9 @@ exports.updateBook = async (req, res) => {
     const bookId = req.params.id;
     const updateData = { ...req.body };
     
-    // If a new file was uploaded, update the coverImage
+    // If a new file was uploaded, update the coverImage with consistent path format
     if (req.file) {
-      updateData.coverImage = `/uploads/${req.file.filename}`;
+      updateData.coverImage = `uploads/books/${req.file.filename}`; // Use the correct subdirectory
     }
 
     // Convert numeric fields
@@ -210,7 +210,7 @@ exports.updateBook = async (req, res) => {
     }
     
     if (error.code === 11000) {
-      return res.status(400).json({ message: "ISBN must be unique" });
+      return res.status(400).json({ message: "A book with these details already exists" });
     }
     
     // Handle mongoose validation errors

@@ -10,6 +10,7 @@ import YouTubeIcon from '@mui/icons-material/YouTube';
 import { FaWhatsapp } from 'react-icons/fa';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
+import { Links } from "../Navbar/Links.jsx";
 
 const Footer = () => {
   const [expandedSection, setExpandedSection] = useState('');
@@ -119,31 +120,37 @@ const Footer = () => {
                 </Typography>
                 <IconButton sx={{ color: 'white', p: 0 }}>
                   {expandedSection === 'quickLinks' ? <RemoveIcon /> : <AddIcon />}
-                      </IconButton>
+                </IconButton>
               </Box>
               <Collapse in={expandedSection === 'quickLinks'} timeout="auto">
                 <Stack spacing={1.5}>
-                  <Link component={RouterLink} to="/" sx={{ color: '#fff', textDecoration: 'none', '&:hover': { color: '#149ddd' } }}>
-                    Home
-                  </Link>
-                  <Link component={RouterLink} to="/about" sx={{ color: '#fff', textDecoration: 'none', '&:hover': { color: '#149ddd' } }}>
-                    About
-                  </Link>
-                  <Link component={RouterLink} to="/courses" sx={{ color: '#fff', textDecoration: 'none', '&:hover': { color: '#149ddd' } }}>
-                    Courses
-                  </Link>
-                  {/* <Link component={RouterLink} to="/privacy" sx={{ color: '#fff', textDecoration: 'none', '&:hover': { color: '#149ddd' } }}>
-                    Privacy Policy
-                  </Link>
-                  <Link component={RouterLink} to="/terms" sx={{ color: '#fff', textDecoration: 'none', '&:hover': { color: '#149ddd' } }}>
-                    Terms of Service
-                  </Link> */}
-                  {/* <Link component={RouterLink} to="/refund-policy" sx={{ color: '#fff', textDecoration: 'none', '&:hover': { color: '#149ddd' } }}>
-                    Return & Refund Policy
-                  </Link> */}
-                  <Link component={RouterLink} to="/contact" sx={{ color: '#fff', textDecoration: 'none', '&:hover': { color: '#149ddd' } }}>
-                    Contact
-                  </Link>
+                  {Links.map((link) => (
+                    <ScrollLink
+                      key={link.id}
+                      to={link.to}
+                      spy={true}
+                      smooth={true}
+                      offset={-70}
+                      duration={500}
+                    >
+                      <Box
+                        sx={{
+                          color: "#fff",
+                          fontSize: "15px",
+                          cursor: "pointer",
+                          position: "relative",
+                          letterSpacing: "0.5px",
+                          fontWeight: 500,
+                          transition: "all 0.3s ease",
+                          '&:hover': {
+                            color: '#149ddd',
+                          }
+                        }}
+                      >
+                        {link.title}
+                      </Box>
+                    </ScrollLink>
+                  ))}
                 </Stack>
               </Collapse>
             </Box>
@@ -154,30 +161,36 @@ const Footer = () => {
                 Quick Links
               </Typography>
               <Stack spacing={1.5}>
-                <Link component={RouterLink} to="/" sx={{ color: '#fff', textDecoration: 'none', '&:hover': { color: '#149ddd' } }}>
-                  Home
-                </Link>
-                <Link component={RouterLink} to="/about" sx={{ color: '#fff', textDecoration: 'none', '&:hover': { color: '#149ddd' } }}>
-                  About
-                </Link>
-                <Link component={RouterLink} to="/courses" sx={{ color: '#fff', textDecoration: 'none', '&:hover': { color: '#149ddd' } }}>
-                  Courses
-                </Link>
-                {/* <Link component={RouterLink} to="/privacy" sx={{ color: '#fff', textDecoration: 'none', '&:hover': { color: '#149ddd' } }}>
-                  Privacy Policy
-                </Link>
-                <Link component={RouterLink} to="/terms" sx={{ color: '#fff', textDecoration: 'none', '&:hover': { color: '#149ddd' } }}>
-                  Terms of Service
-                </Link> */}
-                {/* <Link component={RouterLink} to="/refund-policy" sx={{ color: '#fff', textDecoration: 'none', '&:hover': { color: '#149ddd' } }}>
-                  Return & Refund Policy
-                </Link> */}
-                <Link component={RouterLink} to="/contact" sx={{ color: '#fff', textDecoration: 'none', '&:hover': { color: '#149ddd' } }}>
-                  Contact
-                    </Link>
+                {Links.map((link) => (
+                  <ScrollLink
+                    key={link.id}
+                    to={link.to}
+                    spy={true}
+                    smooth={true}
+                    offset={-70}
+                    duration={500}
+                  >
+                    <Box
+                      sx={{
+                        color: "#fff",
+                        fontSize: "15px",
+                        cursor: "pointer",
+                        position: "relative",
+                        letterSpacing: "0.5px",
+                        fontWeight: 500,
+                        transition: "all 0.3s ease",
+                        '&:hover': {
+                          color: '#149ddd',
+                        }
+                      }}
+                    >
+                      {link.title}
+                    </Box>
+                  </ScrollLink>
+                ))}
               </Stack>
             </Box>
-                  </Grid>
+          </Grid>
 
           {/* Services */}
           <Grid item xs={12} sm={6} md={3} sx={{ pr: { md: 1 } }}>
@@ -242,8 +255,8 @@ const Footer = () => {
                   Packaging
                 </Link>
               </Stack>
-              </Box>
-            </Grid>
+            </Box>
+          </Grid>
 
           {/* Contact Info */}
           <Grid item xs={12} sm={6} md={3}>
@@ -331,8 +344,8 @@ const Footer = () => {
             <Link component={RouterLink} to="/disclaimer">Disclaimer</Link>
           </Box>
         </Box>
-        </Container>
-      </Box>
+      </Container>
+    </Box>
   );
 };
 

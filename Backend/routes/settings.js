@@ -1,14 +1,14 @@
 const express = require('express');
 const router = express.Router();
 const Settings = require('../models/settings.model.js');
-const { auth } = require('../middleware/auth');
+const { authMiddleware } = require('../middleware/authMiddleware');
 const User = require('../models/user.model');
 const bcrypt = require('bcryptjs');
 const createError = require('http-errors');
-const upload = require('../middleware/upload');
+const { profileUpload } = require('../config/multer.js');
 
 // Protected routes - apply auth middleware to all routes
-router.use(auth);
+router.use(authMiddleware);
 
 // Get settings
 router.get('/', async (req, res) => {
@@ -86,7 +86,7 @@ router.put('/password', async (req, res, next) => {
 });
 
 // Update profile with file upload
-router.put('/profile', upload.single('profilePic'), async (req, res, next) => {
+router.put('/profile', profileUpload.single('profilePic'), async (req, res, next) => {
   try {
     console.log('Request body:', req.body);
     console.log('Request file:', req.file);
@@ -97,7 +97,7 @@ router.put('/profile', upload.single('profilePic'), async (req, res, next) => {
     // Handle file upload if present
     if (req.file) {
       // Use absolute URL for the profile picture
-      updates.profilePic = `http://localhost:5000/uploads/${req.file.filename}`;
+      updates.profilePic = `http://localhost:5000/uploads/profiles/${req.file.filename}`;
       console.log('Profile pic path:', updates.profilePic);
     }
 

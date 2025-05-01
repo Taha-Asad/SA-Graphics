@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const authController = require("../Controllers/auth.controller.js");
 const bookController = require("../controllers/book.controller");
-// const orderController = require("../controllers/order.controller");
+const orderController = require("../controllers/order.controller");
 const portfolioController = require("../controllers/portfolio.controller");
 const testimonialController = require("../Controllers/testimonials.controller.js");
 const reviewsController = require("../Controllers/reviews.controller.js");
@@ -10,7 +10,7 @@ const userController = require("../Controllers/user.controller.js");
 const projectController = require("../controllers/project.controller");
 const authMiddleware = require("../middlewares/authMiddleware");
 const adminMiddleware = require("../middlewares/adminMiddleware");
-const { upload, handleMulterError } = require("../config/multer");
+const { bookUpload, paymentProofUpload, projectUpload, profileUpload, handleMulterError } = require("../config/multer");
 const errorHandler = require("../middlewares/errorHandler");
 const { validateJoi } = require("../middlewares/validationMiddleware");
 const {
@@ -32,7 +32,7 @@ const { verifyToken } = require('../middleware/auth');
 // Auth Routes
 router.post(
   "/register",
-  upload.single('profilePhoto'),
+  profileUpload.single('profilePhoto'),
   validateJoi(registerSchema),
   authController.registerUser
 );
@@ -58,7 +58,7 @@ router.post(
 router.put(
   "/update-profile-pic",
   authMiddleware,
-  upload.single("profilePic"),
+  profileUpload.single("profilePic"),
   authController.updateProfilePic
 );
 
@@ -88,7 +88,7 @@ router.post(
   "/books",
   authMiddleware,
   adminMiddleware,
-  upload.single("coverImage"),
+  bookUpload.single("coverImage"),
   handleMulterError,
   bookController.createBook
 );
@@ -101,7 +101,7 @@ router.put(
   "/books/:id",
   authMiddleware,
   adminMiddleware,
-  upload.single("coverImage"),
+  bookUpload.single("coverImage"),
   handleMulterError,
   bookController.updateBook
 );
@@ -114,13 +114,19 @@ router.delete(
 );
 
 // Order Routes
+router.post('/orders', authMiddleware, paymentProofUpload.single('transferProof'), orderController.createOrder);
+router.get('/orders', authMiddleware, orderController.getUserOrders);
+router.get('/orders/:orderId', authMiddleware, orderController.getOrderById);
+router.patch('/orders/:orderId/status', authMiddleware, adminMiddleware, orderController.updateOrderStatus);
+router.patch('/orders/:orderId/payment-status', authMiddleware, adminMiddleware, orderController.verifyPayment);
+router.post('/orders/:orderId/cancel', authMiddleware, orderController.cancelOrder);
 
 // Portfolio Routes
 router.post(
   "/portfolio",
   authMiddleware,
   adminMiddleware,
-  upload.single("image"),
+  projectUpload.single("image"),
   portfolioController.createProject
 );
 
@@ -132,7 +138,7 @@ router.put(
   "/portfolio/:id",
   authMiddleware,
   adminMiddleware,
-  upload.single("image"),
+  projectUpload.single("image"),
   portfolioController.updateProject
 );
 
@@ -288,7 +294,7 @@ router.delete("/services/:id", authMiddleware, adminMiddleware, serviceControlle
 // Update profile with photo upload
 router.patch('/profile',
   verifyToken,
-  upload.single('profilePhoto'),
+  profileUpload.single('profilePhoto'),
   handleMulterError,
   async (req, res) => {
     // ... rest of the profile update logic

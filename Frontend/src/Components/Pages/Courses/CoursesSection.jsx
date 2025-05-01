@@ -259,7 +259,6 @@ const CoursesSection = () => {
               component="h2"
               sx={{
                 position: "relative",
-                fontFamily: "Raleway",
                 fontWeight: "600",
                 mb: { xs: "80px", md: "50px" },
                 fontSize: { xs: "2rem", md: "2.5rem" },
@@ -366,6 +365,7 @@ const CoursesSection = () => {
                   sx={{ 
                     height: '100%', 
                     display: 'flex', 
+                    padding: 2,
                     flexDirection: 'column',
                     position: 'relative',
                     '&::after': {
@@ -379,6 +379,7 @@ const CoursesSection = () => {
                       opacity: 0,
                       transition: 'opacity 0.2s ease-in-out',
                       zIndex: -1
+                      
                     },
                     '&:hover': {
                       transform: 'translateY(-5px)',
@@ -391,11 +392,13 @@ const CoursesSection = () => {
                   <CardMedia
                     component="img"
                     height="200"
+                
                     image={getImageUrl(course.thumbnail)}
                     alt={course.title}
                     sx={{ 
                       objectFit: 'cover',
-                      backgroundColor: '#f5f5f5'
+                      backgroundColor: '#f5f5f5',
+                      borderRadius: "12px",
                     }}
                     loading="lazy"
                     onError={(e) => {

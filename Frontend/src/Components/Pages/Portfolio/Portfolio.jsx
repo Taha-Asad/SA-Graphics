@@ -45,7 +45,7 @@ const ProjectCard = memo(({ project, onClick }) => {
     <CardMedia
       component="img"
       height="200"
-      image={project.image || 'https://via.placeholder.com/300x200?text=No+Image'}
+      image={resolveImageUrl(project.image) || '/images/placeholder.jpg'}
       alt={project.title}
       sx={{
         objectFit: 'cover',
@@ -422,8 +422,7 @@ const Portfolio = React.memo(function Portfolio() {
           component="h2"
           sx={{
             position: "relative",
-            fontFamily: "Raleway",
-            fontWeight: "600",
+              fontWeight: "600",
             mt: 0,
             mb: { xs: "20px", md: "25px" },
             fontSize: { xs: "2rem", md: "2.5rem" },
@@ -544,58 +543,156 @@ const Portfolio = React.memo(function Portfolio() {
         fullWidth
         TransitionComponent={Fade}
         TransitionProps={{ timeout: 400 }}
+        PaperProps={{
+          sx: {
+            borderRadius: 2,
+            background: 'linear-gradient(145deg, #1e242c 0%, #171b21 100%)',
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+            border: '1px solid rgba(255, 255, 255, 0.05)',
+            overflow: 'hidden',
+            '& *': {
+  overflow: 'hidden !important'
+}
+          }
+        }}
       >
         {selectedProject && (
-          <DialogContent sx={{ p: 0, position: 'relative' }}>
-          <IconButton
-            onClick={handleCloseProjectModal}
+          <DialogContent sx={{ p: 0, position: 'relative', bgcolor: 'transparent' }}>
+            <IconButton
+              onClick={handleCloseProjectModal}
               sx={{
                 position: 'absolute',
-                right: 8,
-                top: 8,
-                color: 'grey.500',
+                right: 16,
+                top: 16,
+                color: 'white',
                 zIndex: 1,
-                bgcolor: 'white',
+                bgcolor: 'rgba(0, 0, 0, 0.5)',
+                backdropFilter: 'blur(4px)',
                 '&:hover': {
-                  bgcolor: 'grey.200',
+                  bgcolor: 'rgba(255, 255, 255, 0.2)',
+                  transform: 'rotate(90deg)',
                 },
+                transition: 'all 0.3s ease-in-out'
               }}
-          >
-            <CloseIcon />
-          </IconButton>
+            >
+              <CloseIcon />
+            </IconButton>
             <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' } }}>
               <Box
                 component="img"
-                src={selectedProject.image || 'https://via.placeholder.com/600x400?text=No+Image'}
-                  alt={selectedProject.title}
+                src={resolveImageUrl(selectedProject.image) || '/images/placeholder.jpg'}
+                alt={selectedProject.title}
                 sx={{
                   width: { xs: '100%', md: '50%' },
                   height: { xs: '300px', md: 'auto' },
-                  objectFit: 'cover',
+                  objectFit: 'contain',
+                  padding: '20px',
+                  transition: 'transform 0.3s ease-in-out',
+                  '&:hover': {
+                    transform: 'scale(1.02)'
+                  }
                 }}
               />
-              <Box sx={{ p: 3, flex: 1 }}>
-                <Typography variant="h5" component="h2" gutterBottom>
+              <Box 
+                sx={{ 
+                  p: 4, 
+                  flex: 1,
+                  color: 'white',
+                  background: 'rgba(255, 255, 255, 0.02)'
+                }}
+              >
+                <Typography 
+                  variant="h4" 
+                  component="h2" 
+                  gutterBottom
+                  sx={{
+                    // color: 'linear-gradient(50deg, #149DDD 80%, #A2EEFD 80%);',
+                    fontWeight: 600,
+                    background: 'linear-gradient(160deg, #149DDD 30%, #A2EEFD 60%);',
+                    backgroundClip: 'text',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    mb: 2
+                  }}
+                >
                   {selectedProject.title}
                 </Typography>
-                <Typography variant="body1" color="text.secondary" paragraph>
+                <Typography 
+                  variant="body1" 
+                  sx={{ 
+                    color: 'rgba(255, 255, 255, 0.8)',
+                    lineHeight: 1.7,
+                    mb: 1
+                  }}
+                >
                   {selectedProject.description}
                 </Typography>
-                {selectedProject.skillsUsed && (
-                  <Box sx={{ mt: 2 }}>
-                    <Typography variant="subtitle1" gutterBottom>
-                      Technologies Used:
+                <Typography 
+                      variant="h6" 
+                      gutterBottom
+                      sx={{ 
+                        fontWeight: 500,
+                        background: 'linear-gradient(120deg, #149DDD 0%, #A2EEFD 60%);',
+                        backgroundClip: 'text',
+                        WebkitBackgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent',
+                        mb: 1
+                      }}
+                    >
+                      Category
                     </Typography>
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                    <Box
+                          sx={{
+                            bgcolor: 'rgba(20, 157, 221, 0.1)',
+                            color: '#fff',
+                            px: 2,
+                            py: 0.75,
+                            borderRadius: 2,
+                            fontSize: '0.875rem',
+                            border: '1px solid rgba(20, 157, 221, 0.2)',
+                            transition: 'all 0.2s ease-in-out',
+                            '&:hover': {
+                              bgcolor: 'rgba(20, 157, 221, 0.2)',
+                              transform: 'translateY(-2px)'
+                            }
+                          }}
+                        >
+                          {selectedProject.category}
+                        </Box>
+                {selectedProject.skillsUsed && (
+                  <Box sx={{ mt: 1 }}>
+                    <Typography 
+                      variant="h6" 
+                      gutterBottom
+                      sx={{ 
+                        color: 'white',
+                        fontWeight: 500,
+                        background: 'linear-gradient(120deg, #149DDD 0%, #A2EEFD 60%);',
+                        backgroundClip: 'text',
+                        WebkitBackgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent',
+                        mb: 1
+                      }}
+                    >
+                      Tools Used
+                    </Typography>
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                       {selectedProject.skillsUsed.map((tech, index) => (
                         <Box
-                      key={index}
-                      sx={{
-                            bgcolor: '#f0f0f0',
-                            px: 1.5,
-                            py: 0.5,
-                        borderRadius: 1,
+                          key={index}
+                          sx={{
+                            bgcolor: 'rgba(20, 157, 221, 0.1)',
+                            color: '#fff',
+                            px: 2,
+                            py: 0.75,
+                            borderRadius: 2,
                             fontSize: '0.875rem',
+                            border: '1px solid rgba(20, 157, 221, 0.2)',
+                            transition: 'all 0.2s ease-in-out',
+                            '&:hover': {
+                              bgcolor: 'rgba(20, 157, 221, 0.2)',
+                              transform: 'translateY(-2px)'
+                            }
                           }}
                         >
                           {tech}
@@ -604,46 +701,9 @@ const Portfolio = React.memo(function Portfolio() {
                     </Box>
                   </Box>
                 )}
-                <Box sx={{ mt: 2 }}>
-                  <Typography variant="subtitle1" gutterBottom>
-                    Links:
-                    </Typography>
-                  <Stack direction="row" spacing={2}>
-                    {(selectedProject.githubLink || selectedProject.githubUrl) && (
-                      <Link
-                        href={selectedProject.githubLink || selectedProject.githubUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        sx={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          textDecoration: 'none',
-                        }}
-                      >
-                        <GitHubIcon sx={{ mr: 0.5 }} />
-                        View on GitHub
-                      </Link>
-                    )}
-                    {(selectedProject.liveLink || selectedProject.liveUrl) && (
-                      <Link
-                        href={selectedProject.liveLink || selectedProject.liveUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        sx={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          textDecoration: 'none',
-                        }}
-                      >
-                        <LaunchIcon sx={{ mr: 0.5 }} />
-                        Live Demo
-                      </Link>
-                    )}
-                  </Stack>
-                </Box>
               </Box>
             </Box>
-        </DialogContent>
+          </DialogContent>
         )}
       </Dialog>
 

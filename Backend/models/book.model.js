@@ -7,7 +7,6 @@ const bookSchema = new mongoose.Schema({
   description: { type: String, required: true },
   coverImage: { type: String, required: true },
   publishDate: { type: Date, required: true },
-  isbn: { type: String, required: true, unique: true },
   category: { type: String, required: true },
   price: { type: Number, required: true },
   discount: { 

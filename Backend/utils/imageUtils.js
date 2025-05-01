@@ -4,11 +4,11 @@ const fs = require('fs');
 /**
  * Resolves an image path to a URL that can be used in the frontend
  * @param {string} imagePath - The path to the image (can be relative or absolute)
- * @returns {string} - The resolved URL
+ * @returns {string} - The resolved URL without leading slash for consistency
  */
 const resolveImageUrl = (imagePath) => {
   if (!imagePath) {
-    return '/images/placeholder.jpg';
+    return 'images/placeholder.jpg';
   }
 
   // If it's already a full URL, return it
@@ -24,13 +24,13 @@ const resolveImageUrl = (imagePath) => {
   // Clean up the path to ensure consistent format
   const cleanPath = imagePath.replace(/^\/+/, '').replace(/\\/g, '/');
 
-  // If it's in the uploads directory, ensure it starts with uploads/
+  // If it's in the uploads directory, return the clean path
   if (cleanPath.includes('uploads/')) {
-    return `/${cleanPath}`;
+    return cleanPath;
   }
 
   // Default case: assume it's a relative path in the uploads directory
-  return `/uploads/${cleanPath}`;
+  return `uploads/${cleanPath}`;
 };
 
 /**
