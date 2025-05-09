@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import "./home.css";
-import { Box, Typography, useTheme, useMediaQuery } from "@mui/material";
-
+import { Box, Typography, useTheme, useMediaQuery, Grid, Card, CardMedia, Container } from "@mui/material";
+import Gallery from "../Gallery/Gallery";
 const words = ["Developer", "Freelancer", "Designer"];
 
 const Home = () => {
@@ -63,6 +63,7 @@ const Home = () => {
   }, []);
 
   return (
+    <>
     <Box 
       id="home"
       sx={{ 
@@ -73,7 +74,7 @@ const Home = () => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        mt: '150px',
+        mt: {md:'150px', xs: "140px"},
         mb: '0px',
         overflow: 'hidden'
       }}
@@ -115,7 +116,7 @@ const Home = () => {
           sx={{
             color: "#ffffff",
             fontSize: { xs: "2rem", sm: "3rem", md: "4rem" },
-            fontWeight: 500,
+            fontWeight: 700,
             lineHeight: 1,
             mb: { xs: 2, md: 1 },
             letterSpacing: "-0.02em",
@@ -149,6 +150,8 @@ const Home = () => {
         </Typography>
       </Box>
     </Box>
+      <Gallery/>
+    </>
   );
 };
 

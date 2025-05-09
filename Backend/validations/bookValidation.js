@@ -11,7 +11,8 @@ const bookSchema = Joi.object({
   publishDate: Joi.date().required(),
   // Image is handled by multer middleware
   coverImage: Joi.string().optional(),
-  discount: Joi.number().min(0).max(100).default(0)
+  discount: Joi.number().min(0).max(100).default(0),
+  bulkDiscount: Joi.number().min(0).max(100).default(0)
 });
 
 const reviewSchema = Joi.object({

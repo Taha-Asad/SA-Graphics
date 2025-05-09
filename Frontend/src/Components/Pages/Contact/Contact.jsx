@@ -64,7 +64,6 @@ const Contact = () => {
         overflow: "hidden",
         width: "100%",
       }}
-      data-aos="fade-up"
     >
       <Container maxWidth="lg">
         <Typography
@@ -86,7 +85,7 @@ const Contact = () => {
               transform: "translateX(-50%)",
             },
           }}
-          data-aos="fade-down"
+          data-aos="fade-right"
         >
           Contact
         </Typography>
@@ -98,13 +97,13 @@ const Contact = () => {
               elevation={3}
               component="form"
               onSubmit={handleOnSubmit}
-            
+
               sx={{
                 overflow: "hidden",
                 boxShadow: "0 0 20px rgba(0, 0, 0, 0.1)",
                 p: { xs: 3, md: 4 },
                 bgcolor: "#1B1F27", // updated background color
-color: "#fff", // updated text color
+                color: "#fff", // updated text color
                 height: "100%",
                 transition: "all 0.3s ease",
                 "&:hover": {
@@ -238,88 +237,88 @@ color: "#fff", // updated text color
 
           {/* Contact Info Column */}
           <Grid item xs={12} md={5}>
-          <Paper
-    elevation={3}
-    sx={{
-        boxShadow: "0 0 20px rgba(0, 0, 0, 0.1)",
-        p: { xs: 3, md: 4 },
-        height: "100%",
-        transition: "all 0.3s ease",
-        bgcolor: "#1B1F27", // updated background color
-        color: "#fff", // updated text color
-        "&:hover": {
-            boxShadow: "0 0 30px rgba(0, 0, 0, 0.15)",
-            transform: "translateY(-5px)",
-        },
-    }}
-    data-aos="fade-down"
->
-        <Typography
-            variant="h5"
-            component="h3"
-            sx={{
-                mb: 3,
-                fontWeight: 600,
-                color: "#149DDD",
-            }}
-        >
-            Contact Information
-        </Typography>
+            <Paper
+              elevation={3}
+              sx={{
+                boxShadow: "0 0 20px rgba(0, 0, 0, 0.1)",
+                p: { xs: 3, md: 4 },
+                height: "100%",
+                transition: "all 0.3s ease",
+                bgcolor: "#1B1F27", // updated background color
+                color: "#fff", // updated text color
+                "&:hover": {
+                  boxShadow: "0 0 30px rgba(0, 0, 0, 0.15)",
+                  transform: "translateY(-5px)",
+                },
+              }}
+              data-aos="fade-left"
+            >
+              <Typography
+                variant="h5"
+                component="h3"
+                sx={{
+                  mb: 3,
+                  fontWeight: 600,
+                  color: "#149DDD",
+                }}
+              >
+                Contact Information
+              </Typography>
 
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-            <Box
-                onMouseEnter={() => setHoveredIndex(1)}
-                onMouseLeave={() => setHoveredIndex(null)}
-                sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                <Box sx={{ borderRadius: "50%", padding: "10px", transition: "all 0.7s ease", color: hoveredIndex === 1 ? "#fff" : "#149DDD", bgcolor: hoveredIndex === 1 ? "#149DDD" : "#F4FAFD", border: hoveredIndex === 1 ? "1px solid transparent" : "1px solid #149ddd" }}>
-                <MdLocationPin size={24} />
-                </Box>
-                <Box>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                <Box
+                  onMouseEnter={() => setHoveredIndex(1)}
+                  onMouseLeave={() => setHoveredIndex(null)}
+                  sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                  <Box sx={{ borderRadius: "50%", padding: "10px", transition: "all 0.7s ease", color: hoveredIndex === 1 ? "#fff" : "#149DDD", bgcolor: hoveredIndex === 1 ? "#149DDD" : "#F4FAFD", border: hoveredIndex === 1 ? "1px solid transparent" : "1px solid #149ddd" }}>
+                    <MdLocationPin size={24} />
+                  </Box>
+                  <Box>
                     <Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5 }}>
-                        Address
+                      Address
                     </Typography>
                     <Typography variant="body1" >
-                        123 Main St, Anytown, USA
+                      123 Main St, Anytown, USA
                     </Typography>
+                  </Box>
                 </Box>
-            </Box>
 
-            <Box
-                onMouseEnter={() => setHoveredIndex(2)}
-                onMouseLeave={() => setHoveredIndex(null)}
-                sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                <Box sx={{ borderRadius: "50%", padding: "10px", transition: "all 0.7s ease", color: hoveredIndex === 2 ? "#fff" : "#149DDD", bgcolor: hoveredIndex === 2 ? "#149DDD" : "#F4FAFD", border: hoveredIndex === 2 ? "1px solid transparent" : "1px solid #149ddd" }}>
+                <Box
+                  onMouseEnter={() => setHoveredIndex(2)}
+                  onMouseLeave={() => setHoveredIndex(null)}
+                  sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                  <Box sx={{ borderRadius: "50%", padding: "10px", transition: "all 0.7s ease", color: hoveredIndex === 2 ? "#fff" : "#149DDD", bgcolor: hoveredIndex === 2 ? "#149DDD" : "#F4FAFD", border: hoveredIndex === 2 ? "1px solid transparent" : "1px solid #149ddd" }}>
                     <MdEmail size={24} />
-                </Box>
-                <Box>
+                  </Box>
+                  <Box>
                     <Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5 }}>
-                        Email
+                      Email
                     </Typography>
                     <Typography variant="body1">
-                        info@example.com
+                      info@example.com
                     </Typography>
+                  </Box>
                 </Box>
-            </Box>
 
-            <Box
-                onMouseEnter={() => setHoveredIndex(3)}
-                onMouseLeave={() => setHoveredIndex(null)}
-                sx={{ display: 'flex', alignItems: 'center', gap: 2, }}>
-                <Box sx={{ borderRadius: "50%", padding: "10px", transition: "all 0.7s ease", color: hoveredIndex === 3 ? "#fff" : "#149DDD", bgcolor: hoveredIndex === 3 ? "#149DDD" : "#F4FAFD", border: hoveredIndex === 3 ? "1px solid transparent" : "1px solid #149ddd" }}>
+                <Box
+                  onMouseEnter={() => setHoveredIndex(3)}
+                  onMouseLeave={() => setHoveredIndex(null)}
+                  sx={{ display: 'flex', alignItems: 'center', gap: 2, }}>
+                  <Box sx={{ borderRadius: "50%", padding: "10px", transition: "all 0.7s ease", color: hoveredIndex === 3 ? "#fff" : "#149DDD", bgcolor: hoveredIndex === 3 ? "#149DDD" : "#F4FAFD", border: hoveredIndex === 3 ? "1px solid transparent" : "1px solid #149ddd" }}>
                     <MdPhone size={24} />
-                </Box>
-                <Box>
+                  </Box>
+                  <Box>
                     <Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5 }} >
-                        Phone
+                      Phone
                     </Typography>
                     <Typography variant="body1">
-                        +92 325 9881310
+                      +92 325 9881310
                     </Typography>
+                  </Box>
                 </Box>
-            </Box>
-        </Box>
-    </Paper>
-</Grid>
+              </Box>
+            </Paper>
+          </Grid>
         </Grid>
       </Container>
     </Box>

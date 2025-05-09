@@ -1,9 +1,7 @@
 @import "tailwindcss/preflight";
 @tailwind utilities;
 
-*{
-    font-family: "Raleway", sans-serif;
-}
+
 
 body {
   margin: 0;

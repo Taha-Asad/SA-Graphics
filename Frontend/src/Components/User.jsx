@@ -83,7 +83,7 @@ const User = () => {
         display: 'flex', 
         flexDirection: 'column', 
         minHeight: '100vh',
-        overflowX: 'hidden',
+        overflow: 'hidden',
         position: 'relative'
       }}
     >

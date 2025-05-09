@@ -127,19 +127,20 @@ const Testimonials = () => {
   };
 
   return (
-    <Box
+    <>
+     <Box
       id="testimonials"
       sx={{
         bgcolor: "#F4FAFD",
         position: "relative",
         padding: { xs: "60px 0", md: "80px 0" },
         overflow: "hidden",
+        width: "100%",
       }}
-      data-aos="fade-up"
       onMouseEnter={() => setAutoplay(false)}
       onMouseLeave={() => setAutoplay(true)}
-    >
-      <Container maxWidth="lg">
+     >
+       <Container maxWidth="lg">
         <Typography
           variant="h3"
           component="h2"
@@ -539,6 +540,8 @@ const Testimonials = () => {
         </DialogContent>
       </Dialog>
     </Box>
+       </>
+
   );
 };
 

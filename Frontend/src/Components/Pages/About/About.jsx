@@ -76,14 +76,14 @@ const About = () => {
           <Grid item xs={12} md={6}>
             <Box 
               sx={{ 
-                width: "100%",
-                height: "100%",
+                width: "70%",
+                height: "80%",
                 minHeight: "400px",
+                marginLeft: "50px",
                 position: "relative",
                 overflow: "hidden",
                 boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
                 borderRadius: "50%",
-
               }}
             >
               <img 

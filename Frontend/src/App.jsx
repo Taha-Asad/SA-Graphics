@@ -42,7 +42,7 @@ function App() {
             sx={{ 
               width: '100%',
               minHeight: '100vh',
-              overflowX: 'hidden',
+              overflow: 'hidden',
               display: 'flex',
               flexDirection: 'column',
             }}

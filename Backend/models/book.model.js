@@ -21,6 +21,18 @@ const bookSchema = new mongoose.Schema({
       message: 'Discount must be between 0 and 100'
     }
   },
+  bulkDiscount: { 
+    type: Number, 
+    default: 0,
+    min: 0,
+    max: 100,
+    validate: {
+      validator: function(v) {
+        return v >= 0 && v <= 100;
+      },
+      message: 'Discount must be between 0 and 100'
+    }
+  },
   stock: { type: Number, required: true, default: 0 },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },

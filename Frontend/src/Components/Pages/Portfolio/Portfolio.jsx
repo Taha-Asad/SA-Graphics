@@ -8,8 +8,6 @@ import CloseIcon from '@mui/icons-material/Close';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import ZoomInIcon from '@mui/icons-material/ZoomIn';
 import DeleteIcon from '@mui/icons-material/Delete';
-import GitHubIcon from '@mui/icons-material/GitHub';
-import LaunchIcon from '@mui/icons-material/Launch';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -23,61 +21,62 @@ const ProjectCard = memo(({ project, onClick }) => {
     onClick(project);
   }, [onClick, project]);
 
+  
   return (
-  <Card
-    sx={{
-      cursor: 'pointer',
-      minHeight: '250px',
-      width: '350px',
-      position: 'relative',
-      boxShadow: "rgba(17, 17, 26, 0.1) 0px 4px 16px, rgba(17, 17, 26, 0.05) 0px 8px 32px",
-      '&:hover': {
-        transform: 'translateY(-5px)',
-        boxShadow: "rgba(0, 0, 0, 0.25) 0px 14px 28px, rgba(0, 0, 0, 0.22) 0px 10px 10px"
-      },
-      '&:hover .overlay': {
-        opacity: 1
-      },
-      transition: 'transform 0.2s ease-out, box-shadow 0.2s ease-out'
-    }}
+    <Card
+      sx={{
+        cursor: 'pointer',
+        minHeight: '250px',
+        width: '350px',
+        position: 'relative',
+        boxShadow: "rgba(17, 17, 26, 0.1) 0px 4px 16px, rgba(17, 17, 26, 0.05) 0px 8px 32px",
+        '&:hover': {
+          transform: 'translateY(-5px)',
+          boxShadow: "rgba(0, 0, 0, 0.25) 0px 14px 28px, rgba(0, 0, 0, 0.22) 0px 10px 10px"
+        },
+        '&:hover .overlay': {
+          opacity: 1
+        },
+        transition: 'transform 0.2s ease-out, box-shadow 0.2s ease-out'
+      }}
       onClick={handleClick}
-  >
-    <CardMedia
-      component="img"
-      height="200"
-      image={resolveImageUrl(project.image) || '/images/placeholder.jpg'}
-      alt={project.title}
-      sx={{
-        objectFit: 'cover',
-        width: '100%',
-        height: '250px',
-        objectPosition: 'center'
-      }}
-        loading="lazy"
-    />
-    <Box
-      className="overlay"
-      sx={{
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        width: '100%',
-        height: '100%',
-        bgcolor: 'rgba(0, 0, 0, 0.5)',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        opacity: 0,
-        color: 'white',
-        textAlign: 'center',
-        p: 2
-      }}
     >
-      <ZoomInIcon sx={{ fontSize: 40, mb: 1 }} />
-      <Typography variant="subtitle1">Click to View Details</Typography>
-    </Box>
-  </Card>
+      <CardMedia
+        component="img"
+        height="200"
+        image={resolveImageUrl(project.image) || '/images/placeholder.jpg'}
+        alt={project.title}
+        sx={{
+          objectFit: 'cover',
+          width: '100%',
+          height: '250px',
+          objectPosition: 'center'
+        }}
+        loading="lazy"
+      />
+      <Box
+        className="overlay"
+        sx={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          bgcolor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          opacity: 0,
+          color: 'white',
+          textAlign: 'center',
+          p: 2
+        }}
+      >
+        <ZoomInIcon sx={{ fontSize: 40, mb: 1 }} />
+        <Typography variant="subtitle1">Click to View Details</Typography>
+      </Box>
+    </Card>
   );
 });
 
@@ -87,34 +86,46 @@ const BookCard = memo(({ book, onClick }) => {
   const handleClick = useCallback(() => {
     onClick(book);
   }, [onClick, book]);
-
+  const getEffectiveDiscount = () => {
+    const bulkDiscount = selectedBook.bulkDiscounts
+      ?.filter((bd) => quantity >= bd.quantity)
+      .sort((a, b) => b.quantity - a.quantity)[0];
+  
+    return bulkDiscount?.discount || selectedBook.discount || 0;
+  };
+  
+  const getDiscountedPrice = () => {
+    const discount = getEffectiveDiscount();
+    return selectedBook.price - (selectedBook.price * discount) / 100;
+  };
+  
   return (
-  <Card
-    sx={{
-      cursor: 'pointer',
-      minHeight: '250px',
-      width: '350px',
-      position: 'relative',
-      boxShadow: "rgba(17, 17, 26, 0.1) 0px 4px 16px, rgba(17, 17, 26, 0.05) 0px 8px 32px",
-      '&:hover': {
-        transform: 'translateY(-5px)',
-        boxShadow: "rgba(0, 0, 0, 0.25) 0px 14px 28px, rgba(0, 0, 0, 0.22) 0px 10px 10px"
-      },
-      '&:hover .overlay': {
-        opacity: 1
-      },
-      transition: 'transform 0.2s ease-out, box-shadow 0.2s ease-out'
-    }}
+    <Card
+      sx={{
+        cursor: 'pointer',
+        minHeight: '250px',
+        width: '350px',
+        position: 'relative',
+        boxShadow: "rgba(17, 17, 26, 0.1) 0px 4px 16px, rgba(17, 17, 26, 0.05) 0px 8px 32px",
+        '&:hover': {
+          transform: 'translateY(-5px)',
+          boxShadow: "rgba(0, 0, 0, 0.25) 0px 14px 28px, rgba(0, 0, 0, 0.22) 0px 10px 10px"
+        },
+        '&:hover .overlay': {
+          opacity: 1
+        },
+        transition: 'transform 0.2s ease-out, box-shadow 0.2s ease-out'
+      }}
       onClick={handleClick}
-  >
-    <CardMedia
-      component="img"
+    >
+      <CardMedia
+        component="img"
         height="140"
         image={resolveImageUrl(book.coverImage)}
-      alt={book.title}
-      sx={{
-        objectFit: 'cover',
-        width: '100%',
+        alt={book.title}
+        sx={{
+          objectFit: 'cover',
+          width: '100%',
           height: '200px'
         }}
       />
@@ -126,29 +137,29 @@ const BookCard = memo(({ book, onClick }) => {
           by {book.author}
         </Typography>
       </CardContent>
-    <Box
-      className="overlay"
-      sx={{
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        width: '100%',
-        height: '100%',
-        bgcolor: 'rgba(0, 0, 0, 0.5)',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        opacity: 0,
-        color: 'white',
-        textAlign: 'center',
-        p: 2
-      }}
-    >
-      <ZoomInIcon sx={{ fontSize: 40, mb: 1 }} />
-      <Typography variant="subtitle1">Click to View Details</Typography>
-    </Box>
-  </Card>
+      <Box
+        className="overlay"
+        sx={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          bgcolor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          opacity: 0,
+          color: 'white',
+          textAlign: 'center',
+          p: 2
+        }}
+      >
+        <ZoomInIcon sx={{ fontSize: 40, mb: 1 }} />
+        <Typography variant="subtitle1">Click to View Details</Typography>
+      </Box>
+    </Card>
   );
 });
 
@@ -158,22 +169,22 @@ BookCard.displayName = 'BookCard';
 const PaginatedGrid = memo(({ items, renderItem, itemsPerPage = 6 }) => {
   const [page, setPage] = useState(1);
   const pageCount = Math.ceil(items.length / itemsPerPage);
-  
+
   const handlePageChange = useCallback((event, value) => {
     setPage(value);
   }, []);
-  
+
   const paginatedItems = useMemo(() => {
     const startIndex = (page - 1) * itemsPerPage;
     return items.slice(startIndex, startIndex + itemsPerPage);
   }, [items, page, itemsPerPage]);
 
   const renderGridItem = useCallback((item, index) => (
-    <Grid 
-      item 
-      xs={12} 
-      sm={6} 
-      md={4} 
+    <Grid
+      item
+      xs={12}
+      sm={6}
+      md={4}
       key={item._id || index}
       data-aos="fade-up"
       data-aos-delay={Math.min(index * 50, 200)}
@@ -182,20 +193,20 @@ const PaginatedGrid = memo(({ items, renderItem, itemsPerPage = 6 }) => {
       {renderItem(item)}
     </Grid>
   ), [renderItem]);
-  
+
   return (
     <>
       <Grid container spacing={2}>
         {paginatedItems.map(renderGridItem)}
       </Grid>
-      
+
       {pageCount > 1 && (
         <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-          <Pagination 
-            count={pageCount} 
-            page={page} 
-            onChange={handlePageChange} 
-            color="primary" 
+          <Pagination
+            count={pageCount}
+            page={page}
+            onChange={handlePageChange}
+            color="primary"
             size="large"
           />
         </Box>
@@ -375,11 +386,11 @@ const Portfolio = React.memo(function Portfolio() {
   }, [value, projects, books]);
 
   const pageCount = Math.ceil(items.length / itemsPerPage);
-  
+
   const handlePageChange = useCallback((event, value) => {
     setPage(value);
   }, []);
-  
+
   const paginatedItems = useMemo(() => {
     const startIndex = (page - 1) * itemsPerPage;
     return items.slice(startIndex, startIndex + itemsPerPage);
@@ -396,13 +407,13 @@ const Portfolio = React.memo(function Portfolio() {
       axios.get('http://localhost:5000/api/v1/users/me', {
         headers: { Authorization: `Bearer ${token}` }
       })
-      .then(response => {
-        setUser(response.data);
-      })
-      .catch(error => {
-        console.log("Error fetching user:", error);
-        toast.error("Failed to load user information. Please try again later.");
-      });
+        .then(response => {
+          setUser(response.data);
+        })
+        .catch(error => {
+          console.log("Error fetching user:", error);
+          toast.error("Failed to load user information. Please try again later.");
+        });
     }
   }, []);
 
@@ -422,7 +433,7 @@ const Portfolio = React.memo(function Portfolio() {
           component="h2"
           sx={{
             position: "relative",
-              fontWeight: "600",
+            fontWeight: "600",
             mt: 0,
             mb: { xs: "20px", md: "25px" },
             fontSize: { xs: "2rem", md: "2.5rem" },
@@ -447,21 +458,21 @@ const Portfolio = React.memo(function Portfolio() {
         ) : (
           <TabContext value={value}>
             <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-              <TabList 
-                onChange={handleChange} 
-                sx={{ 
-                  textAlign: 'center', 
-                  ml: {xs:'20%', md:'35%'}, 
-                  mr: {xs:'10%', md:'35%' }
+              <TabList
+                onChange={handleChange}
+                sx={{
+                  textAlign: 'center',
+                  ml: { xs: '20%', md: '35%' },
+                  mr: { xs: '10%', md: '35%' }
                 }}
               >
                 <Tab label="Projects" value="1" />
                 <Tab label="Books" value="2" />
               </TabList>
             </Box>
-            <TabPanel 
-              value="1" 
-              sx={{ 
+            <TabPanel
+              value="1"
+              sx={{
                 p: 0,
                 mt: 2,
                 display: 'block'
@@ -469,11 +480,11 @@ const Portfolio = React.memo(function Portfolio() {
             >
               <Grid container spacing={2}>
                 {paginatedItems.map((project) => (
-                  <Grid 
-                    item 
-                    xs={12} 
-                    sm={6} 
-                    md={4} 
+                  <Grid
+                    item
+                    xs={12}
+                    sm={6}
+                    md={4}
                     key={project._id}
                     data-aos="fade-up"
                     data-aos-delay={Math.min(project.index * 50, 200)}
@@ -485,19 +496,19 @@ const Portfolio = React.memo(function Portfolio() {
               </Grid>
               {pageCount > 1 && (
                 <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-                  <Pagination 
-                    count={pageCount} 
-                    page={page} 
-                    onChange={handlePageChange} 
-                    color="primary" 
+                  <Pagination
+                    count={pageCount}
+                    page={page}
+                    onChange={handlePageChange}
+                    color="primary"
                     size="large"
                   />
                 </Box>
               )}
             </TabPanel>
-            <TabPanel 
-              value="2" 
-              sx={{ 
+            <TabPanel
+              value="2"
+              sx={{
                 p: 0,
                 mt: 2,
                 display: 'block'
@@ -505,11 +516,11 @@ const Portfolio = React.memo(function Portfolio() {
             >
               <Grid container spacing={2}>
                 {paginatedItems.map((book) => (
-                  <Grid 
-                    item 
-                    xs={12} 
-                    sm={6} 
-                    md={4} 
+                  <Grid
+                    item
+                    xs={12}
+                    sm={6}
+                    md={4}
                     key={book._id}
                     data-aos="fade-up"
                     data-aos-delay={Math.min(book.index * 50, 200)}
@@ -521,11 +532,11 @@ const Portfolio = React.memo(function Portfolio() {
               </Grid>
               {pageCount > 1 && (
                 <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-                  <Pagination 
-                    count={pageCount} 
-                    page={page} 
-                    onChange={handlePageChange} 
-                    color="primary" 
+                  <Pagination
+                    count={pageCount}
+                    page={page}
+                    onChange={handlePageChange}
+                    color="primary"
                     size="large"
                   />
                 </Box>
@@ -551,8 +562,8 @@ const Portfolio = React.memo(function Portfolio() {
             border: '1px solid rgba(255, 255, 255, 0.05)',
             overflow: 'hidden',
             '& *': {
-  overflow: 'hidden !important'
-}
+              overflow: 'hidden !important'
+            }
           }
         }}
       >
@@ -593,17 +604,17 @@ const Portfolio = React.memo(function Portfolio() {
                   }
                 }}
               />
-              <Box 
-                sx={{ 
-                  p: 4, 
+              <Box
+                sx={{
+                  p: 4,
                   flex: 1,
                   color: 'white',
                   background: 'rgba(255, 255, 255, 0.02)'
                 }}
               >
-                <Typography 
-                  variant="h4" 
-                  component="h2" 
+                <Typography
+                  variant="h4"
+                  component="h2"
                   gutterBottom
                   sx={{
                     // color: 'linear-gradient(50deg, #149DDD 80%, #A2EEFD 80%);',
@@ -617,9 +628,9 @@ const Portfolio = React.memo(function Portfolio() {
                 >
                   {selectedProject.title}
                 </Typography>
-                <Typography 
-                  variant="body1" 
-                  sx={{ 
+                <Typography
+                  variant="body1"
+                  sx={{
                     color: 'rgba(255, 255, 255, 0.8)',
                     lineHeight: 1.7,
                     mb: 1
@@ -627,44 +638,44 @@ const Portfolio = React.memo(function Portfolio() {
                 >
                   {selectedProject.description}
                 </Typography>
-                <Typography 
-                      variant="h6" 
-                      gutterBottom
-                      sx={{ 
-                        fontWeight: 500,
-                        background: 'linear-gradient(120deg, #149DDD 0%, #A2EEFD 60%);',
-                        backgroundClip: 'text',
-                        WebkitBackgroundClip: 'text',
-                        WebkitTextFillColor: 'transparent',
-                        mb: 1
-                      }}
-                    >
-                      Category
-                    </Typography>
-                    <Box
-                          sx={{
-                            bgcolor: 'rgba(20, 157, 221, 0.1)',
-                            color: '#fff',
-                            px: 2,
-                            py: 0.75,
-                            borderRadius: 2,
-                            fontSize: '0.875rem',
-                            border: '1px solid rgba(20, 157, 221, 0.2)',
-                            transition: 'all 0.2s ease-in-out',
-                            '&:hover': {
-                              bgcolor: 'rgba(20, 157, 221, 0.2)',
-                              transform: 'translateY(-2px)'
-                            }
-                          }}
-                        >
-                          {selectedProject.category}
-                        </Box>
+                <Typography
+                  variant="h6"
+                  gutterBottom
+                  sx={{
+                    fontWeight: 500,
+                    background: 'linear-gradient(120deg, #149DDD 0%, #A2EEFD 60%);',
+                    backgroundClip: 'text',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    mb: 1
+                  }}
+                >
+                  Category
+                </Typography>
+                <Box
+                  sx={{
+                    bgcolor: 'rgba(20, 157, 221, 0.1)',
+                    color: '#fff',
+                    px: 2,
+                    py: 0.75,
+                    borderRadius: 2,
+                    fontSize: '0.875rem',
+                    border: '1px solid rgba(20, 157, 221, 0.2)',
+                    transition: 'all 0.2s ease-in-out',
+                    '&:hover': {
+                      bgcolor: 'rgba(20, 157, 221, 0.2)',
+                      transform: 'translateY(-2px)'
+                    }
+                  }}
+                >
+                  {selectedProject.category}
+                </Box>
                 {selectedProject.skillsUsed && (
                   <Box sx={{ mt: 1 }}>
-                    <Typography 
-                      variant="h6" 
+                    <Typography
+                      variant="h6"
                       gutterBottom
-                      sx={{ 
+                      sx={{
                         color: 'white',
                         fontWeight: 500,
                         background: 'linear-gradient(120deg, #149DDD 0%, #A2EEFD 60%);',
@@ -709,159 +720,172 @@ const Portfolio = React.memo(function Portfolio() {
 
       {/* Book Modal */}
       <Dialog
-        open={Boolean(selectedBook)}
-        onClose={handleCloseBookModal}
-        maxWidth="md"
-        fullWidth
-        TransitionComponent={Fade}
-        TransitionProps={{ timeout: 400 }}
+  open={Boolean(selectedBook)}
+  onClose={handleCloseBookModal}
+  maxWidth="md"
+  fullWidth
+  TransitionComponent={Fade}
+  TransitionProps={{ timeout: 400 }}
+>
+  {selectedBook && (
+    <DialogContent sx={{ p: 0, position: 'relative' }}>
+      <IconButton
+        onClick={handleCloseBookModal}
+        sx={{
+          position: 'absolute',
+          right: 8,
+          top: 8,
+          color: 'grey.500',
+          zIndex: 1,
+          bgcolor: 'white',
+          '&:hover': {
+            bgcolor: 'grey.200',
+          },
+        }}
       >
-        {selectedBook && (
-          <DialogContent sx={{ p: 0, position: 'relative' }}>
-          <IconButton
-            onClick={handleCloseBookModal}
-              sx={{
-                position: 'absolute',
-                right: 8,
-                top: 8,
-                color: 'grey.500',
-                zIndex: 1,
-                bgcolor: 'white',
-                '&:hover': {
-                  bgcolor: 'grey.200',
-                },
-              }}
+        <CloseIcon />
+      </IconButton>
+      <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' } }}>
+        <Box
+          component="img"
+          src={resolveImageUrl(selectedBook.coverImage)}
+          alt={selectedBook.title}
+          sx={{
+            width: { xs: '100%', md: '40%' },
+            height: { xs: '300px', md: 'auto' },
+            objectFit: 'cover',
+          }}
+        />
+        <Box sx={{ p: 3, flex: 1 }}>
+          <Typography variant="h5" component="h2" gutterBottom>
+            {selectedBook.title}
+          </Typography>
+          <Typography variant="body1" color="text.secondary" paragraph>
+            {selectedBook.description}
+          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+            <Rating value={selectedBook.averageRating || 0} precision={0.5} readOnly />
+            <Typography variant="body2" color="text.secondary" sx={{ ml: 1 }}>
+              ({selectedBook.averageRating ? selectedBook.averageRating.toFixed(1) : '0'} / 5)
+            </Typography>
+          </Box>
+
+          {/* Price with bulk discount */}
+          <Typography variant="h6" color="primary" sx={{ mb: 1 }}>
+            {(() => {
+              const price = selectedBook.price;
+              const discount = selectedBook.discount;
+              const bulkDiscount = selectedBook.bulkDiscount || 0;
+              const isBulk = quantity >= 6;
+              const finalDiscount = isBulk ? bulkDiscount : discount;
+              const discountedPrice = price - (price * finalDiscount) / 100;
+
+              return finalDiscount > 0 ? (
+                <>
+                  <span style={{ textDecoration: 'line-through', color: 'gray', marginRight: '8px' }}>
+                    Rs. {price}
+                  </span>
+                  Rs. {discountedPrice.toFixed(2)}
+                  <span style={{ color: 'red', marginLeft: '8px' }}>
+                    ({finalDiscount}% off{isBulk ? ' - Bulk Discount' : ''})
+                  </span>
+                </>
+              ) : (
+                `Rs. ${price}`
+              );
+            })()}
+          </Typography>
+
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+            <Typography variant="body2" sx={{ mr: 2 }}>
+              Quantity:
+            </Typography>
+            <TextField
+              type="number"
+              value={quantity}
+              onChange={handleQuantityChange}
+              inputProps={{ min: 1, max: selectedBook.countInStock }}
+              sx={{ width: '80px' }}
+              size="small"
+            />
+          </Box>
+
+          <Button
+            variant="contained"
+            startIcon={<ShoppingCartIcon />}
+            onClick={handleAddToCart}
+            disabled={selectedBook.countInStock <= 0}
+            sx={{ mb: 2 }}
           >
-            <CloseIcon />
-          </IconButton>
-            <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' } }}>
-              <Box
-                    component="img"
-                src={resolveImageUrl(selectedBook.coverImage)}
-                    alt={selectedBook.title}
-                    sx={{ 
-                  width: { xs: '100%', md: '40%' },
-                  height: { xs: '300px', md: 'auto' },
-                  objectFit: 'cover',
-                }}
-              />
-              <Box sx={{ p: 3, flex: 1 }}>
-                <Typography variant="h5" component="h2" gutterBottom>
-                  {selectedBook.title}
-                </Typography>
-                <Typography variant="body1" color="text.secondary" paragraph>
-                  {selectedBook.description}
-                </Typography>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                  <Rating value={selectedBook.averageRating || 0} precision={0.5} readOnly />
-                  <Typography variant="body2" color="text.secondary" sx={{ ml: 1 }}>
-                    ({selectedBook.averageRating ? selectedBook.averageRating.toFixed(1) : '0'} / 5)
-                  </Typography>
-                </Box>
-                <Typography 
-                  variant="h6" 
-                  color="primary"
-                  sx={{ mb: 2 }}
-                >
-                  {selectedBook.discount > 0 ? (
-                    <>
-                      <span style={{ textDecoration: 'line-through', color: 'gray', marginRight: '8px' }}>
-                        Rs. {selectedBook.price}
-                      </span>
-                      Rs. {selectedBook.price - (selectedBook.price * selectedBook.discount / 100)}
-                      <span style={{ color: 'red', marginLeft: '8px' }}>
-                        ({selectedBook.discount}% off)
-                      </span>
-                    </>
-                  ) : (
-                    `Rs. ${selectedBook.price}`
-                  )}
-                </Typography>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                  <Typography variant="body2" sx={{ mr: 2 }}>
-                    Quantity:
-                  </Typography>
-                  <TextField
-                    type="number"
-                    value={quantity}
-                    onChange={handleQuantityChange}
-                    inputProps={{ min: 1, max: selectedBook.countInStock }}
-                    sx={{ width: '80px' }}
-                    size="small"
-                  />
-                </Box>
-                  <Button
-                    variant="contained"
-                    startIcon={<ShoppingCartIcon />}
-                    onClick={handleAddToCart}
-                  disabled={selectedBook.countInStock <= 0}
-                  sx={{ mb: 2 }}
-                  >
-                    Add to Cart
-                  </Button>
-                <Divider sx={{ my: 2 }} />
-                <Typography variant="h6" gutterBottom>
-                  Reviews
-                </Typography>
-                {reviews.length === 0 ? (
-                  <Typography variant="body2" color="text.secondary">
-                    No reviews yet. Be the first to review this book!
-                  </Typography>
-                ) : (
-                  <Stack spacing={2}>
-                    {reviews.map((review) => (
-                      <Box key={review._id} sx={{ p: 2, bgcolor: 'background.paper', borderRadius: 1 }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
-                          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                            <Avatar src={review.userId?.profilePic} alt={review.userId?.name} sx={{ mr: 1 }} />
-                            <Box>
-                              <Typography variant="subtitle2">
-                                {review.userId?.name || 'Anonymous'}
-                              </Typography>
-                              <Rating value={review.rating} size="small" readOnly />
-                            </Box>
-                          </Box>
-                          {user && (user._id === review.userId?._id || user.role === 'admin') && (
-                            <IconButton 
-                              onClick={() => handleDeleteReview(review._id)}
-                              size="small"
-                              sx={{ color: 'error.main' }}
-                            >
-                              <DeleteIcon />
-                            </IconButton>
-                          )}
-                        </Box>
-                        <Typography variant="body2">{review.comment}</Typography>
+            Add to Cart
+          </Button>
+
+          <Divider sx={{ my: 2 }} />
+
+          <Typography variant="h6" gutterBottom>
+            Reviews
+          </Typography>
+          {reviews.length === 0 ? (
+            <Typography variant="body2" color="text.secondary">
+              No reviews yet. Be the first to review this book!
+            </Typography>
+          ) : (
+            <Stack spacing={2}>
+              {reviews.map((review) => (
+                <Box key={review._id} sx={{ p: 2, bgcolor: 'background.paper', borderRadius: 1 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      <Avatar src={review.userId?.profilePic} alt={review.userId?.name} sx={{ mr: 1 }} />
+                      <Box>
+                        <Typography variant="subtitle2">{review.userId?.name || 'Anonymous'}</Typography>
+                        <Rating value={review.rating} size="small" readOnly />
                       </Box>
-                    ))}
-                  </Stack>
-                )}
-                <Divider sx={{ my: 2 }} />
-                <Box sx={{ mt: 2 }}>
-                  <Typography variant="h6" gutterBottom>Add a Review</Typography>
-                  <Rating
-                    value={newReview.rating}
-                    onChange={(_, value) => setNewReview(prev => ({ ...prev, rating: value }))}
-                    sx={{ mb: 1 }}
-                  />
-                  <TextField
-                    fullWidth
-                    multiline
-                    rows={3}
-                    value={newReview.comment}
-                    onChange={(e) => setNewReview(prev => ({ ...prev, comment: e.target.value }))}
-                    placeholder="Write your review here..."
-                    sx={{ mb: 2 }}
-                  />
-                  <Button variant="contained" onClick={handleAddReview}>
-                    Submit Review
-                  </Button>
+                    </Box>
+                    {user && (user._id === review.userId?._id || user.role === 'admin') && (
+                      <IconButton
+                        onClick={() => handleDeleteReview(review._id)}
+                        size="small"
+                        sx={{ color: 'error.main' }}
+                      >
+                        <DeleteIcon />
+                      </IconButton>
+                    )}
+                  </Box>
+                  <Typography variant="body2">{review.comment}</Typography>
                 </Box>
-                          </Box>
-                        </Box>
-          </DialogContent>
-        )}
-      </Dialog>
+              ))}
+            </Stack>
+          )}
+
+          <Divider sx={{ my: 2 }} />
+          <Box sx={{ mt: 2 }}>
+            <Typography variant="h6" gutterBottom>
+              Add a Review
+            </Typography>
+            <Rating
+              value={newReview.rating}
+              onChange={(_, value) => setNewReview((prev) => ({ ...prev, rating: value }))}
+              sx={{ mb: 1 }}
+            />
+            <TextField
+              fullWidth
+              multiline
+              rows={3}
+              value={newReview.comment}
+              onChange={(e) => setNewReview((prev) => ({ ...prev, comment: e.target.value }))}
+              placeholder="Write your review here..."
+              sx={{ mb: 2 }}
+            />
+            <Button variant="contained" onClick={handleAddReview}>
+              Submit Review
+            </Button>
+          </Box>
+        </Box>
+      </Box>
+    </DialogContent>
+  )}
+</Dialog>
+
     </Box>
   );
 });

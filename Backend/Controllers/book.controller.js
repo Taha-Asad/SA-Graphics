@@ -33,6 +33,7 @@ exports.createBook = async (req, res) => {
       stock: Number(req.body.stock || 0),
       countInStock: Number(req.body.countInStock || 0),
       discount: Number(req.body.discount || 0),
+      bulkDiscount: Number(req.body.bulkDiscount || 0),
       publishDate: new Date(req.body.publishDate)
     };
 
@@ -151,6 +152,7 @@ exports.updateBook = async (req, res) => {
     if (updateData.stock) updateData.stock = Number(updateData.stock);
     if (updateData.countInStock) updateData.countInStock = Number(updateData.countInStock);
     if (updateData.discount) updateData.discount = Number(updateData.discount);
+    if (updateData.bulkDiscount) updateData.bulkDiscount = Number(updateData.bulkDiscount);
     if (updateData.publishDate) updateData.publishDate = new Date(updateData.publishDate);
 
     // Validate the update data

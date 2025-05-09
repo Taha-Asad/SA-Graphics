@@ -41,19 +41,18 @@ const Books = () => {
     stock: '',
     countInStock: '',
     publishDate: '',
-    discount: '0'
+    discount: '0',
+    bulkDiscount: '0'
   });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check if user is logged in and is an admin
     if (!user || user.role !== 'admin') {
       navigate('/login');
       return;
     }
-    
     fetchBooks();
   }, [user, navigate]);
 
@@ -61,8 +60,7 @@ const Books = () => {
     try {
       setLoading(true);
       const response = await axiosInstance.get('/books');
-      const booksData = Array.isArray(response.data) ? response.data : 
-                       response.data.books ? response.data.books : [];
+      const booksData = Array.isArray(response.data) ? response.data : response.data.books ? response.data.books : [];
       setBooks(booksData);
     } catch (error) {
       console.error('Error fetching books:', error);
@@ -85,7 +83,8 @@ const Books = () => {
         stock: book.stock || '',
         countInStock: book.countInStock || '',
         publishDate: book.publishDate ? new Date(book.publishDate).toISOString().split('T')[0] : '',
-        discount: book.discount || '0'
+        discount: book.discount || '0',
+        bulkDiscount: book.bulkDiscount || '0'
       });
     } else {
       setSelectedBook(null);
@@ -98,7 +97,8 @@ const Books = () => {
         stock: '',
         countInStock: '',
         publishDate: '',
-        discount: '0'
+        discount: '0',
+        bulkDiscount: '0'
       });
     }
     setIsModalOpen(true);
@@ -116,7 +116,8 @@ const Books = () => {
       stock: '',
       countInStock: '',
       publishDate: '',
-      discount: '0'
+      discount: '0',
+      bulkDiscount: '0'
     });
   };
 
@@ -141,82 +142,54 @@ const Books = () => {
       return;
     }
 
-    // Check if user is logged in and is an admin
     if (!user || user.role !== 'admin') {
       setError('You must be logged in as an admin to perform this action');
       navigate('/login');
       return;
     }
-    
+
     try {
-      // Validate image for new books
       if (!selectedBook && !formData.coverImage) {
         setError('Cover image is required for new books');
         return;
       }
 
       const formDataToSend = new FormData();
-      
-      // First append the image if it exists
+
       if (formData.coverImage) {
         formDataToSend.append('coverImage', formData.coverImage);
       }
 
-      // Convert and validate numeric fields
       const numericFields = {
         price: parseFloat(formData.price) || 0,
         stock: parseInt(formData.stock) || 0,
-        countInStock: parseInt(formData.countInStock) || 0
+        countInStock: parseInt(formData.countInStock) || 0,
+        discount: parseFloat(formData.discount) || 0,
+        bulkDiscount: parseFloat(formData.bulkDiscount) || 0
       };
 
-      // Append all fields to FormData
       Object.keys(formData).forEach(key => {
         if (key !== 'coverImage') {
           let value = formData[key];
-          
-          // Convert numeric fields
+
           if (key in numericFields) {
             value = numericFields[key];
           }
-          
-          // Convert date field
+
           if (key === 'publishDate') {
             value = new Date(value).toISOString();
           }
-          
+
           formDataToSend.append(key, value);
         }
       });
 
-      // Get the token from localStorage
       const token = localStorage.getItem('token');
-      
-      // Set up the config with the token
       const config = {
         headers: {
           'Authorization': `Bearer ${token}`,
-          // Don't set Content-Type here, let the browser set it with the boundary
         },
       };
-
-      console.log('Submitting form data:', {
-        title: formDataToSend.get('title'),
-        author: formDataToSend.get('author'),
-        description: formDataToSend.get('description'),
-        price: formDataToSend.get('price'),
-        category: formDataToSend.get('category'),
-        publishDate: formDataToSend.get('publishDate'),
-        stock: formDataToSend.get('stock'),
-        countInStock: formDataToSend.get('countInStock'),
-        discount: formDataToSend.get('discount'),
-        coverImage: formDataToSend.get('coverImage')
-      });
-      
-      console.log('Request config:', {
-        headers: config.headers,
-        url: selectedBook ? `/books/${selectedBook._id}` : '/books',
-        method: selectedBook ? 'PUT' : 'POST'
-      });
 
       if (selectedBook) {
         await axiosInstance.put(`/books/${selectedBook._id}`, formDataToSend, config);
@@ -225,44 +198,32 @@ const Books = () => {
         await axiosInstance.post('/books', formDataToSend, config);
         setSuccess('Book created successfully');
       }
-      
+
       fetchBooks();
       handleClose();
     } catch (error) {
       console.error('Error saving book:', error);
-      console.error('Error details:', {
-        message: error.message,
-        response: error.response?.data,
-        status: error.response?.status,
-        headers: error.response?.headers
-      });
-      
       let errorMessage = 'Failed to save book';
-      
+
       if (error.response) {
-        // The request was made and the server responded with a status code
-        // that falls out of the range of 2xx
         errorMessage = error.response.data?.message || error.response.data?.error || errorMessage;
-        
-        // If there are validation errors, display them
         if (error.response.data?.errors) {
           const validationErrors = Object.values(error.response.data.errors).join(', ');
           errorMessage = `Validation errors: ${validationErrors}`;
         }
       } else if (error.request) {
-        // The request was made but no response was received
         errorMessage = 'No response from server. Please check your connection.';
       } else {
-        // Something happened in setting up the request that triggered an Error
         errorMessage = error.message;
       }
-      
+
       setError(errorMessage);
-      
-      // If unauthorized, redirect to login
+
       if (error.response?.status === 401) {
         navigate('/login');
       }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -298,6 +259,7 @@ const Books = () => {
               <TableCell>Title</TableCell>
               <TableCell>Author</TableCell>
               <TableCell>Price</TableCell>
+              <TableCell>Bulk Discount (%)</TableCell>
               <TableCell>Actions</TableCell>
             </TableRow>
           </TableHead>
@@ -307,6 +269,7 @@ const Books = () => {
                 <TableCell>{book.title}</TableCell>
                 <TableCell>{book.author}</TableCell>
                 <TableCell>Rs. {book.price}</TableCell>
+                <TableCell>{book.bulkDiscount || 0}%</TableCell>
                 <TableCell>
                   <IconButton onClick={() => handleOpen(book)}>
                     <EditIcon />
@@ -319,7 +282,7 @@ const Books = () => {
             ))}
             {!loading && Array.isArray(books) && books.length === 0 && (
               <TableRow>
-                <TableCell colSpan={4} align="center">
+                <TableCell colSpan={5} align="center">
                   No books found
                 </TableCell>
               </TableRow>
@@ -333,108 +296,19 @@ const Books = () => {
         <form onSubmit={handleSubmit}>
           <DialogContent>
             <Stack spacing={2}>
-              <TextField
-                name="title"
-                label="Title"
-                value={formData.title}
-                onChange={handleChange}
-                fullWidth
-                required
-              />
-              <TextField
-                name="author"
-                label="Author"
-                value={formData.author}
-                onChange={handleChange}
-                fullWidth
-                required
-              />
-              <TextField
-                name="description"
-                label="Description"
-                value={formData.description}
-                onChange={handleChange}
-                fullWidth
-                multiline
-                rows={4}
-                required
-              />
-              <TextField
-                name="category"
-                label="Category"
-                value={formData.category}
-                onChange={handleChange}
-                fullWidth
-                required
-              />
-              <TextField
-                name="price"
-                label="Price (Rs.)"
-                type="number"
-                value={formData.price}
-                onChange={handleChange}
-                fullWidth
-                required
-                helperText="Enter price in Rupees"
-              />
-              <TextField
-                name="discount"
-                label="Discount (%)"
-                type="number"
-                value={formData.discount}
-                onChange={handleChange}
-                fullWidth
-                InputProps={{
-                  inputProps: {
-                    min: 0,
-                    max: 100
-                  }
-                }}
-              />
-              <TextField
-                name="stock"
-                label="Stock"
-                type="number"
-                value={formData.stock}
-                onChange={handleChange}
-                fullWidth
-                required
-              />
-              <TextField
-                name="countInStock"
-                label="Count in Stock"
-                type="number"
-                value={formData.countInStock}
-                onChange={handleChange}
-                fullWidth
-                required
-              />
-              <TextField
-                name="publishDate"
-                label="Publish Date"
-                type="date"
-                value={formData.publishDate}
-                onChange={handleChange}
-                fullWidth
-                required
-                InputLabelProps={{
-                  shrink: true,
-                }}
-              />
-              <input
-                accept="image/*"
-                id="coverImage"
-                name="coverImage"
-                type="file"
-                onChange={handleChange}
-                style={{ display: 'none' }}
-              />
+              <TextField name="title" label="Title" value={formData.title} onChange={handleChange} fullWidth required />
+              <TextField name="author" label="Author" value={formData.author} onChange={handleChange} fullWidth required />
+              <TextField name="description" label="Description" value={formData.description} onChange={handleChange} fullWidth multiline rows={4} required />
+              <TextField name="category" label="Category" value={formData.category} onChange={handleChange} fullWidth required />
+              <TextField name="price" label="Price (Rs.)" type="number" value={formData.price} onChange={handleChange} fullWidth required helperText="Enter price in Rupees" />
+              <TextField name="discount" label="Discount (%)" type="number" value={formData.discount} onChange={handleChange} fullWidth InputProps={{ inputProps: { min: 0, max: 100 }}} />
+              <TextField name="bulkDiscount" label="Bulk Discount (6+ items) (%)" type="number" value={formData.bulkDiscount} onChange={handleChange} fullWidth InputProps={{ inputProps: { min: 0, max: 100 }}} helperText="Discount when a user buys 6 or more copies" />
+              <TextField name="stock" label="Stock" type="number" value={formData.stock} onChange={handleChange} fullWidth required />
+              <TextField name="countInStock" label="Count in Stock" type="number" value={formData.countInStock} onChange={handleChange} fullWidth required />
+              <TextField name="publishDate" label="Publish Date" type="date" value={formData.publishDate} onChange={handleChange} fullWidth required InputLabelProps={{ shrink: true }} />
+              <input accept="image/*" id="coverImage" name="coverImage" type="file" onChange={handleChange} style={{ display: 'none' }} />
               <label htmlFor="coverImage">
-                <Button
-                  variant="outlined"
-                  component="span"
-                  fullWidth
-                >
+                <Button variant="outlined" component="span" fullWidth>
                   {selectedBook ? 'Change Cover Image' : 'Upload Cover Image'}
                 </Button>
               </label>
@@ -442,12 +316,7 @@ const Books = () => {
           </DialogContent>
           <DialogActions>
             <Button onClick={handleClose}>Cancel</Button>
-            <Button 
-              type="submit" 
-              variant="contained" 
-              color="primary"
-              disabled={isLoading}
-            >
+            <Button type="submit" variant="contained" color="primary" disabled={isLoading}>
               {isLoading ? 'Saving...' : (selectedBook ? 'Update' : 'Create')}
             </Button>
           </DialogActions>
@@ -457,4 +326,4 @@ const Books = () => {
   );
 };
 
-export default Books; 
+export default Books;

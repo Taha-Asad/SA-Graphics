@@ -68,22 +68,22 @@ const CoursesSection = () => {
   // Enhanced image URL handler with debugging
   const getImageUrl = (thumbnail) => {
     console.log('Original thumbnail value:', thumbnail);
-    
+
     if (!thumbnail) {
       console.log('Using placeholder image');
       return '/images/placeholder.jpg';
     }
-    
+
     if (thumbnail.startsWith('http')) {
       console.log('Using full HTTP URL:', thumbnail);
       return thumbnail;
     }
-    
+
     // Remove any leading slashes or uploads/ prefixes
     const cleanPath = thumbnail.replace(/^\/+/, '').replace(/^uploads\//, '');
     const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
     const finalUrl = `${baseUrl}/uploads/${cleanPath}`;
-    
+
     console.log('Constructed image URL:', finalUrl);
     return finalUrl;
   };
@@ -92,15 +92,15 @@ const CoursesSection = () => {
     try {
       setLoading(true);
       console.log('Fetching courses...');
-      
+
       const apiUrl = `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/v1/courses`;
       console.log('API Endpoint:', apiUrl);
-      
+
       const response = await axios.get(apiUrl);
       console.log('API Response:', response.data);
-      
+
       let coursesToSet = [];
-      
+
       if (response.data && Array.isArray(response.data)) {
         coursesToSet = response.data;
       } else if (response.data && Array.isArray(response.data.courses)) {
@@ -163,7 +163,7 @@ const CoursesSection = () => {
       console.error('Courses is not an array:', coursesToFilter);
       return [];
     }
-    
+
     return coursesToFilter.filter(course => {
       if (filters.search && !course.title.toLowerCase().includes(filters.search.toLowerCase())) {
         return false;
@@ -201,17 +201,17 @@ const CoursesSection = () => {
     setOpenDialog(false);
     setSelectedCourse(null);
   };
-  
+
   // Stable image URL generator to prevent re-renders
   const getStableImageUrl = (thumbnail) => {
     if (!thumbnail) {
       return '/images/placeholder.jpg';
     }
-    
+
     if (thumbnail.startsWith('http')) {
       return thumbnail;
     }
-    
+
     const cleanPath = thumbnail.replace(/^\/+/, '').replace(/^uploads\//, '');
     const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
     return `${baseUrl}/uploads/${cleanPath}`;
@@ -244,9 +244,9 @@ const CoursesSection = () => {
 
   return (
     <>
-      <Box 
-        component="section" 
-        sx={{ 
+      <Box
+        component="section"
+        sx={{
           py: 8,
           backgroundColor: '#f8f9fa'
         }}
@@ -273,7 +273,6 @@ const CoursesSection = () => {
                   transform: "translateX(-50%)",
                 },
               }}
-              data-aos="fade-down"
             >
               Featured Courses
             </Typography>
@@ -361,10 +360,10 @@ const CoursesSection = () => {
           <Grid container spacing={4}>
             {filteredCourses.map((course) => (
               <Grid item xs={12} sm={6} md={4} key={course._id} data-aos="fade-up" data-aos-delay="200">
-                <Card 
-                  sx={{ 
-                    height: '100%', 
-                    display: 'flex', 
+                <Card
+                  sx={{
+                    height: '100%',
+                    display: 'flex',
                     padding: 2,
                     flexDirection: 'column',
                     position: 'relative',
@@ -379,7 +378,7 @@ const CoursesSection = () => {
                       opacity: 0,
                       transition: 'opacity 0.2s ease-in-out',
                       zIndex: -1
-                      
+
                     },
                     '&:hover': {
                       transform: 'translateY(-5px)',
@@ -392,10 +391,10 @@ const CoursesSection = () => {
                   <CardMedia
                     component="img"
                     height="200"
-                
+
                     image={getImageUrl(course.thumbnail)}
                     alt={course.title}
-                    sx={{ 
+                    sx={{
                       objectFit: 'cover',
                       backgroundColor: '#f5f5f5',
                       borderRadius: "12px",
@@ -410,7 +409,7 @@ const CoursesSection = () => {
                     <Typography gutterBottom variant="h5" component="h2">
                       {course.title}
                     </Typography>
-                    
+
                     <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
                       <Rating value={course.rating} readOnly precision={0.5} size="small" />
                       <Typography variant="body2" color="text.secondary">
@@ -480,7 +479,6 @@ const CoursesSection = () => {
           </Box>
         </Container>
       </Box>
-
       {/* Course Details Dialog */}
       <Dialog
         open={openDialog}
@@ -585,8 +583,8 @@ const CoursesSection = () => {
             </DialogContent>
             <DialogActions>
               <Button onClick={handleCloseDialog}>Close</Button>
-              <Button 
-                variant="contained" 
+              <Button
+                variant="contained"
                 onClick={() => {
                   handleAddToCart(selectedCourse);
                   handleCloseDialog();
