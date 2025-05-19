@@ -108,10 +108,15 @@ const Checkout = () => {
         navigate('/login');
         return;
       }
-
+      if (!user || !user._id) {
+        toast.error('User not found. Please log in again.');
+        navigate('/login');
+        setLoading(false);
+        return;
+      }
       // Validate required fields
-      if (!deliveryAddress.street || !deliveryAddress.city || 
-          !deliveryAddress.province || !deliveryAddress.postalCode) {
+      if (!deliveryAddress.street || !deliveryAddress.city ||
+        !deliveryAddress.province || !deliveryAddress.postalCode) {
         toast.error("Please fill in all address fields");
         setLoading(false);
         return;
@@ -132,8 +137,8 @@ const Checkout = () => {
 
       const formattedItems = cartItems.map(item => ({
         _id: item._id,
-          title: item.title,
-          price: item.price,
+        title: item.title,
+        price: item.price,
         quantity: item.quantity || 1,
         type: item.type || 'product',
         thumbnail: item.thumbnail || null,
@@ -159,7 +164,7 @@ const Checkout = () => {
           postalCode: deliveryAddress.postalCode,
           phoneNo: deliveryAddress.phoneNo || user.phoneNo || ''
         },
-        userId: user._id.toString(),
+        userId: user._id.toString() || "",
         paymentMethod: selectedPaymentMethod,
         paymentStatus: 'pending',
         status: 'pending'
@@ -186,23 +191,23 @@ const Checkout = () => {
         requestData = formData;
       }
 
-        const response = await axios.post(
-          'http://localhost:5000/api/v1/orders',
-          requestData,
-          config
-        );
+      const response = await axios.post(
+        'http://localhost:5000/api/v1/orders',
+        requestData,
+        config
+      );
 
-        console.log('Order response:', response.data);
+      console.log('Order response:', response.data);
 
-        if (response.data.status === 'success') {
-          setOrderSuccess(true);
-          setOrderId(response.data.data.order._id);
+      if (response.data.status === 'success') {
+        setOrderSuccess(true);
+        setOrderId(response.data.data.order._id);
         toast.success(response.data.message || "Order placed successfully!");
-          clearCart();
-        
+        clearCart();
+
         // Check if it's a course order from the response
         const isCourseOrder = response.data.data.isCourseOrder;
-        
+
         if (isCourseOrder) {
           // For course orders, redirect to home page
           navigate('/');
@@ -210,12 +215,12 @@ const Checkout = () => {
           // For regular orders, go to track order page
           navigate(`/account/track-order/${response.data.data.order._id}`);
         }
-        }
-      } catch (error) {
-        console.error('Order submission error:', error);
-        console.error('Error response:', error.response?.data);
-        const errorMessage = error.response?.data?.message || "Failed to place order";
-        toast.error(errorMessage);
+      }
+    } catch (error) {
+      console.error('Order submission error:', error);
+      console.error('Error response:', error.response?.data);
+      const errorMessage = error.response?.data?.message || "Failed to place order";
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -224,10 +229,10 @@ const Checkout = () => {
   if (orderSuccess && orderId) {
     return (
       <Container maxWidth="lg" sx={{ py: 8, minHeight: '80vh', mt: 10 }}>
-        <Paper 
-          elevation={3} 
-          sx={{ 
-            p: 4, 
+        <Paper
+          elevation={3}
+          sx={{
+            p: 4,
             textAlign: 'center',
             backgroundColor: '#1e242c',
             border: '1px solid rgba(255, 255, 255, 0.1)',
@@ -260,7 +265,7 @@ const Checkout = () => {
               sx={{
                 borderColor: '#149ddd',
                 color: '#149ddd',
-                '&:hover': { 
+                '&:hover': {
                   borderColor: '#1187c1',
                   backgroundColor: 'rgba(20, 157, 221, 0.04)'
                 },
@@ -279,11 +284,11 @@ const Checkout = () => {
 
   if (cartItems.length === 0) {
     return (
-      <Container maxWidth="lg" sx={{ py: 8, minHeight: '80vh' , mt: 10}}>
-        <Paper 
-          elevation={3} 
-          sx={{ 
-            p: 4, 
+      <Container maxWidth="lg" sx={{ py: 8, minHeight: '80vh', mt: 10 }}>
+        <Paper
+          elevation={3}
+          sx={{
+            p: 4,
             textAlign: 'center',
             backgroundColor: '#1e242c',
             border: '1px solid rgba(255, 255, 255, 0.1)',
@@ -313,187 +318,187 @@ const Checkout = () => {
   }
 
   return (
-    <Box sx={{ 
-      minHeight: '100vh', 
+    <Box sx={{
+      minHeight: '100vh',
       py: 4,
       background: '#1e242c'
     }}>
       <Container maxWidth="lg">
-        <Typography variant="h4" component="h1" gutterBottom sx={{ 
-          fontWeight: 600, 
+        <Typography variant="h4" component="h1" gutterBottom sx={{
+          fontWeight: 600,
           color: 'white',
           mb: 4,
           textAlign: 'center'
         }}>
-        Checkout
-      </Typography>
-      
+          Checkout
+        </Typography>
+
         <Grid container spacing={4}>
           {/* Shipping Information */}
           <Grid item xs={12} md={7}>
-            <Paper elevation={3} sx={{ 
-              p: 3, 
+            <Paper elevation={3} sx={{
+              p: 3,
               borderRadius: 2,
               background: '#1e242c',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
               boxShadow: '0 4px 20px rgba(0,0,0,0.2)'
             }}>
-              <Typography variant="h6" gutterBottom sx={{ 
-                  color: 'white',
+              <Typography variant="h6" gutterBottom sx={{
+                color: 'white',
                 fontWeight: 600,
                 mb: 3
               }}>
                 Shipping Information
               </Typography>
-              
+
               <form onSubmit={handleSubmit}>
                 <Grid container spacing={3}>
                   <Grid item xs={12} sm={6}>
-                  <TextField
-                    fullWidth
+                    <TextField
+                      fullWidth
                       label="Name"
                       name="name"
                       value={deliveryAddress.name}
-                    onChange={handleInputChange}
+                      onChange={handleInputChange}
                       required
-                    sx={{
-                      '& .MuiOutlinedInput-root': {
-                        '& fieldset': {
+                      sx={{
+                        '& .MuiOutlinedInput-root': {
+                          '& fieldset': {
                             borderColor: 'rgba(255, 255, 255, 0.23)',
+                          },
+                          '&:hover fieldset': {
+                            borderColor: '#149ddd',
+                          },
+                          '&.Mui-focused fieldset': {
+                            borderColor: '#149ddd',
+                          },
                         },
-                        '&:hover fieldset': {
-                          borderColor: '#149ddd',
+                        '& .MuiInputLabel-root': {
+                          color: 'rgba(255, 255, 255, 0.7)',
                         },
-                        '&.Mui-focused fieldset': {
-                          borderColor: '#149ddd',
+                        '& .MuiOutlinedInput-input': {
+                          color: 'white',
                         },
-                      },
-                      '& .MuiInputLabel-root': {
-                        color: 'rgba(255, 255, 255, 0.7)',
-                      },
-                      '& .MuiOutlinedInput-input': {
-                        color: 'white',
-                      },
-                    }}
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    fullWidth
+                      }}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      fullWidth
                       label="Email"
                       name="email"
                       type="email"
                       value={deliveryAddress.email}
-                    onChange={handleInputChange}
+                      onChange={handleInputChange}
                       required
-                    sx={{
-                      '& .MuiOutlinedInput-root': {
-                        '& fieldset': {
+                      sx={{
+                        '& .MuiOutlinedInput-root': {
+                          '& fieldset': {
                             borderColor: 'rgba(255, 255, 255, 0.23)',
+                          },
+                          '&:hover fieldset': {
+                            borderColor: '#149ddd',
+                          },
+                          '&.Mui-focused fieldset': {
+                            borderColor: '#149ddd',
+                          },
                         },
-                        '&:hover fieldset': {
-                          borderColor: '#149ddd',
+                        '& .MuiInputLabel-root': {
+                          color: 'rgba(255, 255, 255, 0.7)',
                         },
-                        '&.Mui-focused fieldset': {
-                          borderColor: '#149ddd',
+                        '& .MuiOutlinedInput-input': {
+                          color: 'white',
                         },
-                      },
-                      '& .MuiInputLabel-root': {
-                        color: 'rgba(255, 255, 255, 0.7)',
-                      },
-                      '& .MuiOutlinedInput-input': {
-                        color: 'white',
-                      },
-                    }}
-                  />
-                </Grid>
+                      }}
+                    />
+                  </Grid>
                   <Grid item xs={12}>
-                  <TextField
-                    fullWidth
+                    <TextField
+                      fullWidth
                       label="Phone Number"
                       name="phoneNo"
                       value={deliveryAddress.phoneNo}
-                    onChange={handleInputChange}
+                      onChange={handleInputChange}
                       required
-                    sx={{
-                      '& .MuiOutlinedInput-root': {
-                        '& fieldset': {
+                      sx={{
+                        '& .MuiOutlinedInput-root': {
+                          '& fieldset': {
                             borderColor: 'rgba(255, 255, 255, 0.23)',
+                          },
+                          '&:hover fieldset': {
+                            borderColor: '#149ddd',
+                          },
+                          '&.Mui-focused fieldset': {
+                            borderColor: '#149ddd',
+                          },
                         },
-                        '&:hover fieldset': {
-                          borderColor: '#149ddd',
+                        '& .MuiInputLabel-root': {
+                          color: 'rgba(255, 255, 255, 0.7)',
                         },
-                        '&.Mui-focused fieldset': {
-                          borderColor: '#149ddd',
+                        '& .MuiOutlinedInput-input': {
+                          color: 'white',
                         },
-                      },
-                      '& .MuiInputLabel-root': {
-                        color: 'rgba(255, 255, 255, 0.7)',
-                      },
-                      '& .MuiOutlinedInput-input': {
-                        color: 'white',
-                      },
-                    }}
-                  />
-                </Grid>
+                      }}
+                    />
+                  </Grid>
                   <Grid item xs={12}>
-                  <TextField
-                    fullWidth
+                    <TextField
+                      fullWidth
                       label="Street Address"
                       name="street"
                       value={deliveryAddress.street}
-                    onChange={handleInputChange}
+                      onChange={handleInputChange}
                       required
-                    sx={{
-                      '& .MuiOutlinedInput-root': {
-                        '& fieldset': {
+                      sx={{
+                        '& .MuiOutlinedInput-root': {
+                          '& fieldset': {
                             borderColor: 'rgba(255, 255, 255, 0.23)',
+                          },
+                          '&:hover fieldset': {
+                            borderColor: '#149ddd',
+                          },
+                          '&.Mui-focused fieldset': {
+                            borderColor: '#149ddd',
+                          },
                         },
-                        '&:hover fieldset': {
-                          borderColor: '#149ddd',
+                        '& .MuiInputLabel-root': {
+                          color: 'rgba(255, 255, 255, 0.7)',
                         },
-                        '&.Mui-focused fieldset': {
-                          borderColor: '#149ddd',
+                        '& .MuiOutlinedInput-input': {
+                          color: 'white',
                         },
-                      },
-                      '& .MuiInputLabel-root': {
-                        color: 'rgba(255, 255, 255, 0.7)',
-                      },
-                      '& .MuiOutlinedInput-input': {
-                        color: 'white',
-                      },
-                    }}
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    fullWidth
+                      }}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      fullWidth
                       label="City"
                       name="city"
                       value={deliveryAddress.city}
-                    onChange={handleInputChange}
+                      onChange={handleInputChange}
                       required
-                    sx={{
-                      '& .MuiOutlinedInput-root': {
-                        '& fieldset': {
+                      sx={{
+                        '& .MuiOutlinedInput-root': {
+                          '& fieldset': {
                             borderColor: 'rgba(255, 255, 255, 0.23)',
+                          },
+                          '&:hover fieldset': {
+                            borderColor: '#149ddd',
+                          },
+                          '&.Mui-focused fieldset': {
+                            borderColor: '#149ddd',
+                          },
                         },
-                        '&:hover fieldset': {
-                          borderColor: '#149ddd',
+                        '& .MuiInputLabel-root': {
+                          color: 'rgba(255, 255, 255, 0.7)',
                         },
-                        '&.Mui-focused fieldset': {
-                          borderColor: '#149ddd',
+                        '& .MuiOutlinedInput-input': {
+                          color: 'white',
                         },
-                      },
-                      '& .MuiInputLabel-root': {
-                        color: 'rgba(255, 255, 255, 0.7)',
-                      },
-                      '& .MuiOutlinedInput-input': {
-                        color: 'white',
-                      },
-                    }}
-                  />
-                </Grid>
+                      }}
+                    />
+                  </Grid>
                   <Grid item xs={12} sm={6}>
                     <TextField
                       fullWidth
@@ -555,12 +560,12 @@ const Checkout = () => {
                 </Grid>
               </form>
             </Paper>
-              </Grid>
+          </Grid>
 
           {/* Order Summary */}
           <Grid item xs={12} md={5}>
-            <Paper elevation={3} sx={{ 
-              p: 3, 
+            <Paper elevation={3} sx={{
+              p: 3,
               borderRadius: 2,
               background: '#1e242c',
               border: '1px solid rgba(255, 255, 255, 0.1)',
@@ -568,7 +573,7 @@ const Checkout = () => {
               position: 'sticky',
               top: 20
             }}>
-              <Typography variant="h6" gutterBottom sx={{ 
+              <Typography variant="h6" gutterBottom sx={{
                 color: 'white',
                 fontWeight: 600,
                 mb: 3
@@ -578,16 +583,16 @@ const Checkout = () => {
 
               <List>
                 {cartItems.map((item) => (
-                  <ListItem key={item._id} sx={{ 
+                  <ListItem key={item._id} sx={{
                     py: 1,
                     borderBottom: '1px solid rgba(255, 255, 255, 0.1)'
                   }}>
                     <ListItemAvatar>
-                      <Avatar 
-                        src={item.thumbnail} 
+                      <Avatar
+                        src={item.thumbnail}
                         alt={item.title}
-                sx={{ 
-                          width: 60, 
+                        sx={{
+                          width: 60,
                           height: 60,
                           borderRadius: 1
                         }}
@@ -606,7 +611,7 @@ const Checkout = () => {
                       }
                       sx={{ ml: 2 }}
                     />
-                    <Typography variant="body1" sx={{ 
+                    <Typography variant="body1" sx={{
                       fontWeight: 600,
                       color: '#149ddd'
                     }}>
@@ -619,22 +624,22 @@ const Checkout = () => {
               <Divider sx={{ my: 2, borderColor: 'rgba(255, 255, 255, 0.1)' }} />
 
               <FormControl component="fieldset" sx={{ width: '100%', mb: 3 }}>
-                <FormLabel component="legend" sx={{ 
+                <FormLabel component="legend" sx={{
                   color: 'white',
                   fontWeight: 600,
                   mb: 2
                 }}>
-                Payment Method
+                  Payment Method
                 </FormLabel>
-              <RadioGroup
-                value={selectedPaymentMethod}
-                onChange={handleInputChange}
+                <RadioGroup
+                  value={selectedPaymentMethod}
+                  onChange={handleInputChange}
                   name="paymentMethod"
-              >
-                <FormControlLabel
-                  value="cash"
+                >
+                  <FormControlLabel
+                    value="cash"
                     control={
-                      <Radio sx={{ 
+                      <Radio sx={{
                         color: 'rgba(255, 255, 255, 0.7)',
                         '&.Mui-checked': {
                           color: '#149ddd',
@@ -646,11 +651,11 @@ const Checkout = () => {
                         Cash on Delivery
                       </Typography>
                     }
-                />
-                <FormControlLabel
-                  value="transfer"
+                  />
+                  <FormControlLabel
+                    value="transfer"
                     control={
-                      <Radio sx={{ 
+                      <Radio sx={{
                         color: 'rgba(255, 255, 255, 0.7)',
                         '&.Mui-checked': {
                           color: '#149ddd',
@@ -666,7 +671,7 @@ const Checkout = () => {
                   <FormControlLabel
                     value="jazzcash"
                     control={
-                      <Radio sx={{ 
+                      <Radio sx={{
                         color: 'rgba(255, 255, 255, 0.7)',
                         '&.Mui-checked': {
                           color: '#149ddd',
@@ -678,8 +683,8 @@ const Checkout = () => {
                         Jazz Cash
                       </Typography>
                     }
-                />
-              </RadioGroup>
+                  />
+                </RadioGroup>
               </FormControl>
 
               {(selectedPaymentMethod === 'transfer' || selectedPaymentMethod === 'jazzcash') && (
@@ -691,10 +696,10 @@ const Checkout = () => {
                     <>
                       <Typography variant="body2" sx={{ color: 'white', fontWeight: 600 }}>
                         Bank: HBL
-                        </Typography>
+                      </Typography>
                       <Typography variant="body2" sx={{ color: 'white', fontWeight: 600 }}>
                         Account Number: 1234567890
-                          </Typography>
+                      </Typography>
                       <Typography variant="body2" sx={{ color: 'white', fontWeight: 600 }}>
                         Account Name: SA Graphics
                       </Typography>
@@ -712,32 +717,32 @@ const Checkout = () => {
 
                   <Box sx={{ mt: 3 }}>
                     <Typography variant="body2" sx={{ color: 'white', mb: 2 }}>
-                          Upload Payment Proof
-                      </Typography>
-                      <input
-                          accept="image/*"
-                          type="file"
+                      Upload Payment Proof
+                    </Typography>
+                    <input
+                      accept="image/*"
+                      type="file"
                       id="payment-proof"
-                          name="transferProof"
-                          onChange={handleInputChange}
-                          style={{ display: 'none' }}
-                      />
+                      name="transferProof"
+                      onChange={handleInputChange}
+                      style={{ display: 'none' }}
+                    />
                     <label htmlFor="payment-proof">
-                          <Button
-                              variant="outlined"
-                              component="span"
-                              sx={{
-                                  color: 'white',
-                                  borderColor: 'rgba(255, 255, 255, 0.23)',
-                                  '&:hover': {
-                                      borderColor: '#149ddd',
-                                      backgroundColor: 'rgba(20, 157, 221, 0.08)'
-                                  }
-                              }}
-                          >
-                              {transferProof ? 'Change File' : 'Choose File'}
-                          </Button>
-                      </label>
+                      <Button
+                        variant="outlined"
+                        component="span"
+                        sx={{
+                          color: 'white',
+                          borderColor: 'rgba(255, 255, 255, 0.23)',
+                          '&:hover': {
+                            borderColor: '#149ddd',
+                            backgroundColor: 'rgba(20, 157, 221, 0.08)'
+                          }
+                        }}
+                      >
+                        {transferProof ? 'Change File' : 'Choose File'}
+                      </Button>
+                    </label>
                     {transferProof && (
                       <Typography variant="body2" sx={{ color: 'white', mt: 1 }}>
                         File selected: {transferProof.name}
@@ -748,19 +753,19 @@ const Checkout = () => {
               )}
 
               <Box sx={{ mb: 3 }}>
-                <Typography variant="body1" sx={{ 
+                <Typography variant="body1" sx={{
                   color: 'rgba(255, 255, 255, 0.7)',
                   mb: 1
                 }}>
                   Subtotal: Rs. {getCartTotal()}
-                    </Typography>
-                <Typography variant="body1" sx={{ 
+                </Typography>
+                <Typography variant="body1" sx={{
                   color: 'rgba(255, 255, 255, 0.7)',
                   mb: 1
                 }}>
                   Charity (2.5%): Rs. {calculateCharityAmount(getCartTotal())}
-                    </Typography>
-                <Typography variant="h6" sx={{ 
+                </Typography>
+                <Typography variant="h6" sx={{
                   fontWeight: 600,
                   color: 'white'
                 }}>
@@ -786,7 +791,7 @@ const Checkout = () => {
             </Paper>
           </Grid>
         </Grid>
-    </Container>
+      </Container>
     </Box>
   );
 };
