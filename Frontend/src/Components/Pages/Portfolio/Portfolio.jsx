@@ -82,21 +82,21 @@ const ProjectCard = memo(({ project, onClick }) => {
 
 ProjectCard.displayName = 'ProjectCard';
 
-const BookCard = memo(({ book, onClick }) => {
+const BookCard = memo(({ book, onClick, quantity = 1 }) => {
   const handleClick = useCallback(() => {
     onClick(book);
   }, [onClick, book]);
   const getEffectiveDiscount = () => {
-    const bulkDiscount = selectedBook.bulkDiscounts
+    const bulkDiscount = book.bulkDiscounts
       ?.filter((bd) => quantity >= bd.quantity)
       .sort((a, b) => b.quantity - a.quantity)[0];
   
-    return bulkDiscount?.discount || selectedBook.discount || 0;
+    return bulkDiscount?.discount || book.discount || 0;
   };
   
   const getDiscountedPrice = () => {
     const discount = getEffectiveDiscount();
-    return selectedBook.price - (selectedBook.price * discount) / 100;
+    return book.price - (book.price * discount) / 100;
   };
   
   return (
@@ -526,7 +526,7 @@ const Portfolio = React.memo(function Portfolio() {
                     data-aos-delay={Math.min(book.index * 50, 200)}
                     data-aos-once="true"
                   >
-                    <BookCard book={book} onClick={handleBookClick} />
+                    <BookCard book={book} onClick={handleBookClick} quantity={quantity} />
                   </Grid>
                 ))}
               </Grid>
