@@ -8,11 +8,11 @@ const testimonialController = require("../Controllers/testimonials.controller.js
 const reviewsController = require("../Controllers/reviews.controller.js");
 const userController = require("../Controllers/user.controller.js");
 const projectController = require("../controllers/project.controller");
-const authMiddleware = require("../middlewares/authMiddleware");
-const adminMiddleware = require("../middlewares/adminMiddleware");
+const {authenticateUser} = require("../middleware/authMiddleware");
+const adminMiddleware = require("../middleware/admin.js");
 const { bookUpload, paymentProofUpload, projectUpload, profileUpload, handleMulterError } = require("../config/multer");
-const errorHandler = require("../middlewares/errorHandler");
-const { validateJoi } = require("../middlewares/validationMiddleware");
+const errorHandler = require("../middleware/errorHandler.js");
+const { validateJoi } = require("../middleware/validationMiddleware.js");
 const {
   registerSchema,
   loginSchema,
@@ -22,7 +22,6 @@ const {
 } = require("../validations/userValidations");
 const { createContact } = require("../Controllers/contact.controller.js");
 const { updateProfile } = require('../Controllers/auth.controller');
-const wishlistController = require('../Controllers/wishlist.controller');
 const supportController = require('../Controllers/support.controller');
 const dashboardController = require('../Controllers/dashboard.controller');
 const settingsController = require('../Controllers/settings.controller');
@@ -45,19 +44,19 @@ router.post(
 
 router.post(
   "/auth/logout",
-  authMiddleware,
+  authenticateUser,
   authController.logout
 );
 
 router.post(
   "/auth/change-password",
-  authMiddleware,
+  authenticateUser,
   authController.changePassword
 );
 
 router.put(
   "/update-profile-pic",
-  authMiddleware,
+  authenticateUser,
   profileUpload.single("profilePic"),
   authController.updateProfilePic
 );
@@ -86,7 +85,7 @@ router.post(
 // Book Routes
 router.post(
   "/books",
-  authMiddleware,
+  authenticateUser,
   adminMiddleware,
   bookUpload.single("coverImage"),
   handleMulterError,
@@ -99,7 +98,7 @@ router.get("/books/:id", bookController.getBook);
 
 router.put(
   "/books/:id",
-  authMiddleware,
+  authenticateUser,
   adminMiddleware,
   bookUpload.single("coverImage"),
   handleMulterError,
@@ -108,23 +107,23 @@ router.put(
 
 router.delete(
   "/books/:id",
-  authMiddleware,
+  authenticateUser,
   adminMiddleware,
   bookController.deleteBook
 );
 
 // Order Routes
-router.post('/orders', authMiddleware, paymentProofUpload.single('transferProof'), orderController.createOrder);
-router.get('/orders', authMiddleware, orderController.getUserOrders);
-router.get('/orders/:orderId', authMiddleware, orderController.getOrderById);
-router.patch('/orders/:orderId/status', authMiddleware, adminMiddleware, orderController.updateOrderStatus);
-router.patch('/orders/:orderId/payment-status', authMiddleware, adminMiddleware, orderController.verifyPayment);
-router.post('/orders/:orderId/cancel', authMiddleware, orderController.cancelOrder);
+router.post('/orders', authenticateUser, paymentProofUpload.single('transferProof'), orderController.createOrder);
+router.get('/orders', authenticateUser, orderController.getUserOrders);
+router.get('/orders/:orderId', authenticateUser, orderController.getOrderById);
+router.patch('/orders/:orderId/status', authenticateUser, adminMiddleware, orderController.updateOrderStatus);
+router.patch('/orders/:orderId/payment-status', authenticateUser, adminMiddleware, orderController.verifyPayment);
+router.post('/orders/:orderId/cancel', authenticateUser, orderController.cancelOrder);
 
 // Portfolio Routes
 router.post(
   "/portfolio",
-  authMiddleware,
+  authenticateUser,
   adminMiddleware,
   projectUpload.single("image"),
   portfolioController.createProject
@@ -136,7 +135,7 @@ router.get("/portfolio/:id", portfolioController.getProjectById);
 
 router.put(
   "/portfolio/:id",
-  authMiddleware,
+  authenticateUser,
   adminMiddleware,
   projectUpload.single("image"),
   portfolioController.updateProject
@@ -144,7 +143,7 @@ router.put(
 
 router.delete(
   "/portfolio/:id",
-  authMiddleware,
+  authenticateUser,
   adminMiddleware,
   portfolioController.deleteProject
 );
@@ -152,7 +151,7 @@ router.delete(
 // Testimonial Routes
 router.post(
   "/testimonials",
-  authMiddleware,
+  authenticateUser,
   testimonialController.submitTestimonial
 );
 
@@ -160,112 +159,107 @@ router.get("/testimonials", testimonialController.getApprovedTestimonials);
 
 router.get(
   "/admin/testimonials",
-  authMiddleware,
+  authenticateUser,
   adminMiddleware,
   testimonialController.getAllTestimonials
 );
 
 router.put(
   "/admin/testimonials/:id",
-  authMiddleware,
+  authenticateUser,
   adminMiddleware,
   testimonialController.updateTestimonialStatus
 );
 
 router.delete(
   "/admin/testimonials/:id",
-  authMiddleware,
+  authenticateUser,
   adminMiddleware,
   testimonialController.deleteTestimonial
 );
 
 // Review Routes
-router.post("/books/:bookId/reviews", authMiddleware, reviewsController.createBookReview);
+router.post("/books/:bookId/reviews", authenticateUser, reviewsController.createBookReview);
 router.get("/books/:bookId/reviews", reviewsController.getBookReviews);
-router.put("/books/:bookId/reviews/:reviewId", authMiddleware, reviewsController.updateReview);
-router.delete("/books/:bookId/reviews/:reviewId", authMiddleware, reviewsController.deleteReview);
+router.put("/books/:bookId/reviews/:reviewId", authenticateUser, reviewsController.updateReview);
+router.delete("/books/:bookId/reviews/:reviewId", authenticateUser, reviewsController.deleteReview);
 
 // Service Review Routes
-router.post("/reviews/services", authMiddleware, reviewsController.createReview);
-router.put("/reviews/services/:reviewId", authMiddleware, reviewsController.updateReview);
-router.delete("/reviews/services/:reviewId", authMiddleware, reviewsController.deleteReview);
+router.post("/reviews/services", authenticateUser, reviewsController.createReview);
+router.put("/reviews/services/:reviewId", authenticateUser, reviewsController.updateReview);
+router.delete("/reviews/services/:reviewId", authenticateUser, reviewsController.deleteReview);
 
 // contact routes
 router.post('/contact' , createContact);
 
 // User routes
-router.get('/users/me', authMiddleware, (req, res) => {
+router.get('/users/me', authenticateUser, (req, res) => {
   res.json(req.user);
 });
-router.get('/users/stats', authMiddleware, userController.getUserStats);
-router.put('/update-profile', authMiddleware, validateJoi(updateProfileSchema), authController.updateProfile);
+router.get('/users/stats', authenticateUser, userController.getUserStats);
+router.put('/update-profile', authenticateUser, validateJoi(updateProfileSchema), authController.updateProfile);
 
-// Wishlist routes
-router.get('/wishlist', authMiddleware, wishlistController.getWishlist);
-router.post('/wishlist', authMiddleware, wishlistController.addToWishlist);
-router.delete('/wishlist/:bookId', authMiddleware, wishlistController.removeFromWishlist);
-router.delete('/wishlist', authMiddleware, wishlistController.clearWishlist);
 
 // Support routes
-router.post('/support', authMiddleware, supportController.createSupportTicket);
-router.get('/support/tickets', authMiddleware, supportController.getUserTickets);
-router.get('/support/admin/tickets', authMiddleware, adminMiddleware, supportController.getAllTickets);
-router.put('/support/admin/tickets/:ticketId', authMiddleware, adminMiddleware, supportController.updateTicketStatus);
+router.post('/support', authenticateUser, supportController.createSupportTicket);
+router.get('/support/tickets', authenticateUser, supportController.getUserTickets);
+router.get('/support/admin/tickets', authenticateUser, adminMiddleware, supportController.getAllTickets);
+router.put('/support/admin/tickets/:ticketId', authenticateUser, adminMiddleware, supportController.updateTicketStatus);
 
 // Admin User Management Routes
 router.get(
   "/admin/users",
-  authMiddleware,
+  authenticateUser,
   adminMiddleware,
   userController.getAllUsers
 );
 
 router.put(
   "/admin/users/:userId",
-  authMiddleware,
+  authenticateUser,
   adminMiddleware,
   userController.updateUser
 );
 
 router.delete(
   "/admin/users/:userId",
-  authMiddleware,
+  authenticateUser,
   adminMiddleware,
   userController.deleteUser
 );
 
 router.patch(
   "/admin/users/:userId/block",
-  authMiddleware,
+  authenticateUser,
   adminMiddleware,
   userController.blockUser
 );
 
 router.patch(
   "/admin/users/:userId/unblock",
-  authMiddleware,
+  authenticateUser,
   adminMiddleware,
   userController.unblockUser
 );
 
 // Book Routes
-router.post("/admin/books", authMiddleware, adminMiddleware, bookController.createBook);
-router.get("/admin/books", authMiddleware, adminMiddleware, bookController.getAllBooks);
-router.get("/admin/books/:id", authMiddleware, adminMiddleware, bookController.getBook);
-router.put("/admin/books/:id", authMiddleware, adminMiddleware, bookController.updateBook);
-router.delete("/admin/books/:id", authMiddleware, adminMiddleware, bookController.deleteBook);
+router.post("/admin/books", authenticateUser, adminMiddleware, bookController.createBook);
+router.get("/admin/books", authenticateUser, adminMiddleware, bookController.getAllBooks);
+router.get("/admin/books/:id", authenticateUser, adminMiddleware, bookController.getBook);
+router.put("/admin/books/:id", authenticateUser, adminMiddleware, bookController.updateBook);
+router.delete("/admin/books/:id", authenticateUser, adminMiddleware, bookController.deleteBook);
 
 // Project Routes
-router.post("/admin/projects", authMiddleware, adminMiddleware, projectController.createProject);
-router.get("/admin/projects", authMiddleware, adminMiddleware, projectController.getAllProjects);
-router.get("/admin/projects/:id", authMiddleware, adminMiddleware, projectController.getProject);
-router.put("/admin/projects/:id", authMiddleware, adminMiddleware, projectController.updateProject);
-router.delete("/admin/projects/:id", authMiddleware, adminMiddleware, projectController.deleteProject);
+router.post("/admin/projects", authenticateUser, adminMiddleware, projectController.createProject);
+router.get("/admin/projects", authenticateUser, adminMiddleware, projectController.getAllProjects);
+router.get("/admin/projects/:id", authenticateUser, adminMiddleware, projectController.getProject);
+router.put("/admin/projects/:id", authenticateUser, adminMiddleware, projectController.updateProject);
+router.delete("/admin/projects/:id", authenticateUser, adminMiddleware, projectController.deleteProject);
 
 // Admin Routes
 router.get(
   "/admin/dashboard",
-  authMiddleware,
+  authenticateUser,
   adminMiddleware,
   dashboardController.getDashboardStats
 );
@@ -273,23 +267,23 @@ router.get(
 // Settings Routes
 router.get(
   "/settings",
-  authMiddleware,
+  authenticateUser,
   adminMiddleware,
   settingsController.getSettings
 );
 
 router.put(
   "/settings",
-  authMiddleware,
+  authenticateUser,
   adminMiddleware,
   settingsController.updateSettings
 );
 
 // Service Routes
 router.get("/services", serviceController.getServices);
-router.post("/services", authMiddleware, adminMiddleware, serviceController.createService);
-router.put("/services/:id", authMiddleware, adminMiddleware, serviceController.updateService);
-router.delete("/services/:id", authMiddleware, adminMiddleware, serviceController.deleteService);
+router.post("/services", authenticateUser, adminMiddleware, serviceController.createService);
+router.put("/services/:id", authenticateUser, adminMiddleware, serviceController.updateService);
+router.delete("/services/:id", authenticateUser, adminMiddleware, serviceController.deleteService);
 
 // Update profile with photo upload
 router.patch('/profile',

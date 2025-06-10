@@ -1,14 +1,14 @@
 const express = require('express');
 const router = express.Router();
 const Settings = require('../models/settings.model.js');
-const { authMiddleware } = require('../middleware/authMiddleware');
+const {authenticateUser} = require('../middleware/authMiddleware.js');
 const User = require('../models/user.model');
 const bcrypt = require('bcryptjs');
 const createError = require('http-errors');
 const { profileUpload } = require('../config/multer.js');
 
 // Protected routes - apply auth middleware to all routes
-router.use(authMiddleware);
+router.use(authenticateUser);
 
 // Get settings
 router.get('/', async (req, res) => {

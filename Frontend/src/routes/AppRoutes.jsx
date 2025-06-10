@@ -18,7 +18,6 @@ const AppRoutes = () => {
       <Route path="/profile" element={<UserRoutes />} />
       <Route path="/orders" element={<UserRoutes />} />
       <Route path="/track-order" element={<UserRoutes />} />
-      <Route path="/wishlist" element={<UserRoutes />} />
       <Route path="/reviews" element={<UserRoutes />} />
       <Route path="/security" element={<UserRoutes />} />
       <Route path="/support" element={<UserRoutes />} />

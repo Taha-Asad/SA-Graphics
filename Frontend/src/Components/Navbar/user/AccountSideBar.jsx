@@ -42,7 +42,6 @@ const AccountSideBar = ({ onClose, open }) => {
   const [userStats, setUserStats] = useState({
     orders: 0,
     reviews: 0,
-    wishlist: 0
   });
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editFormData, setEditFormData] = useState({
@@ -241,11 +240,6 @@ const AccountSideBar = ({ onClose, open }) => {
         icon: <FiPackage size={20} />,
         text: 'Orders',
         path: '/account/orders'
-      },
-      {
-        icon: <FiHeart size={20} />,
-        text: 'Wishlist',
-        path: '/account/wishlist'
       },
       {
         icon: <MdReviews size={20} />,
@@ -693,45 +687,7 @@ const AccountSideBar = ({ onClose, open }) => {
                       </Typography>
                     </Box>
 
-                    <Box 
-                      component={Link}
-                      to="/account/wishlist"
-                      onClick={onClose}
-              sx={{
-                        textAlign: 'center',
-                        textDecoration: 'none',
-                        flex: 1,
-                        cursor: 'pointer',
-                '&:hover': {
-                          '& .stat-number': { color: '#149ddd' }
-                        }
-                      }}
-                    >
-                      <Typography 
-                        className="stat-number"
-                        variant="h6" 
-                        sx={{ 
-                          color: 'white',
-                          fontWeight: 600,
-                          fontSize: '1.5rem',
-                          mb: 0.5,
-                          transition: 'color 0.2s ease'
-                        }}
-                      >
-                        {userStats.wishlist}
-                      </Typography>
-                      <Typography 
-                        variant="caption" 
-                        sx={{ 
-                          color: 'rgba(255, 255, 255, 0.7)',
-                          fontSize: '0.75rem',
-                          letterSpacing: '0.5px',
-                          display: 'block'
-                        }}
-                      >
-                        Wishlist
-                      </Typography>
-                    </Box>
+
                   </>
                 )}
               </Box>

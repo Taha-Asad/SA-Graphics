@@ -36,7 +36,7 @@ const About = () => {
                 color: "#149ddd",  
               }}
             >
-              Sheraz Amjad
+              SA Grafix
             </Typography>
 
             <Typography 
@@ -113,7 +113,7 @@ const About = () => {
             mx: "auto"
           }}
         >
-          Sheraz Amjad is one of Pakistan's youngest and most dynamic voices in IT education, digital entrepreneurship, and motivational speaking. At just 18 years of age, he has empowered hundreds of students with modern digital skills, practical guidance, and inspirational life lessons.
+          SA Grafix is one of Pakistan's youngest and most dynamic voices in IT education, digital entrepreneurship, and motivational speaking. At just 18 years of age, he has empowered hundreds of students with modern digital skills, practical guidance, and inspirational life lessons.
         </Typography>
 
         {/* Content Sections */}
@@ -147,7 +147,7 @@ const About = () => {
           <Grid item xs={12} md={6}>
             <Box sx={{ mb: 4 }}>
               <Typography variant="h5" sx={{ color: "#000000", mb: 3, fontWeight: "600" }}>
-                Why Sheraz Amjad?
+                Why SA Grafix ?
               </Typography>
               <Typography variant="body1" sx={{ color: "#555", lineHeight: 2 }}>
                 • Started journey at age 13 during COVID-19<br />

@@ -6,7 +6,7 @@ const ejs = require('ejs');
 const path = require('path');
 const { UPLOAD_PATH, paymentProofUpload } = require('../config/multer');
 const fs = require('fs');
-const { authMiddleware, adminMiddleware } = require('../middleware/authMiddleware');
+const { authenticateUser , authorizeRoles } = require('../middleware/authMiddleware');
 const {
   createOrder,
   getUserOrders,
@@ -17,22 +17,22 @@ const {
 } = require("../Controllers/order.controller");
 
 // Create a new order with payment proof
-router.post('/', authMiddleware, paymentProofUpload.single('transferProof'), createOrder);
+router.post('/', authenticateUser, paymentProofUpload.single('transferProof'), createOrder);
 
 // Get all orders for the logged-in user
-router.get('/', authMiddleware, getUserOrders);
+router.get('/', authenticateUser, getUserOrders);
 
 // Get specific order by ID
-router.get('/:orderId', authMiddleware, getOrderById);
+router.get('/:orderId', authenticateUser, getOrderById);
 
 // Update order status (Admin only)
-router.patch('/:orderId/status', authMiddleware, adminMiddleware, updateOrderStatus);
+router.patch('/:orderId/status', authenticateUser, authorizeRoles, updateOrderStatus);
 
 // Update payment status (Admin only)
-router.patch('/:orderId/payment-status', authMiddleware, adminMiddleware, verifyPayment);
+router.patch('/:orderId/payment-status', authenticateUser, authorizeRoles, verifyPayment);
 
 // Cancel order
-router.post('/:orderId/cancel', authMiddleware, cancelOrder);
+router.post('/:orderId/cancel', authenticateUser, cancelOrder);
 
 // Serve payment proof images
 router.get('/:orderId/payment-proof', async (req, res) => {
@@ -48,14 +48,6 @@ router.get('/:orderId/payment-proof', async (req, res) => {
             return res.status(404).json({ message: 'Order not found' });
         }
 
-        // Log all possible payment proof fields
-        console.log('Payment proof fields:', {
-            transferProof: order.transferProof,
-            paymentProof: order.paymentProof,
-            proofOfPayment: order.proofOfPayment,
-            paymentProofImage: order.paymentProofImage,
-            paymentReceipt: order.paymentReceipt
-        });
 
         // Check for any available payment proof field
         const proofFile = order.transferProof || order.paymentProof || order.proofOfPayment || 
@@ -142,14 +134,7 @@ router.head('/:orderId/payment-proof', async (req, res) => {
             return res.status(404).end();
         }
 
-        // Log all possible payment proof fields
-        console.log('Payment proof fields:', {
-            transferProof: order.transferProof,
-            paymentProof: order.paymentProof,
-            proofOfPayment: order.proofOfPayment,
-            paymentProofImage: order.paymentProofImage,
-            paymentReceipt: order.paymentReceipt
-        });
+
 
         // Check for any available payment proof field
         const proofFile = order.transferProof || order.paymentProof || order.proofOfPayment || 
@@ -168,7 +153,6 @@ router.head('/:orderId/payment-proof', async (req, res) => {
             path.join(UPLOAD_PATH, 'payment-proofs', path.basename(proofFile))
         ];
 
-        console.log('Checking possible paths:', possiblePaths);
 
         const existingPath = possiblePaths.find(p => fs.existsSync(p));
         if (!existingPath) {
@@ -176,7 +160,6 @@ router.head('/:orderId/payment-proof', async (req, res) => {
             return res.status(404).end();
         }
 
-        console.log('Found file at:', existingPath);
 
         const ext = path.extname(existingPath).toLowerCase();
         const contentType = ext === '.png' ? 'image/png' : 

@@ -44,7 +44,6 @@ const AccountMenuItem = ({ icon: Icon, title, path, onClick }) => {
           )}
           <Typography
             sx={{
-              fontFamily: 'Raleway',
               fontSize: '16px',
               fontWeight: 500
             }}

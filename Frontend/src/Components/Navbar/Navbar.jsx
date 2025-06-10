@@ -9,7 +9,7 @@ import { Link as RouterLink, useLocation } from 'react-router-dom';
 import CartSideBar from './user/CartSideBar.jsx';
 import { Links } from './Links';
 import { Link as ScrollLink } from "react-scroll";
-
+import logo from "../../../public/assets/Logo/logo.jpg"
 const pages = [
   { name: 'Home', path: '/' },
   { name: 'About', path: '/about' },
@@ -49,10 +49,10 @@ const Navbar = () => {
 
   return (
     <>
-      <Box 
-        sx={{ 
-          width: "100%", 
-          bgcolor: "#040B14", 
+      <Box
+        sx={{
+          width: "100%",
+          bgcolor: "#040B14",
           height: "25%",
           position: 'fixed',
           top: 0,
@@ -63,30 +63,36 @@ const Navbar = () => {
         }}
       >
         <Container maxWidth="lg">
-          <Stack 
-            direction="row" 
-            alignItems="center" 
+          <Stack
+            direction="row"
+            alignItems="center"
             justifyContent="space-between"
           >
             {/* Logo Section */}
-            <RouterLink to="/" style={{ textDecoration: 'none' }}>
-              <Stack spacing={1}>
+            {/* <RouterLink to="/" style={{ textDecoration: 'none' }}>
+              <Stack spacing={1} >
                 <Stack direction="row" spacing={1} alignItems="baseline">
-                  <Box component="span" sx={{ 
-                    color: '#F4FAFA', // Yellow color for Sheraz
-                    fontSize: { xs: '2rem', md: '2.5rem' },
-                    fontWeight: 800,
-                    lineHeight: 1
+                  <Box sx={{
+                    width:"25%",
+                    left:"20%"
                   }}>
-                    Sheraz
+                    <img src={logo} alt="" width={"100%"} style={{borderRadius:"50px" , marginLeft:"-20px"}}/>
                   </Box>
                   <Box component="span" sx={{ 
-                    color: '#149DDD', // White color for Amjad
+                    color: '#F4FAFA', 
+                    fontSize: { xs: '2rem', md: '2.5rem' },
+                    fontWeight: 800,
+                    lineHeight: 1,
+                  }}>
+                    SA
+                  </Box>
+                  <Box component="span" sx={{ 
+                    color: '#149DDD', 
                     fontSize: { xs: '2rem', md: '2.5rem' },
                     fontWeight: 800,
                     lineHeight: 1
                   }}>
-                    Amjad
+                    Grafix
                   </Box>
                 </Stack>
                 <Box component="span" sx={{ 
@@ -99,13 +105,77 @@ const Navbar = () => {
                   Speaker | Trainer | Author
                 </Box>
               </Stack>
-              </RouterLink>
+              </RouterLink> */}
+            <RouterLink to="/" style={{ textDecoration: 'none' }}>
+              <Stack spacing={1}>
+                <Stack
+                  direction="row"
+                  spacing={1}
+                  alignItems="center" // Changed from 'baseline' to 'center'
+                  sx={{
+                    position: 'relative', // Needed for absolute positioning of logo
+                    paddingLeft: '40px' // Compensate for logo position
+                  }}
+                >
+                  {/* Logo Container - Absolute positioned */}
+                  <Box sx={{
+                    position: 'absolute',
+                    top:0.3,
+                    left: -5,
+                    width: { xs: '60px', md: '80px' }, // Fixed widths
+                    height: { xs: '60px', md: '80px' }
+                  }}>
+                    <img
+                      src={logo}
+                      alt="SA Grafix Logo"
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'contain', 
+                        borderRadius: '50%'
+                      }}
+                    />
+                  </Box>
 
+                  {/* Text Components */}
+                  <Box component="span" sx={{
+                    color: '#F4FAFA',
+                    fontSize: { xs: '2rem', md: '2.5rem' },
+                    fontWeight: 800,
+                    lineHeight: 1,
+                    paddingLeft:{xs: "20px" , md:"40px"},
+                    marginLeft: { xs: '10px', md: '100%' } 
+                  }}>
+                    SA
+                  </Box>
+                  <Box component="span" sx={{
+                    color: '#BD3326',
+                    fontSize: { xs: '2rem', md: '2.5rem' },
+                    fontWeight: 800,
+                    lineHeight: 1
+                  }}>
+                    Grafix
+                  </Box>
+                </Stack>
+
+                <Box component="span" sx={{
+                  color: '#fff',
+                  fontSize: { xs: '0.9rem', md: '1.1rem' },
+                  fontWeight: 400,
+                  opacity: 0.8,
+                  letterSpacing: '1px',
+                  textAlign: 'center', // Center the subtitle
+                  paddingLeft: { xs: '70px', md: '90px' } // Align with text above
+                }}>
+                  Speaker | Trainer | Author
+                </Box>
+              </Stack>
+            </RouterLink>
             {/* Desktop Navigation Links */}
             {isHomePage && (
-              <Stack 
-                direction="row" 
-                spacing={4} 
+              <Stack
+                direction="row"
+                spacing={4}
                 sx={{ display: { xs: 'none', md: 'flex' } }}
               >
                 {Links.map((link) => (
@@ -161,7 +231,7 @@ const Navbar = () => {
               {isMobile && (
                 <IconButton
                   onClick={() => setMenuOpen(true)}
-                  sx={{ 
+                  sx={{
                     color: '#fff',
                     '&:hover': { color: '#149ddd' }
                   }}
@@ -171,7 +241,7 @@ const Navbar = () => {
               )}
               <IconButton
                 onClick={() => setUserSideBar(true)}
-                sx={{ 
+                sx={{
                   color: '#fff',
                   '&:hover': { color: '#149ddd' }
                 }}
@@ -180,7 +250,7 @@ const Navbar = () => {
               </IconButton>
               <IconButton
                 onClick={() => setCartSidebar(true)}
-              sx={{
+                sx={{
                   color: '#fff',
                   '&:hover': { color: '#149ddd' }
                 }}
@@ -198,7 +268,7 @@ const Navbar = () => {
         open={menuOpen}
         onClose={() => setMenuOpen(false)}
         onOpen={() => setMenuOpen(true)}
-          sx={{
+        sx={{
           '& .MuiDrawer-paper': {
             width: { xs: '85%', sm: '300px' },
             bgcolor: '#040B14',
@@ -208,7 +278,7 @@ const Navbar = () => {
         }}
       >
         <Box sx={{ mb: 2, display: 'flex', justifyContent: 'flex-end' }}>
-          <IconButton 
+          <IconButton
             onClick={() => setMenuOpen(false)}
             sx={{ color: '#fff' }}
           >
@@ -226,8 +296,8 @@ const Navbar = () => {
               duration={500}
               onClick={() => setMenuOpen(false)}
             >
-        <Box
-        sx={{
+              <Box
+                sx={{
                   color: "#fff",
                   display: 'flex',
                   alignItems: 'center',
@@ -244,7 +314,7 @@ const Navbar = () => {
               >
                 {link.icon}
                 {link.title}
-        </Box>
+              </Box>
             </ScrollLink>
           ))}
         </Stack>
@@ -252,7 +322,7 @@ const Navbar = () => {
 
       {/* Account Sidebar */}
       <AccountSideBar onClose={() => setUserSideBar(false)} open={userSideBar} />
-      
+
       {/* Cart Sidebar */}
       <CartSideBar onClose={() => setCartSidebar(false)} open={cartSidebar} />
     </>

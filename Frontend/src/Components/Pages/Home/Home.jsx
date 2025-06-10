@@ -124,7 +124,7 @@ const Home = () => {
           }}
           data-aos="fade-up"
         >
-          Sheraz <span style={{ color: "#149ddd" }}>Amjad</span>
+          SA <span style={{ color: "#149ddd" }}>Grafix</span>
         </Typography>
         
         <Typography 

@@ -93,9 +93,6 @@ const Footer = () => {
               <Link href="#" aria-label="Whatsapp" fontSize={25}>
                 <FaWhatsapp/>
               </Link>
-              <Link href="#" aria-label="LinkedIn">
-                <LinkedInIcon />
-              </Link>
               <Link href="#" aria-label="YouTube">
                 <YouTubeIcon />
               </Link>

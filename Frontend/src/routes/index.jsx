@@ -4,7 +4,6 @@ import MainLayout from '../Components/Layout/MainLayout';
 import AuthLayout from '../Components/Layout/AuthLayout';
 import AccountLayout from '../Components/Layout/AccountLayout';
 import Security from '../Components/Pages/Security/Security';
-import Wishlist from '../Components/Pages/Wishlist/Wishlist';
 import Support from '../Components/Pages/Support/Support';
 import User from '../Components/User';
 
@@ -120,7 +119,6 @@ const AppRoutes = () => {
             <Route path="security" element={<Security />} />
             <Route path="orders" element={<Orders />} />
             <Route path="track-order/:orderId" element={<TrackOrder />} />
-            <Route path="wishlist" element={<Wishlist />} />
             <Route path="reviews" element={<MyReviews />} />
             <Route path="support" element={<Support />} />
           </Route>

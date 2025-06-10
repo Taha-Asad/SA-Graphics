@@ -112,7 +112,7 @@ transporter.verify((error) => {
 });
 
 // Error handling middleware
-app.use(require('./middlewares/errorHandler.js'));
+app.use(require('./middleware/errorHandler.js'));
 
 // Start server
 const PORT = process.env.PORT || 5000;

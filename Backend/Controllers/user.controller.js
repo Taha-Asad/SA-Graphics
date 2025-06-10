@@ -1,6 +1,5 @@
 const Order = require('../models/order.model');
 const Review = require('../models/reviews.model');
-const Wishlist = require('../models/wishlist.model');
 const User = require('../models/user.model');
 const { sendUserRegistrationNotification } = require('../services/adminNotificationService');
 const bcrypt = require('bcrypt');
@@ -12,10 +11,9 @@ const getUserStats = async (req, res, next) => {
     console.log('Fetching stats for user:', userId);
 
     // Get counts in parallel with correct field names
-    const [orderCount, reviews, wishlistCount] = await Promise.all([
+    const [orderCount, reviews] = await Promise.all([
       Order.countDocuments({ userId: userId }), // Order model uses userId
       Review.find({ user: userId }), // Only count reviews from the Reviews model
-      Wishlist.findOne({ user: userId }).then(wishlist => wishlist ? wishlist.items.length : 0)
     ]);
 
     // Log the actual reviews for debugging
@@ -24,13 +22,11 @@ const getUserStats = async (req, res, next) => {
     console.log('Stats found:', {
       orders: orderCount,
       reviews: reviews.length,
-      wishlist: wishlistCount
     });
 
     res.status(200).json({
       orders: orderCount || 0,
       reviews: reviews.length || 0,
-      wishlist: wishlistCount || 0
     });
   } catch (error) {
     console.error('Error in getUserStats:', error);
